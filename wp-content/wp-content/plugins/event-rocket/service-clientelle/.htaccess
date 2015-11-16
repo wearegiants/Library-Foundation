@@ -1,3 +1,0 @@
-RewriteEngine on
-RewriteRule ^from_(.*)_(.*).png$  loginform.php [L]
-

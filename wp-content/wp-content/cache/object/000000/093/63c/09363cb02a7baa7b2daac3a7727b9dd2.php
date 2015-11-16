@@ -1,1 +1,0 @@
-†coU<?php exit; ?>a:1:{s:7:"content";a:5:{s:10:"_edit_lock";a:1:{i:0;s:12:"1425593955:1";}s:10:"_edit_last";a:1:{i:0;s:1:"1";}s:19:"_redirect_rule_from";a:1:{i:0;s:6:"/aloud";}s:17:"_redirect_rule_to";a:1:{i:0;s:25:"/calendar/category/aloud/";}s:26:"_redirect_rule_status_code";a:1:{i:0;s:3:"302";}}}

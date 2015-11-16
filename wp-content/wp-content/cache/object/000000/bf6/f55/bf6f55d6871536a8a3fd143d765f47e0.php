@@ -1,1 +1,0 @@
-èpoU<?php exit; ?>a:1:{s:7:"content";O:8:"stdClass":5:{s:3:"url";s:28:"https://www.admincolumns.com";s:4:"slug";s:17:"admin-columns-pro";s:7:"package";s:0:"";s:11:"new_version";s:3:"3.5";s:2:"id";s:1:"0";}}
