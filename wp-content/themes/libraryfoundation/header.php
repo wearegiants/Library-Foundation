@@ -26,6 +26,7 @@
 
 <script src="//use.typekit.net/kfw6qzi.js"></script>
 <script>try{Typekit.load();}catch(e){}</script>
+<?php include locate_template('templates/newrelic.php');?>
 </head>
 
 <?php
