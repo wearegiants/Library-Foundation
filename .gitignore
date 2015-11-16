@@ -4,3 +4,8 @@ wp-content/uploads
 *.zip
 .DS_Store
 wp-config.php
+ignore
+
+wp-content/themes/lflatheme
+wp-content/themes/backups
+wp-content/wp-content
