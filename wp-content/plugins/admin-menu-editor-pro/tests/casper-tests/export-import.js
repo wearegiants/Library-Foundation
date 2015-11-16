@@ -55,9 +55,9 @@ casper.then(function() {
 var originalMenuState = null, exportFileName;
 casper.then(function() {
 	//Save the base state so we can compare to it later.
-	originalMenuState = casper.evaluate(function() {
-		return AmeEditorApi.readMenuTreeState();
-	});
+	originalMenuState = JSON.parse(casper.evaluate(function() {
+		return jQuery.toJSON(AmeEditorApi.readMenuTreeState());
+	}));
 
 	//Export.
 	casper.test.comment('Exporting it to a file...');
@@ -124,9 +124,9 @@ casper.waitUntilVisible('#import_complete_notice', function() {
 //The notice should automatically disappear after a few seconds.
 casper.waitWhileVisible('#import_complete_notice', function() {
 
-	var importedMenuState = casper.evaluate(function() {
-		return AmeEditorApi.readMenuTreeState();
-	});
+	var importedMenuState = JSON.parse(casper.evaluate(function() {
+		return jQuery.toJSON(AmeEditorApi.readMenuTreeState())
+	}));
 
 	//Special case: The URL of the menu items that link to customize.php changes depending on the current URL.
 	//Since the import process re-merges the menu, this particular item will get a different URL after import.
@@ -135,7 +135,7 @@ casper.waitWhileVisible('#import_complete_notice', function() {
 	_.forEach(states, function(state) {
 		function removeReturnArg(url) {
 			if (url.match(/^customize\.php/)) {
-				url = url.replace(/([&?])return=[^&#]*?([&#]|$)/, '$1')
+				url = url.replace(/([&?])return=[^&#]*?([&#]|$)/, '$1$2')
 			}
 			return url;
 		}

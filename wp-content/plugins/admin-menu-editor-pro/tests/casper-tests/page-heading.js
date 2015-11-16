@@ -1,5 +1,5 @@
 /*
- Test the ability to change the page heading. The heading is the <h2> element at the top of most admin pages.
+ Test the ability to change the page heading. The heading is the <h1> element at the top of most admin pages.
  For plugins it often matches the menu title, but WordPress admin pages sometimes have different headings.
 
  Some pages have an "Add New" button, a search box or other UI element(s) in the heading. We need to make sure
@@ -35,19 +35,19 @@ casper.waitForSelector('#message.updated');
 
 casper.thenOpen(ameTestConfig.adminUrl + '/edit.php', function() {
 	casper.test.assertSelectorHasText(
-		'.wrap > h2:first-child',
+		'.wrap > h1:first-child', //In WP 4.2 and below it was H2. WP 4.3 changed it to H1.
 		'My Custom Heading',
 		'The "Posts" heading was changed to "My Custom Heading"'
 	);
 	casper.test.assertExists(
-		'.wrap > h2 .add-new-h2',
+		'.wrap > h1 .page-title-action', //In WP 4.2 and below the button class was add-new-h2.
 		'The "Add New" button still exists'
 	);
 });
 
 casper.thenOpen(ameTestConfig.adminUrl + '/widgets.php', function() {
 	casper.test.assertSelectorHasText(
-		'.wrap > h2:first-child',
+		'.wrap > h1:first-child',
 		'Another Heading',
 		'The "Widgets" heading was changed to "Another Heading"'
 	);

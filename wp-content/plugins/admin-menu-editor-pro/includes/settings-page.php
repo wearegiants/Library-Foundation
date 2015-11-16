@@ -16,12 +16,11 @@ $isProVersion = apply_filters('admin_menu_editor_is_pro', false);
 ?>
 
 <div class="wrap">
-	<?php screen_icon(); ?>
-	<h2>
+	<<?php echo WPMenuEditor::$admin_heading_tag; ?>>
 		<?php echo apply_filters('admin_menu_editor-self_page_title', 'Menu Editor'); ?> Settings
 		<a href="<?php echo esc_attr($editor_page_url); ?>" class="add-new-h2"
 		   title="Back to Admin Menu Editor">Editor</a>
-	</h2>
+	</<?php echo WPMenuEditor::$admin_heading_tag; ?>>
 
 	<form method="post" action="<?php echo esc_attr($formActionUrl); ?>" id="ws_plugin_settings_form">
 
@@ -138,10 +137,10 @@ $isProVersion = apply_filters('admin_menu_editor_is_pro', false);
 						<label>
 							<input type="checkbox" name="show_deprecated_hide_button"
 								<?php checked($settings['show_deprecated_hide_button']); ?>>
-							Enable the "Show/Hide" toolbar button (not recommended)
+							Enable the "Hide (cosmetic)" toolbar button
 						</label>
 						<br><span class="description">
-							This feature is deprecated and is only kept for backwards compatibility purposes.
+							This button hides the selected menu item without making it inaccessible.
 						</span>
 						</p>
 					<?php endif; ?>

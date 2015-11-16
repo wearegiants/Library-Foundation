@@ -13,6 +13,9 @@ class Wslm_LicenseManagerClient {
 	private $siteToken = null;
 	private $storeLicenseKey = false;
 
+	private $tokenHistorySize = 0;
+	private $tokenHistory = null;
+
 	private $checkPeriod = null;
 	private $cronHook;
 
@@ -43,6 +46,7 @@ class Wslm_LicenseManagerClient {
 			'check_period' => null,
 			'store_license_key' => false,
             'update_checker' => null,
+	        'token_history_size' => 0,
         );
         $args = array_merge($defaults, $args);
 
@@ -55,6 +59,7 @@ class Wslm_LicenseManagerClient {
         $this->productSlug = $args['product_slug'];
         $this->optionName = $args['option_name'];
         $this->licenseScope = $args['license_scope'];
+	    $this->tokenHistorySize = $args['token_history_size'];
 
         if ($args['update_checker'] !== null) {
             $this->updateChecker = $args['update_checker'];
@@ -110,6 +115,12 @@ class Wslm_LicenseManagerClient {
 		if ( isset($options['license']) ) {
 			$this->license = $this->createLicenseObject($options['license']);
 		}
+
+		if ( $this->tokenHistorySize > 0 ) {
+			$this->tokenHistory = isset($options['token_history']) ? $options['token_history'] : array();
+		} else {
+			$this->tokenHistory = null;
+		}
 	}
 
 	protected function save() {
@@ -117,6 +128,9 @@ class Wslm_LicenseManagerClient {
 		if ( !empty($this->license) ) {
 			$licenseData = $this->license->getData();
 			unset($licenseData['sites']);
+			if ( !$this->storeLicenseKey ) {
+				unset($licenseData['license_key']);
+			}
 		}
 
 		$options = array(
@@ -124,6 +138,11 @@ class Wslm_LicenseManagerClient {
 			'site_token' => $this->siteToken,
 			'license' => $licenseData,
 		);
+
+		if ( ($this->tokenHistorySize > 0) && !empty($this->tokenHistory) ) {
+			$options['token_history'] = array_slice($this->tokenHistory, -$this->tokenHistorySize);
+		}
+
 		if ( $this->licenseScope === self::LICENSE_SCOPE_NETWORK ) {
 			update_site_option($this->optionName, $options);
 		} else {
@@ -135,6 +154,7 @@ class Wslm_LicenseManagerClient {
 		$this->license = null;
 		$this->licenseKey = null;
 		$this->siteToken = null;
+		$this->tokenHistory = null;
 		wp_clear_scheduled_hook($this->cronHook);
 
 		if ( $this->licenseScope === self::LICENSE_SCOPE_NETWORK ) {
@@ -238,16 +258,56 @@ class Wslm_LicenseManagerClient {
 	}
 
 	/**
-	 * @param $licenseKey
+	 * Activate a license on the current site.
+	 *
+	 * @param string $licenseKey
 	 * @return Wslm_ProductLicense|WP_Error
 	 */
 	public function licenseThisSite($licenseKey) {
 		$result = $this->api->licenseSite($this->productSlug, $licenseKey, $this->getSiteUrl());
+		return $this->processActivationResponse($result, $licenseKey);
+	}
+
+	/**
+	 * Associate an already-activated, site-specific license with the current site.
+	 *
+	 * This is for situations where you have already obtained a site token somehow and just need
+	 * the license manager to verify it and refresh license details.
+	 *
+	 * @param string $siteToken
+	 * @return WP_Error|Wslm_ProductLicense
+	 */
+	public function licenseThisSiteByToken($siteToken) {
+		$result = $this->api->getLicenseByToken($this->productSlug, $siteToken, $this->getSiteUrl());
+		return $this->processActivationResponse($result, null, $siteToken);
+	}
+
+	/**
+	 * @param Wslm_LicenseManagerApiResponse $result
+	 * @param string|null $licenseKey
+	 * @param string|null $siteToken
+	 * @return Wslm_ProductLicense|WP_Error
+	 */
+	private function processActivationResponse($result, $licenseKey = null, $siteToken = null) {
 		if ( $result->success() ) {
 			//Success! Lets save our license data.
 			$this->license = $this->createLicenseObject($result->response->license);
-			$this->siteToken = $result->response->site_token;
-			$this->licenseKey = $licenseKey;
+			$this->siteToken = isset($result->response->site_token) ? $result->response->site_token : $siteToken;
+			$this->licenseKey = $this->storeLicenseKey ? $licenseKey : null;
+
+			if ( !isset($this->license['site_url']) && !empty($this->siteToken) ) {
+				$this->license['site_url'] = $this->getSiteUrl();
+			}
+
+			if ( ($this->tokenHistorySize > 0) && !empty($this->siteToken) ) {
+				//Add this token+site combination to the bottom of the list.
+				$this->tokenHistory = isset($this->tokenHistory) ? $this->tokenHistory : array();
+				unset($this->tokenHistory[$this->siteToken]);
+				$this->tokenHistory[$this->siteToken] = $this->getSiteUrl();
+			}
+
+			do_action('wslm_license_activated-' . $this->productSlug, $this->license);
+
 			$this->save();
 
 			//Now that we have a valid license, an update might be available. Clear the cache.
@@ -342,6 +402,13 @@ class Wslm_LicenseManagerClient {
 			return $this->siteToken;
 		}
 		return null;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getTokenHistory() {
+		return isset($this->tokenHistory) ? $this->tokenHistory : array();
 	}
 
 	public function getProductSlug() {

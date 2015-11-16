@@ -14,15 +14,27 @@ var ameTest = {
 		});
 	},
 	
-	isLoggedIn: function(displayName) {
+	isLoggedIn: function(userName) {
 		var currentDisplayName = casper.evaluate(function() {
 			return jQuery('#wpadminbar').find('.display-name').text().trim();
+		});
+		var currentUserName = casper.evaluate(function() {
+			return jQuery('#wpadminbar').find('.username').text().trim();
 		});
 
 		if ( currentDisplayName == '' ) {
 			return false;
 		}
-		return displayName ? (currentDisplayName == displayName) : true;
+
+		if (userName) {
+			if (currentUserName !== '') {
+				return (currentUserName == userName);
+			} else {
+				return (currentDisplayName == userName);
+			}
+		}
+
+		return true;
 	},
 	
 	thenLoginAsAdmin: function() {
@@ -184,6 +196,42 @@ var ameTest = {
 				item.find('.ws_edit_field-' + name + ' .ws_field_value').val(value).change();
 			});
 		}, level, properties);
+	},
+
+	getHighlightedMenuCount: function getHighlightedMenuCount() {
+		return jQuery('li.wp-has-current-submenu, li.menu-top.current', '#adminmenu').length;
+	},
+
+
+	getHighlightedItemCount: function () {
+		return jQuery('ul.wp-submenu li.current', '#adminmenu').length;
+	},
+
+	selectActor: function(actorId) {
+		casper.click('#ws_actor_selector a[href="#' + actorId + '"]');
+	},
+
+	selectRoleActor: function(roleId) {
+		this.selectActor('role:' + roleId);
+	},
+
+	selectAdminUserActor: function() {
+		this.selectActor('user:' + ameTestConfig.adminUsername);
+	},
+
+	selectNoActor: function() {
+		casper.click('#ws_actor_selector a.ws_no_actor');
+	},
+	
+	thenSaveMenu: function (callback) {
+		casper.then(function() {
+			casper.click('#ws_save_menu');
+		});
+		casper.waitForSelector('#message.updated', function() {
+			if (callback) {
+				callback();
+			}
+		});
 	}
 };
 

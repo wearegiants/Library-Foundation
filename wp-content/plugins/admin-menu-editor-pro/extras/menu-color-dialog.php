@@ -1,4 +1,24 @@
 <div id="ws-ame-menu-color-settings" title="Colors">
+	<div id="ame-color-preset-container">
+		<label for="ame-menu-color-presets" class="hidden"><strong>Presets</strong></label>
+
+		<select id="ame-menu-color-presets">
+			<option value="" selected="selected" disabled="disabled" class="ame-meta-option">
+				Select a preset
+			</option>
+
+			<option disabled class="ame-meta-option" id="ame-color-preset-separator">
+				<?php echo str_repeat('&#9472;', 25); ?>
+			</option>
+
+			<option value="[save_preset]" id="ws-ame-save-color-preset" class="ame-meta-option">
+				Save current settings as a preset...
+			</option>
+		</select>
+
+		<a id="ws-ame-delete-color-preset" href="#" class="hidden">Delete preset</a>
+	</div>
+
 	<?php
 	$menuColors = array(
 		'base-color'       => 'Background',
@@ -70,6 +90,7 @@
 
 	<div class="ws_dialog_buttons">
 		<?php submit_button('Save Changes', 'primary', 'ws-ame-save-menu-colors', false); ?>
-		<input type="button" class="button ws_close_dialog" value="Cancel">
+		<?php submit_button('Apply to All', 'secondary', 'ws-ame-apply-colors-to-all', false); ?>
+		<input type="button" class="button ws_close_dialog" value="Cancel" autofocus="autofocus">
 	</div>
 </div>

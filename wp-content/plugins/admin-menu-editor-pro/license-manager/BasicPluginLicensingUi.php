@@ -14,13 +14,16 @@ class Wslm_BasicPluginLicensingUI {
 	private $currentTab = 'current-license';
 	private $tabs = array();
 
+	private $keyConstant = null;
+
 	/** @var bool Whether to display the site token (if any) in the licensing window. */
 	protected $tokenDisplayEnabled = false;
 
-	public function __construct(Wslm_LicenseManagerClient $licenseManager, $pluginFile) {
+	public function __construct(Wslm_LicenseManagerClient $licenseManager, $pluginFile, $keyConstant = null) {
 		$this->licenseManager = $licenseManager;
 		$this->pluginFile = $pluginFile;
 		$this->slug = $this->licenseManager->getProductSlug();
+		$this->keyConstant = $keyConstant;
 
 		$this->tabs = array(
 			'current-license' => array(
@@ -46,6 +49,9 @@ class Wslm_BasicPluginLicensingUI {
 		add_action('wp_ajax_' . $this->getAjaxActionName(), array($this, 'printUi'));
 
 		add_action('after_plugin_row_' . $basename, array($this, 'printPluginRowNotice'), 10, 0);
+
+		add_action('all_admin_notices', array($this, 'autoActivateLicense'));
+		add_action('wslm_license_activated-' . $this->slug, array($this, 'clearActivationFailureFlag'), 10, 0);
 	}
 
 	public function addLicenseActionLink($links) {
@@ -516,7 +522,7 @@ class Wslm_BasicPluginLicensingUI {
 				$renewalUrl ? '</a>' : ''
 			),
 			'not_found' => 'The current license key or site token is invalid.',
-			'bad_site' => 'The current license is associated with a different site. Please re-enter your license key.',
+			'wrong_site' => 'Your site URL has changed. Please re-enter your license key.',
 		);
 		$status = $license->getStatus();
 		$notice = isset($messages[$status]) ? $messages[$status] : 'The current license is invalid.';
@@ -535,5 +541,50 @@ class Wslm_BasicPluginLicensingUI {
 			</td>
 		<?php
 		//(Intentionally leaving our <tr> unclosed. It will match up with the </tr> that WP outputs.)
+	}
+
+	public function autoActivateLicense() {
+		$license = $this->licenseManager->getLicense();
+		$failureFlag = 'wslm_auto_activation_failed-' . $this->slug;
+		if ( !$this->currentUserCanManageLicense() || $license->isValid() || get_site_option($failureFlag) ) {
+			return;
+		}
+
+		$result = null;
+		$tokenHistory = $this->licenseManager->getTokenHistory();
+		if ( !empty($this->keyConstant) && defined($this->keyConstant) ) {
+			//Attempt to activate the license key that's defined in wp-config.php.
+			$result = $this->licenseManager->licenseThisSite(constant($this->keyConstant));
+		} else if ( !empty($tokenHistory) ) {
+			//Check if there's a known token that matches the current site URL. Try to activate that token.
+			$possibleToken = array_search($this->licenseManager->getSiteUrl(), array_reverse($tokenHistory, true));
+			if ( !empty($possibleToken) ) {
+				$result = $this->licenseManager->licenseThisSiteByToken($possibleToken);
+			}
+		}
+
+		if ( is_wp_error($result) ) {
+			printf(
+				'<div class="error">
+					<p>
+						%1$s tried to automatically activate your license, but it didn\'t work.<br/>
+						Error: <code>%2$s [%3$s]</code>
+					</p>
+					<p>Please go to the <a href="%4$s">Plugins</a> page and enter your license key.</p>
+				</div>',
+				apply_filters('wslm_product_name-' . $this->slug, $this->slug),
+				$result->get_error_message(),
+				$result->get_error_code(),
+				is_multisite() ? network_admin_url('plugins.php') : admin_url('plugins.php')
+			);
+			update_site_option($failureFlag, true);
+		} else if ( $result instanceof Wslm_ProductLicense ) {
+			//Success! Don't output anything, just proceed as normal.
+			$this->clearActivationFailureFlag();
+		}
+	}
+
+	public function clearActivationFailureFlag() {
+	    delete_site_option('wslm_auto_activation_failed-' . $this->slug);
 	}
 }

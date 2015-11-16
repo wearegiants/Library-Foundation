@@ -5,6 +5,7 @@ class wsMenuEditorExtras {
 	private $wp_menu_editor;
 
 	private $framed_pages = array();
+	private $embedded_wp_pages = array();
 
 	//A list of IDs for menu items output by Ozh's Admin Drop Down Menu
 	//(those can't be modified the usual way because Ozh's plugin strips tags
@@ -111,10 +112,17 @@ class wsMenuEditorExtras {
 		add_action('admin_enqueue_scripts', array($this, 'enqueue_menu_color_style'));
 		add_action('wp_ajax_ame_output_menu_color_css', array($this,'ajax_output_menu_color_css') );
 
+		/**
+		 * Modules.
+		 */
+		include dirname(__FILE__) . '/extras/modules/visible-users/visible-users.php';
+		new ameVisibleUsers($this->wp_menu_editor);
+
 		//License management
 		add_filter('wslm_license_ui_title-admin-menu-editor-pro', array($this, 'license_ui_title'), 10, 0);
 		add_action('wslm_license_ui_logo-admin-menu-editor-pro', array($this, 'license_ui_logo'));
 		add_action('wslm_license_ui_details-admin-menu-editor-pro', array($this, 'license_ui_upgrade_link'), 10, 3);
+		add_filter('wslm_product_name-admin-menu-editor-pro', array($this, 'license_ui_product_name'), 10, 0);
 	}
 	
   /**
@@ -348,53 +356,232 @@ class wsMenuEditorExtras {
 			echo "You do not have sufficient permissions to view this page.";
 			return;
 		}
-		
+
+		$styles = array(
+			'border' => 'none',
+			'width'  => '100%',
+			'min-height' => '300px',
+		);
+
+		//The user can set the frame height manually or let the plugin calculate it automatically (the default).
+		$height = !empty($item['iframe_height']) ? intval($item['iframe_height']) : 0;
+		$height = min(max($height, 0), 10000);
+		if ( !empty($height) ) {
+			$styles['height'] = $height . 'px';
+			unset($styles['min-height']);
+		}
+
+		$style_attr = '';
+		foreach($styles as $property => $value) {
+			$style_attr .= $property . ': ' . $value . ';';
+		}
+
 		$heading = !empty($item['page_title'])?$item['page_title']:$item['menu_title'];
+		$heading = sprintf('<%1$s>%2$s</%1$s>', WPMenuEditor::$admin_heading_tag, $heading);
 		?>
 		<div class="wrap">
-		<h2><?php echo $heading; ?></h2>
+		<?php echo $heading; ?>
 		<!--suppress HtmlUnknownAttribute "frameborder" is in fact allowed here -->
 			<iframe
 			src="<?php echo esc_attr($item['file']); ?>" 
-			style="border: none; width: 100%; min-height:300px;"
+			style="<?php echo esc_attr($style_attr); ?>>"
 			id="ws-framed-page"
 			frameborder="0" 
 		></iframe>
 		</div>
-		<script type="text/javascript">
-		function wsResizeFrame(){
-			var $ = jQuery;
-			var footer = $('#footer, #wpfooter');
-			var frame = $('#ws-framed-page');
-			var containerPadding = parseInt(frame.closest('#wpbody-content').css('padding-bottom'), 10) || 0;
-
-			//Automagically calculate a frame height that fills the entire page without creating a vertical scrollbar.
-			var maxHeight = footer.offset().top - frame.offset().top;
-			var minHeight = maxHeight - containerPadding;
-
-			var empiricalFudgeFactor = 29; //Based on the default admin theme in WP 4.1 (without the test helper output).
-			var initialHeight = maxHeight - empiricalFudgeFactor;
-
-			frame.height(initialHeight);
-
-			setTimeout(function() {
-				//Check if there's a scroll bar and reduce the height just enough to get rid of it.
-				//Sometimes it's not possible to avoid scrolling because another part of the page is too tall,
-				//so we have a minimum height limit.
-				var scrollDelta = $(document).height() - $(window).height();
-				if (scrollDelta > 0) {
-					frame.height(Math.max(initialHeight - scrollDelta, minHeight));
-				}
-			}, 1)
-		}
-		
-		jQuery(function(){
-			wsResizeFrame();
-		});
-		</script>		
 		<?php
+
+		if ( empty($height) ) :
+		?>
+			<script type="text/javascript">
+			function wsResizeFrame(){
+				var $ = jQuery;
+				var footer = $('#footer, #wpfooter');
+				var frame = $('#ws-framed-page');
+				var containerPadding = parseInt(frame.closest('#wpbody-content').css('padding-bottom'), 10) || 0;
+
+				//Automagically calculate a frame height that fills the entire page without creating a vertical scrollbar.
+				var maxHeight = footer.offset().top - frame.offset().top;
+				var minHeight = maxHeight - containerPadding;
+
+				var empiricalFudgeFactor = 29; //Based on the default admin theme in WP 4.1 (without the test helper output).
+				var initialHeight = maxHeight - empiricalFudgeFactor;
+
+				frame.height(initialHeight);
+
+				setTimeout(function() {
+					//Check if there's a scroll bar and reduce the height just enough to get rid of it.
+					//Sometimes it's not possible to avoid scrolling because another part of the page is too tall,
+					//so we have a minimum height limit.
+					var scrollDelta = $(document).height() - $(window).height();
+					if (scrollDelta > 0) {
+						frame.height(Math.max(initialHeight - scrollDelta, minHeight));
+					}
+				}, 1)
+			}
+
+			jQuery(function(){
+				wsResizeFrame();
+			});
+			</script>
+		<?php
+		endif;
 	}
-	
+
+	/**
+	 * Set up menu items that display the content of a normal page (as in the post type) as an admin page.
+	 *
+	 * @param array $item Menu item.
+	 * @param string|null $parent_file Parent menu slug or URL.
+	 * @return array Modified menu item.
+	 */
+	public function create_embedded_wp_page($item, $parent_file = null) {
+		if ( ameMenuItem::get($item, 'template_id') !== ameMenuItem::embeddedPageTemplateId ) {
+			return $item;
+		}
+
+		$page_id = ameMenuItem::get($item, 'embedded_page_id', 0);
+		$blog_id = ameMenuItem::get($item, 'embedded_page_blog_id', get_current_blog_id());
+
+		//Default to using the menu title as the window title.
+		if ( empty($item['page_title']) ) {
+			$item['page_title'] = strip_tags($item['menu_title']);
+		}
+
+		$slug = 'embedded-page-' . md5($page_id . '|' . $blog_id . '|' . count($this->embedded_wp_pages));
+		$this->embedded_wp_pages[$slug] = $item; //Used by the callback function.
+
+		//Add a virtual menu.
+		if ( empty($parent_file) ) {
+			add_menu_page(
+				$item['page_title'],
+				$item['menu_title'],
+				$item['access_level'],
+				$slug,
+				array($this, 'display_embedded_wp_page')
+			);
+		} else {
+			add_submenu_page(
+				$parent_file,
+				$item['menu_title'],
+				$item['menu_title'],
+				$item['access_level'],
+				$slug,
+				array($this, 'display_embedded_wp_page')
+			);
+		}
+
+		//Change the slug to our newly created page.
+		$item['file'] = $slug;
+		//Force automatic URL generation.
+		$item['url'] = '';
+		//Make sure admin-helpers.js won't replace the real heading with the placeholder.
+		if ($item['page_heading'] === ameMenuItem::embeddedPagePlaceholderHeading) {
+			$item['page_heading'] = null;
+		}
+
+		return $item;
+	}
+
+	/**
+	 * A callback for menu items that embed a page or CPT item in the admin panel. Displays the content of the page.
+	 */
+	public function display_embedded_wp_page() {
+		$slug = isset($_GET['page']) ? strval($_GET['page']) : null;
+		if ( empty($slug) || !isset($this->embedded_wp_pages[$slug]) ) {
+			echo '<h1>Error: Invalid page. How did you get here?</h1>';
+			return;
+		}
+
+		$item = $this->embedded_wp_pages[$slug];
+		$page_id = ameMenuItem::get($item, 'embedded_page_id', 0);
+		$page_blog_id = ameMenuItem::get($item, 'embedded_page_blog_id', get_current_blog_id());
+
+		$should_switch = ($page_blog_id !== get_current_blog_id());
+		if ( $should_switch ) {
+			switch_to_blog($page_blog_id);
+		}
+
+		$page = get_post($page_id);
+		$expected_post_status = 'publish';
+		if ( empty($page) ) {
+			printf(
+				'Error: Page not found. Post ID %1$d does not exist on blog ID %2$d.',
+				$page_id,
+				$page_blog_id
+			);
+		} else if ( $page->post_status !== $expected_post_status ) {
+			printf(
+				'Error: This page is not published. Post ID: %1$d, expected status: "%2$s", actual status: "%3$s".',
+				$page_id,
+				esc_html($expected_post_status),
+				esc_html($page->post_status)
+			);
+		} else {
+			$heading = $item['page_heading'];
+			if ( $heading === ameMenuItem::embeddedPagePlaceholderHeading ) {
+				//Note that this means the user can't set the heading to the same text as the placeholder.
+				//That's poor design, but it probably won't matter in practice.
+				$heading = strip_tags($item['menu_title']);
+			}
+
+			echo '<div class="wrap">';
+			if ( !empty($heading) ) {
+				printf('<%2$s>%1$s</%2$s>', $heading, WPMenuEditor::$admin_heading_tag);
+			}
+			echo apply_filters('the_content', $page->post_content);
+			echo '</div>';
+		}
+
+		if ( $should_switch ) {
+			restore_current_blog();
+		}
+	}
+
+	private function set_final_hidden_flag($item) {
+		//Globally hidden items stay hidden regardless of who is currently logged in.
+		if ( !empty($item['hidden']) ) {
+			return $item;
+		}
+
+		static $user = null, $user_login = '';
+		if ( $user === null ) {
+			$user = wp_get_current_user();
+			$user_login = $user->get('user_login');
+		}
+
+		//User-specific settings take precedence.
+		$user_actor = 'user:' . $user_login;
+		if ( isset($item['hidden_from_actor'][$user_actor]) ) {
+			$item['hidden'] = $item['hidden_from_actor'][$user_actor];
+			return $item;
+		}
+
+		//The item will be hidden only if *all* of the user's roles have it hidden.
+		//Unlike with capabilities and permissions, there are no defaults to worry about.
+		$actors = array();
+		if ( is_multisite() && is_super_admin($user) ) {
+			$actors[] = 'special:super_admin';
+		}
+		foreach($this->wp_menu_editor->get_user_roles($user) as $role) {
+			$actors[] = 'role:' . $role;
+		}
+
+		$is_hidden = null;
+		foreach($actors as $actor) {
+			if ( !isset($is_hidden) ) {
+				$is_hidden = !empty($item['hidden_from_actor'][$actor]);
+			} else {
+				$is_hidden = $is_hidden && !empty($item['hidden_from_actor'][$actor]);
+			}
+		}
+
+		if ( $is_hidden ) {
+			$item['hidden'] = true;
+		}
+		return $item;
+	}
+
 	/**
 	 * Output the HTML for import and export dialogs.
 	 * Callback for the 'menu_editor_footer' action.
@@ -1167,6 +1354,10 @@ wsEditorData.importMenuNonce = "<?php echo esc_js(wp_create_nonce('import_custom
 		</p><?php
 	}
 
+	public function license_ui_product_name() {
+		return 'Admin Menu Editor Pro';
+	}
+
 	/**
 	 * Format separator items located in sub-menus.
 	 * See /css/admin.css for the relevant styles.
@@ -1273,6 +1464,16 @@ wsEditorData.importMenuNonce = "<?php echo esc_js(wp_create_nonce('import_custom
 		//Handle submenu separators.
 		if ( current_filter() == 'custom_admin_submenu' ) {
 			$item = $this->create_submenu_separator($item);
+		}
+
+		//Handle menus that display a WP page in the admin.
+		if ( $item['template_id'] === ameMenuItem::embeddedPageTemplateId ) {
+			$item = $this->create_embedded_wp_page($item, $parent_file);
+		}
+
+		//Apply per-role visibility (cosmetic, not permissions).
+		if ( !empty($item['hidden_from_actor']) ) {
+			$item = $this->set_final_hidden_flag($item);
 		}
 
 		return $item;
@@ -1415,9 +1616,19 @@ $ameProLicenseManager = new Wslm_LicenseManagerClient(array(
 	'product_slug' => 'admin-menu-editor-pro',
 	'license_scope' => Wslm_LicenseManagerClient::LICENSE_SCOPE_NETWORK,
 	'update_checker' => isset($ameProUpdateChecker) ? $ameProUpdateChecker : null,
+	'token_history_size' => 5,
 ));
 if ( isset($wp_menu_editor) ) {
-	$ameLicensingUi = new Wslm_BasicPluginLicensingUI($ameProLicenseManager, $wp_menu_editor->plugin_file);
+	$ameLicensingUi = new Wslm_BasicPluginLicensingUI(
+		$ameProLicenseManager,
+		$wp_menu_editor->plugin_file,
+		'AME_LICENSE_KEY'
+	);
+}
+
+//Load WP-CLI commands.
+if ( defined('WP_CLI') && WP_CLI && isset($wp_menu_editor) ) {
+	include dirname(__FILE__) . '/extras/wp-cli-integration.php';
 }
 
 }

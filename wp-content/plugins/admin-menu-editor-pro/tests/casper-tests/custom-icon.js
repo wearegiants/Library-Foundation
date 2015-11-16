@@ -123,6 +123,22 @@ casper.then(function() {
 		'submenu'
 	);
 
+	//Give another submenu an icon, then hide that submenu. The plugin shouldn't allocate space for icons
+	//(via the .ame-has-submenu-icons class) when the item that has the icon is not visible.
+	ameTest.selectItemByTitle('Users', 'Add New', true);
+	casper.click('.ws_item.ws_active .ws_toggle_advanced_fields');
+
+	ameTest.setItemFields(
+		{
+			'icon_url': 'dashicons-star-filled'
+		},
+		'submenu'
+	);
+
+	//Hide it from the current user.
+	casper.click('#ws_actor_selector a[href="#user:' + ameTestConfig.adminUsername + '"]');
+	casper.click('#ws_submenu_box .ws_item.ws_active .ws_actor_access_checkbox');
+
 	casper.click('#ws_save_menu');
 });
 
@@ -130,6 +146,11 @@ casper.waitForSelector('#message.updated', function() {
 	casper.test.assertExists(
 		'#menu-settings ul.wp-submenu a[href="options-writing.php"] .dashicons-star-empty',
 		'Custom submenu icons show up correctly'
+	);
+
+	casper.test.assertDoesntExist(
+		'#menu-users.ame-has-submenu-icons',
+		'Top level menus only get the "ame-has-submenu-icons" class when the submenus with icons are visible'
 	);
 });
 

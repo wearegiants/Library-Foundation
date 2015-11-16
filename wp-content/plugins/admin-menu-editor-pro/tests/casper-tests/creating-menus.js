@@ -1,14 +1,16 @@
 /* Test the ability to create custom menus and menu items. */
 casper.start();
-casper.test.comment('Add a new menu after "Appearance", then click it.');
-
 ameTest.thenQuickSetup(['check-compression']);
+
+var fixedFrameHeight = 567;
 
 casper.then(function() {
 	ameTest.loadDefaultMenu();
 });
 
 casper.then(function() {
+	casper.test.comment('Add a new menu after "Appearance", then click it.');
+
 	casper.test.assertEval(function() {
 		var menuEditor = jQuery('#ws_menu_editor');
 		var appearance = menuEditor.find('.ws_item_title:contains("Appearance")').first().closest('.ws_container');
@@ -88,6 +90,16 @@ casper.then(function() {
 		'open_in'    : 'iframe'
 	});
 
+	//Add another menu that opens in frame, but set the frame height manually this time.
+	ameTest.selectItemByTitle('Media');
+	ameTest.addNewItem({
+		'menu_title' : 'Fixed Frame',
+		'template_id': '',
+		'file'       : 'http://example.com/?second',
+		'open_in'    : 'iframe',
+		'iframe_height' : fixedFrameHeight
+	});
+
 	casper.click('#ws_save_menu');
 });
 
@@ -110,6 +122,11 @@ casper.waitForSelector('#message.updated', function() {
 		'Plugin Submenu',
 		'Added a submenu to a plugin menu (open in = iframe)'
 	);
+	casper.test.assertSelectorHasText(
+		'#menu-media .wp-submenu a[href*="?page=framed-menu-item-"]',
+		'Fixed Frame',
+		'Added another submenu to Media (open in = iframe, fixed height)'
+	);
 
 	casper.test.assertEval(function() {
 		var item = jQuery('#menu-media').find('.wp-submenu a[href="http://example.com/"]');
@@ -130,6 +147,19 @@ casper.then(function() {
 	casper.test.assertEvalEquals(function() {
 		return jQuery('#ws-framed-page').attr('src');
 	}, 'http://www.iana.org/domains/example', 'IFrame source matches the menu URL');
+
+	//Verify that the second item that's set to open in an frame has the right height.
+	casper.click('#menu-media .wp-submenu a[href*="?page=framed-menu-item-"]');
+});
+
+casper.then(function() {
+	casper.test.assertEvalEquals(function() {
+		return jQuery('#ws-framed-page').attr('src');
+	}, 'http://example.com/?second', 'Fixed IFrame source matches the menu URL');
+
+	casper.test.assertEvalEquals(function() {
+		return jQuery('#ws-framed-page').height();
+	}, fixedFrameHeight, 'The frame height matches the height that was entered by the user');
 });
 
 ameTest.deactivateAllHelpers();

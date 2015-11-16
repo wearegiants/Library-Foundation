@@ -2,9 +2,9 @@
 Contributors: whiteshadow
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=A6P9S6CE3SRSW
 Tags: admin, dashboard, menu, security, wpmu
-Requires at least: 3.8
-Tested up to: 4.2
-Stable tag: 1.98
+Requires at least: 4.1
+Tested up to: 4.4
+Stable tag: 2.0
 
 Lets you directly edit the WordPress admin menu. You can re-order, hide or rename existing menus, add custom menus and more.
 
@@ -32,9 +32,13 @@ Pro version of the Admin Menu Editor plugin. Lets you manually edit the Dashboar
 
 **Requirements**
 
-- WordPress 3.8 or later
+- WordPress 4.1 or later
 
 _For maximum compatibility and security, using a modern web browser such as Firefox, Opera, Chrome or Safari is recommended. Certain advanced features (e.g. menu import) may not work reliably or at all in Internet Explorer and other outdated browsers._
+
+**Credits**
+
+This plugin uses some icons from the ["Silk" icon set](http://fortawesome.github.io/Font-Awesome/) by Mark James. These icons are licensed under the [Creative Commons Attribution 3.0 License](http://creativecommons.org/licenses/by/3.0/).
 
 == Installation ==
 
@@ -79,6 +83,67 @@ Here are some usage tips and other things that can be good to know when using th
 == Changelog ==
 
 [Get the latest version here.](http://adminmenueditor.com/updates/)
+
+= 2.0 =
+##### Added
+* Added "Choose users..." link that lets you select which users will show up in the menu editor. This makes it easier to change menu permissions for specific users.
+* Added "Hide all submenu items when this item is hidden" setting. Normally, a top level menu stays visible as long as it has at least one accessible submenu item (that's just how WordPress works). You can use this setting to override that, forcing all submenu items to stay hidden if the user doesn't have access to the parent menu. Note that this can break plugins that rely on the default WordPress behaviour, so use with care.
+* Added "Frame height" field. You can manually set the height of `<iframe>` elements that the plugin generates for menu items configured to open in a frame. Leave it empty to calculate the height automatically (the default).
+* Improved support for custom post types. You can now change individual CPT permissions like "edit [content]", "edit other user's [content]", "delete private [content]", and so on without having to install additional plugins. To access these settings, select a menu item that points to a CPT and click the "Edit..." button next to the "Permissions" field.
+* Added "Hide and prevent access" toolbar button. When the "All" option is selected in the list of roles, this button will hide the selected menu from everyone except the currently logged-in user (and Super Admin on Multisite). Basically, it's a shortcut for clicking on each role and unchecking the menu, then enabling the menu for your own account. When a specific role is selected, the button will just hide the selected menu from that role - the equivalent of toggling the menu checkbox.
+* Added basic WP-CLI support. Run `wp help admin-menu-editor` for a list of available commands.
+* Added "Apply to All" button to the color scheme screen. 
+* You can save color presets.
+* Added "Keep this menu open" checkbox. As the name implies, this setting keeps a top level menu expanded even if it is not the current menu.
+* Added a way to embed a page or post in the WordPess admin. Set "Target page" to "Embed WP page", then pick a page from the "Embedded page ID" dropdown. You can also use the "Custom" tab to select a CPT item or to pick a page from another site of a Multisite network.
+* You can define an `AME_LICENSE_KEY` constant in `wp-config.php` to set your license key. The plugin will attempt to automatically activate that key the next time an administrator visits the Dashboard. It will only try that *once* - if the key is incorerect or something else goes wrong, you'll have to activate your key manually.
+* Added sort buttons to the top level menu toolbar. Click the down chevron button to display them.
+* Added an arrow that points from the current submenu to the currently selected parent menu. This might help new users understand that the left column shows top level menus and the right column shows the corresponding submenu(s).
+
+##### Fixed
+* Role names no longer move around when you click them.
+* No longer reserve space for submenu icons when the items with icons are not actually visible. 
+* Fixed a rare bug where the menu editor would crash if one of the menu items had a `null` menu title. Technically, it's not valid to set the title to `null`, but it turns out that some plugins do that anyway.
+* Fixed another rare bug where certain valid colors would be treated as "no color selected".
+* Top level menus that have an empty title ("", an empty string) are no longer treated as separators.
+* The "page heading" setting now works properly on pages that use `<h1>` headings.
+* Made all text fields and dropdowns the same height. 
+* All fields have consistent vertical margins.
+* Fixed a number of layout bugs that could cause field labels to show up in the wrong place or get wrapped/broken in half when another plugin changed the default font or input size.
+* Fixed a minor layout bug that caused the "expand menu properties" arrow to move down slightly when holding down the mouse button.
+* Fixed a minor bug that could cause toolbar buttons to change size or position if another plugin happens to override the default link and image CSS.
+* Added a workaround for plugins that create "Welcome", "What's New" or "Getting Started" menu items and then hide those items in a non-standard way. Now (some of) these items will no longer show up unnecessarily.
+* Fixed a bug that mostly affected mobile devices and made it impossible to expand a top level menu when its "target page" was set to "None".
+* Improved compatibility with buggy plugins that unintentionally corrupt the list of users' roles by misusing `array_shift`.
+* Fixed a URL parsing bug that caused AME to mix up the "Customize", "Header" and "Background" menu items in some configurations.
+
+##### Changed
+* Increased minimum required WordPress version to 4.1.
+* In the "Permissions" dialog, moved the "enabled" checkbox to the left side of the list of roles. 
+* Un-deprecated the "Show/Hide" button, renamed it to "Hide without preventing access" and improved its compatibility with other features. Now it supports per-role settings. Changed the icon from a grey puzzle piece to a rectangle with a dashed border.
+* Made the plugin more resilient to JavaScript crashes caused by other plugins.
+* Use `<h1>` headings for admin pages in WordPress 4.2 and above.
+* The plugin will remember the last few site URLs it has been activated on and automatically load the appropriate license details if the URL changes. This only works when all of the sites share the same WordPress database. 
+* The default submenu icon now matches the parent icon.
+* Changed the wording of a bunch of tooltips.
+* Made the "delete" button appear disabled when the selected menu item can't be deleted.
+* Moved the "new separator" button so that it's next to the "new menu" button.  
+* Ran out of space in the toolbar, moved a few buttons to the second row. Click the new last button in the toolbar ("down chevron") to show or hide the second row.
+* Changed the close icon of plugin dialogs to a plain white "X".
+* Increased tooltip text size.
+* Optimization: Removed emoji scripts from the menu editor page. WordPress emoji implementation can significantly slow down JavaScript-heavy plugins because it tracks all DOM changes via MutationObserver.
+* Tested up to WordPress 4.4-beta3.
+
+= 1.99 =
+* Fixed a `TypeError: invalid 'in' operand a` error that caused compatibility issues with WordPress 4.3.
+* Fixed a bug where the current menu item wouldn't get highlighted if its URL included %-encoded query parameters.
+* Fixed a bug in menu URL generation that could cause problems when moving a plugin menu from "Posts", "Pages" or a CPT to another menu. The URL of the menu item got changed in a way that could break some plugins.
+* Fixed a .htaccess compatiblility issue with with Apache 2.3+.
+* Fixed a layout issue that caused the "reset to default" button for the "Color scheme" field to show up in the wrong place.
+* Fixed an incorrect directory name in an error message.
+* The "Links" menu will no longer show up in the editor unless explicitly enabled. As of WP 3.5, the "Links" menu still exists in WordPress core but is inaccessible because the Links Manager is disabled by default.
+* Slightly improved menu item drag-and-drop. You can now drop top level menus anywhere in the submenu box. Previously you had to drop them in a specific, fixed spot. Also, when dragging a submenu item to the top level, a placeholder box will show up to indicate where you can drop the item.
+* Tested with WordPress 4.3.
 
 = 1.98 =
 * Tested up to WordPress 4.2.

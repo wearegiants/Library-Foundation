@@ -13,6 +13,9 @@ if( defined( 'ABSPATH') && defined('WP_UNINSTALL_PLUGIN') ) {
 	delete_option('ws_menu_editor_pro');
 	if ( function_exists('delete_site_option') ){
 		delete_site_option('ws_menu_editor_pro');
+
+		//Remove the "automatic license activation failed" flag. Most sites won't have this.
+		delete_site_option('wslm_auto_activation_failed-admin-menu-editor-pro');
 	}
 	//Remove update metadata
 	delete_option('ame_pro_external_updates');
