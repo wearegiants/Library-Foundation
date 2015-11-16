@@ -1,0 +1,180 @@
+.page-header {
+
+  background-color: @bgGray;
+  background-position: top center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  .header-overlay();
+
+  @media @mobile {
+    padding-top: 100px;
+  }
+
+  @media @tablet {
+    padding-top: 275px;
+  }
+
+  @media @desktop {
+    padding-top: 225px;
+  }
+
+
+  &:hover {
+    &:after {
+      opacity: 1;
+    }
+  }
+
+  > div {
+    z-index: 9;
+    position: relative;
+  }
+
+  h1 {
+    color: @white;
+
+    a {
+      color: inherit;
+    }
+
+    &.has-sub {
+      margin-bottom: 0;
+      line-height: 1;
+    }
+
+  }
+
+  .page-header-subtitle {
+    .caslon();
+    color: @white;
+    margin: 0;
+    margin-bottom: 15px;
+    .font_size(24);
+    p {
+      margin: 0;
+      color: inherit;
+    }
+  }
+
+  ul.parent-links {
+
+    padding-left: 0;
+    margin-bottom: 0;
+
+    li {
+
+      display: inline-block;
+
+      @media @mobile {
+        .font_size(11);
+      }
+
+      @media @tablet {
+        .font_size(14);
+      }
+
+      &:before {
+        display: none;
+      }
+
+      a {
+        color: @white;
+        display: block;
+        padding-right: 0;
+        &:before {
+          top: .125em;
+          position: relative;
+          margin: 0 7px;
+        }
+      }
+
+      &:first-child {
+        a {
+          &:before {
+            display: none;
+          }
+        }
+      }
+
+    }
+
+  }
+
+  &.event {
+    .parent-links {
+      li {
+        a {
+          color: @white;
+          &:before {
+            top: .125em;
+            position: relative;
+          }
+        }
+        .cat_aloud {
+          background-color: @aloudpink;
+          color: @white;
+          height: 30px;
+          line-height: 33px;
+          padding: 0 10px;
+          border-radius: 3px;
+        }
+      }
+    }
+  }
+
+  &.minimal {
+
+    background-color: @blue;
+    background-size: cover;
+
+    &:after {
+      opacity: .125;
+    }
+
+    .page-header-title {
+
+      font-size: 3em;
+
+    }
+
+  }
+
+}
+
+.cart-header {
+
+  .buttons {
+
+    display: block;
+
+    @media @mobile {
+      float: none;
+      height: 60px;
+    }
+
+    @media @desktop {
+      float: right;
+    }
+
+    .button {
+      border: none;
+      height: 20px;
+      line-height: 20px;
+      padding: 0;
+      padding-left: 10px;
+      .cat();
+
+      @media @mobile {
+        padding-left: 0;
+        .font_size(10);
+      }
+
+      @media @tablet {
+        padding-left: 10px;
+        .font_size(11);
+      }
+
+    }
+
+  }
+}

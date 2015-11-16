@@ -1,0 +1,45 @@
+/* @override 
+	http://lfla.org/odyssey/wp-content/themes/roots/assets/css/layout.css */
+
+#calendar {
+  clear: both;
+  padding-bottom: 60px!important;
+}
+
+.pullquote {
+  border-bottom: 1px solid #eee;
+  border-top: 1px solid #eee;
+  background: #fff!important;
+}
+
+.pullquote .rnd-button {
+  border-color: #38637C;
+  color: #38637C;
+  opacity: .75;
+  -webkit-transition: 300ms ease;
+}
+
+.pullquote .rnd-button:hover {
+  color: #38637C;
+  opacity: 1;
+}
+
+.page-id-431 .text-center {
+}
+
+.page-id-431 .text-center p {
+  margin-bottom: 20px;
+  font-size: 19px;
+  line-height: 1.8;
+}
+
+#calendar .rnd-button {
+  background: #fff!important;
+  color: #38637C!important;
+  opacity: .75;
+}
+
+#calendar .rnd-button:hover{
+  color: #38637C!important;
+  opacity: 1;
+}

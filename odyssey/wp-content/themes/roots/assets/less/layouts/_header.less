@@ -1,0 +1,112 @@
+#site-logo {
+	&.page {
+		margin-top: 50px;
+		margin-bottom: 50px;
+	}
+}
+
+.banner { 
+
+	border-bottom: none;
+	margin: 0;
+	font-family: @intro-regular;
+	background: none;
+	font-size: 16px;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	text-rendering: optimizelegibility;
+
+	.container {
+		//border-top: 1px solid rgba(0,0,0,.07);
+		padding: 20px 0 20px;
+	}
+
+
+	&.stuck {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		background: #fff;
+		border-bottom: none;
+		box-shadow: 0 0 10px rgba(0,0,0,.04);
+
+		
+
+	}
+
+	.navbar-header {
+		display: block;
+		float: none;
+	}
+
+	.navbar-brand {
+		text-align: center;
+		margin: auto;
+		float: none;
+	}
+
+	.navbar-nav {
+
+		float: none;
+		margin: 0 auto;
+		text-align: center;
+
+		> li {
+			display: inline-block;
+			float: none;
+
+			a {
+				padding: 5px 8px;
+				color: #A7AAAC;
+				-webkit-transition: 300ms ease;
+
+				&:hover {
+					color: @brand-primary;
+				}
+
+				&.active {
+					color: @brand-primary;
+				}
+			}
+
+			&.menu-the-la-odyssey a {
+				
+				color: @brand-primary
+			}
+		}
+
+	}
+
+
+
+}
+
+.banner.headroom--pinned {
+    display: block;
+}
+.banner.headroom--unpinned {
+    display: none;
+    transform: translateY(-100%);
+}
+
+.banner.headroom {
+    transition: transform 200ms linear;
+}
+
+.banner.headroom--pinned {
+    transform: translateY(0%);
+}
+
+.banner.headroom--unpinned {
+    transform: translateY(-100%);
+}
+
+.banner.headroom--pinned {
+	position: fixed;
+	z-index: 1000;
+	background: #fff;
+	right: 0;
+	left: 0;
+	top: 0;
+}

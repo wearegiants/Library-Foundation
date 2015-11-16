@@ -1,0 +1,82 @@
+// Font Sizes
+
+// font-family:'DIN Next W01 Light';
+// font-family:'DIN Next W01 Regular';
+// font-family:'DIN Next W01 Medium';
+// font-family:'DINNextRoundedLTW01-Lig';
+// font-family:'DINNextRoundedLTW01-Reg';
+// font-family:'DINNextRoundedLTW01-Med';
+
+// @font-size-xs:       .font_size(12);
+// @font-size-sm:       .font_size(14);
+// @font-size-bd:       .font_size(15);
+// @font-size-md:       .font_size(24);
+// @font-size-lg:       .font_size(32);
+// @font-size-xl:       .font_size(48);
+
+// Font Families
+
+@font-fam-titles:    "Sentinel",sans-serif;
+@font-fam-subtitle:  "franklin-gothic-urw",sans-serif;
+@font-fam-body:      "franklin-gothic-urw",sans-serif;
+@font-fam-buttons:   "franklin-gothic-urw",sans-serif;
+@font-fam-primary:   "franklin-gothic-urw",sans-serif;
+@font-fam-secondary: "franklin-gothic-urw",sans-serif;
+
+// Font Setup
+
+body {
+  font-family: @font-fam-body;
+  font-weight: 500;
+}
+
+
+h1,h2,h3,h4,h5,h6,strong,b {
+  font-family: @font-fam-titles;
+  font-weight: normal;
+}
+
+h2 {
+  font-family: @font-fam-subtitle;
+  color: @textGray;
+}
+
+.type-title {
+
+  font-family: @font-fam-titles;
+
+  @media @mobile {
+    .font_size(24);
+  }
+
+  @media @tablet {
+    .font_size(32);
+  }
+
+  @media @desktop {
+    .font_size(48);
+  }
+
+  @media @max {
+    .font_size(48);
+  }
+
+}
+
+.type-subtitle {
+  .font_size(24);
+  font-family: @font-fam-subtitle;
+}
+
+.button, .btn {
+  .font_size(12);
+  font-family: @font-fam-buttons;
+}
+
+.main-nav {
+  .font_size(15);
+  font-family: @font-fam-buttons;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+}

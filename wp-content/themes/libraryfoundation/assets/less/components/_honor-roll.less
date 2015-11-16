@@ -1,0 +1,66 @@
+.columns {
+
+  padding: 0;
+
+  -webkit-column-count: 3; /* Chrome, Safari, Opera */
+     -moz-column-count: 3; /* Firefox */
+          column-count: 3;
+
+  @media @tabletC {
+
+  -webkit-column-count: 2; /* Chrome, Safari, Opera */
+     -moz-column-count: 2; /* Firefox */
+          column-count: 2;
+
+  }
+
+  @media @mobileC {
+
+  -webkit-column-count: 1; /* Chrome, Safari, Opera */
+     -moz-column-count: 1; /* Firefox */
+          column-count: 1;
+
+  }
+
+  -webkit-column-gap: 20px; /* Chrome, Safari, Opera */
+     -moz-column-gap: 20px; /* Firefox */
+          column-gap: 20px;
+
+  li {
+    margin: 0;
+    display: block;
+    line-height: 1.4;
+    margin-bottom: 10px;
+    position: relative;
+
+    &:before {
+      width: 5px;
+      height: 5px;
+
+      position: absolute;
+      top: 10px;
+      left: -15px;
+
+      background: #eee;
+      border-radius: 100%;
+      content: '';
+      display: block;
+    }
+
+  }
+
+}
+
+.page.honor-roll {
+
+  .member-header {
+    padding: 0;
+    margin-bottom: @gutter;
+  }
+
+  .text-box {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+}

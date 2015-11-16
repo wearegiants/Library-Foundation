@@ -1,0 +1,53 @@
+.gr_form {
+
+  ul {
+
+    li {
+
+      label.gfield_label {
+        font-weight: normal!important;
+        //color: @green;
+      }
+
+      input[type=text],
+      input[type=email],
+      input[type=password],
+      input[type=tel], {
+        height: 40px;
+        line-height: 42px;
+        padding: 0 10px;
+        .font_size(18);
+        margin-bottom: 5px;
+        //min-width: 100%;
+        display: inline-block;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      &:before {
+        display: none;
+      }
+
+      .ginput_complex {
+        overflow: visible!important;
+        span {
+          overflow: visible!important;
+        }
+      }
+
+    }
+
+  }
+
+  .dropdown-menu {
+
+    margin: 0;
+    margin-bottom: 5px;
+    height: 44px;
+
+    button {
+      font-weight: normal;
+    }
+
+  }
+
+}

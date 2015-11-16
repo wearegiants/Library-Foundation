@@ -1,0 +1,1 @@
+‡coU<?php exit; ?>a:1:{s:7:"content";s:52:"http://lfla.org/wp-includes/images/media/default.png";}

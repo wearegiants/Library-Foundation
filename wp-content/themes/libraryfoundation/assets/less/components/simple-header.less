@@ -1,0 +1,169 @@
+.simple-header {
+
+  background-color: @blue;
+  background-position: top center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  padding-top: 175px;
+  position: relative;
+  overflow: hidden;
+  background-size: cover;
+  background-attachment: scroll;
+
+
+  .simple-header--bg {
+
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+
+    .inner {
+
+      background-position: top center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      position: absolute;
+      @blur : 10px;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      -webkit-filter: blur(@blur);
+      -moz-filter: blur(@blur);
+      -o-filter: blur(@blur);
+      -ms-filter: blur(@blur);
+      filter: blur(@blur);
+
+    }
+
+
+
+    // width: 120%;
+    // height: 120%;
+
+    // width: 100%;
+    // height: 100%;
+
+
+
+    // top: -0%;
+    // left: -0%;
+
+    opacity: .85;
+    z-index: 1;
+
+  }
+
+  > .row {
+    position: relative;
+    z-index: 2;
+  }
+
+  > .event-meta {
+    position: relative;
+    z-index: 2px;
+  }
+
+
+  &:hover {
+    &:after {
+      opacity: 1;
+    }
+  }
+
+  > div {
+    z-index: 9;
+    position: relative;
+  }
+
+  h1 {
+    color: @white;
+    font-size: 4em;
+
+    a {
+      color: inherit;
+    }
+
+    &.has-sub {
+      margin-bottom: 0;
+      line-height: 1;
+    }
+
+  }
+
+  .page-header-subtitle {
+    .caslon();
+    color: @white;
+    margin: 0;
+    margin-bottom: 25px;
+    font-size: 24px;
+  }
+
+  ul.parent-links {
+
+    padding-left: 0;
+    margin-bottom: 0;
+
+    li {
+
+      display: inline-block;
+
+      &:before {
+        display: none;
+      }
+
+      &:first-child {
+        a {
+          &:before {
+            display: none;
+          }
+        }
+      }
+
+      a {
+        color: @white;
+        display: block;
+        padding-right: 20px;
+      }
+
+    }
+
+  }
+
+  &.event {
+    .parent-links {
+      li {
+        a {
+          color: @aloudpink;
+        }
+      }
+    }
+  }
+
+  &.minimal {
+
+    padding-top: 175px;
+    background: @blue;
+
+    &:after {
+      opacity: .125;
+    }
+
+    .page-header-title {
+
+      font-size: 3em;
+
+    }
+
+  }
+
+}
+
+.page-header.event {
+  &.simple-header {
+    background: url(/assets/img/blankevent.jpg);
+    background-size: cover;
+  }
+}

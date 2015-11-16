@@ -1,0 +1,68 @@
+#things {
+
+  margin-bottom: 20px;
+
+  menu {
+
+    a {
+
+      .cat();
+      padding: 15px 20px 5px;
+
+      &.active {
+
+        background: @bgGray;
+
+      }
+
+    }
+
+  }
+
+
+  .ticket {
+
+    border-bottom: 1px solid darken(@bgGray, 5%);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    hr {
+      display: none;
+    }
+    
+    .title {
+      margin-bottom: 0;
+      line-height: 1.3;
+    }
+
+    .alert, .noted {
+      .cat();
+      display: block;
+      color: @blue;
+      &.active {
+        color: @lighterGray;
+        pointer-events: none;
+      }
+    }
+
+    .tickets_description {
+      padding-top: 10px;
+      font-size: 14px;
+    }
+
+  }
+
+  .tabber-tab {
+
+    background: @bgGray;
+    margin-bottom: 20px;
+
+    .ticket {
+      padding: 15px 0;
+    }
+
+  }
+
+}

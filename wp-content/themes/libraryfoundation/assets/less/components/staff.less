@@ -1,0 +1,181 @@
+.page-staff {
+  .page-content {
+    .hidden();
+  }
+}
+
+#staff {
+
+  .title {
+    .sentinel();
+  }
+
+  .group {
+    margin-bottom: 20px;
+  }
+
+}
+
+.staff-member {
+
+  position: relative;
+  margin-bottom: 10px;
+
+  .thumb {
+    position: relative;
+  }
+
+  .meta {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    .cat();
+    z-index: 99;
+    font-weight: 900;
+
+    span {
+      padding: 0 15px;
+      height: 30px;
+      line-height: 32px;
+      display: block;
+      float: left;
+      color: @white;
+      background: @blue;
+    }
+
+    .cat_culturalprograms {
+      background: @aloudpink
+    }
+
+    .cat_development {
+      background: @orange
+    }
+
+    .cat_librarystore {
+      background: #4BACD3;
+    }
+
+    .cat_hidden, .cat_featured {
+      display: none;
+    }
+
+  }
+
+  .info {
+
+    line-height: 1.4;
+    .cat();
+    font-weight: 500;
+    @media @mobile {
+      .font_size(8);
+    }
+    @media @tablet {
+      .font_size(11);
+    }
+    @media @desktop {
+      .font_size(10);
+    }
+
+
+    br {
+      height: 1px;
+      display: none;
+    }
+
+    strong, b {
+      .sentinel();
+      font-weight: normal;
+      color: @gray;
+      letter-spacing: 0;
+      display: block;
+      text-transform: capitalize;
+      font-size: 22px;
+    }
+
+    em, a, i {
+      display: block;
+      font-style: normal;
+      border: none;
+      color: @lightGray;
+      text-decoration: none;
+
+    }
+
+  }
+
+}
+
+
+#board-members {
+
+  header {
+    width: 100%;
+    float: none;
+    h2 {
+      .sentinel();
+    }
+  }
+
+  .board {
+
+    width: 100%;
+    float: none;
+    position: relative;
+
+    ul {
+
+      padding: 0;
+      .clearfix();
+
+      li {
+
+        border: 1px solid @lightestGray;
+        margin: 0;
+        line-height: 1.5;
+        .font_size(14);
+        display: block;
+        float: left;
+        margin-bottom: -1px;
+        margin-right: -1px;
+
+        strong {
+          font-weight: normal;
+          .sentinel();
+          .font_size(18);
+          line-height: 1.2;
+          display: inline-block;
+          color: @black;
+        }
+
+        em {
+          font-style: normal;
+        }
+
+        @media @mobile {
+          width: 100%;
+          height: auto;
+          padding: 15px 0;
+          border-right: none;
+          border-left: none;
+        }
+
+        @media @tablet {
+          width: 33%;
+          height: 150px;
+          padding: 15px;
+          border: 1px solid @lightestGray;
+        }
+
+        @media @desktop {
+          width: 25%;
+          height: 140px;
+          padding: 15px;
+        }
+
+      }
+
+    }
+
+  }
+
+}

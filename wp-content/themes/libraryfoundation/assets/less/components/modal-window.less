@@ -1,0 +1,198 @@
+.modal-window {
+
+  max-width: 700px;
+  background: @white;
+  padding: 20px;
+  margin: auto;
+  box-shadow: 0 0 50px 10px @black25;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+
+  &.member {
+
+    .images, .woocommerce-tabs, .sku_wrapper, .posted_in {
+
+      display: none;
+
+    }
+
+    h1 {
+      margin: 0;
+      margin-bottom: 25px;
+      .sentinel();
+      color: @blue;
+      font-size: 2.5em;
+    }
+
+    .value {
+      //text-align: right;
+      select {
+        float: right;
+      }
+
+      .selecter {
+        margin: 0;
+      }
+
+    }
+
+    .variations {
+
+      margin-bottom: 20px;
+
+    }
+
+    .variations_button {
+
+      display: inline-block;
+      //height: 30px;
+      //line-height: 30px;
+      float: right;
+
+      button {
+        background: @blue;
+        border: none;
+        .cat();
+        font-weight: 500;
+        color: @white;
+      }
+
+    }
+
+    .single_variation {
+
+      display: inline-block;
+
+    }
+
+    .summary {
+
+      margin: 0;
+      width: 100%;
+      max-width: 100%;
+
+      > div p {
+        display: none;
+      }
+      > div p.price {
+        display: block;
+      }
+
+    }
+
+    .price {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+  }
+
+  h2 {
+    .sentinel();
+    margin: 0;
+  }
+
+  .message {
+    margin-bottom: 15px;
+  }
+
+  &.pass form {
+    > div {
+      margin: 0 -@gutter*2;
+    }
+    .login-btn {
+      .font_size(14);
+      background: @blue;
+      border-radius: 3px;
+      box-shadow: none;
+      margin: 0 0 10px;
+      padding: 0 10px;
+      height: 38px;
+      line-height: 38px;
+      .cat();
+      color: @white;
+    }
+  }
+
+ .ticket {
+
+    margin-top: 10px;
+
+    hr {
+      display: none;
+    }
+
+    .title {
+      margin: 0;
+      margin-bottom: 0;
+      line-height: 1.3;
+      .sentinel();
+    }
+
+    .alert, .noted {
+      .cat();
+      display: block;
+      color: @blue;
+      &.active {
+        color: @lighterGray;
+        pointer-events: none;
+      }
+    }
+
+    .tickets_description {
+      padding-top: 0;
+      font-size: 14px;
+    }
+
+    .quantity {
+      padding-top: 5px;
+    }
+
+  }
+
+
+}
+
+#password-entry {
+
+  height: 0px;
+  overflow: hidden;
+  position: relative;
+
+  .cancel {
+    position: absolute;
+    color: @black75;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+  }
+
+  form {
+
+    input {
+      margin-bottom: 0;
+      border: none;
+    }
+    .login {
+      .font_size(14);
+      background: @black25;
+      border-radius: 3px;
+      box-shadow: none;
+      margin: 0 0 10px;
+      padding: 0 10px;
+      height: 37px;
+      line-height: 37px;
+      .cat();
+      color: @white;
+    }
+  }
+
+}
+
+#password-entry.active {
+  background: @blue;
+  margin: -20px;
+  margin-top: 20px;
+  padding: 0 20px;
+}

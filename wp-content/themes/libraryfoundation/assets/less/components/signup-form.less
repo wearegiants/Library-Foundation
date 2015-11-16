@@ -1,0 +1,148 @@
+.mc4wp-form {
+
+  #signup-form {
+
+    background: @bgGray;
+
+    @media @mobile {
+      padding: 25px;
+    }
+
+    @media @tablet {
+      padding: 15px;
+    }
+
+    @media @desktop {
+      padding: 25px;
+    }
+
+    .wrapper {
+      position: relative;
+    }
+
+    > label {
+
+      .cat();
+
+      @media @mobile {
+        font-size: 10px;
+      }
+
+      @media @tablet {
+        font-size: 10px;
+      }
+
+      @media @desktop {
+        font-size: 11px;
+      }
+
+      color: @white50;
+      font-weight: 500;
+
+    }
+
+    input#mc4wp_email {
+
+      height: 34px;
+      line-height: 34px;
+      padding: 0 10px;
+      width: 100%;
+
+      @media @mobile {
+        margin-bottom: 5px;
+      }
+
+      @media @tablet {
+        margin-bottom: 5px;
+      }
+
+      @media @desktop {
+        margin-bottom: 0px;
+      }
+      //display: inline-block;
+      //box-sizing: border-box;
+
+    }
+
+    .button {
+
+      box-sizing: border-box;
+      display: inline-block;
+      width: 30%;
+      color: @white;
+      .cat();
+      font-weight: 500;
+      height: 34px;
+      line-height: 36px;
+      border: none;
+      float: right;
+      margin-left: -5%;
+      position: relative;
+      z-index: 3;
+      border-radius: 2px;
+      transition: 300ms ease;
+
+    }
+
+  }
+
+  .mc4wp-alert {
+    padding: 10px 25px;
+    background: @bgGray;
+  }
+
+}
+
+.events-category-aloud {
+
+    #signup-form {
+      background: @darkGray;
+      .button {
+        width: 100%;
+        background: @aloudpink;
+        &:hover {
+          background: darken(@aloudpink, 10%);
+        }
+      }
+    }
+
+  }
+
+.page-young-literati {
+
+    #signup-form {
+      background: @darkGray;
+      .button {
+        background: @green;
+        width: 100%;
+        &:hover {
+          background: darken(@green, 10%);
+        }
+      }
+    }
+
+  }
+
+.page-home {
+
+  #signup-form {
+    background: @bgGray;
+    label {
+      color: @textGray;
+    }
+    .button {
+
+      width: 100%;
+      padding: 0;
+      background: @blue;
+      //position: absolute;
+      right: 0;
+
+      &:hover {
+        background: darken(@blue, 10%);
+      }
+
+    }
+  }
+
+}

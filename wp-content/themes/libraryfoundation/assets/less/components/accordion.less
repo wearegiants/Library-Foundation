@@ -1,0 +1,118 @@
+.accordion {
+  list-style-type:none;
+  padding:0;
+}
+
+.accordion ul {
+  padding:0;
+  margin:0;
+  float:left;
+  display:block;
+  width:100%
+}
+
+.accordion li {
+  cursor:pointer;
+  list-style-type:none;
+  padding:0;
+  margin:0;
+  display:block;
+  width:100%;
+  border-bottom: 2px solid @bgGray;
+  &:last-child {
+    border-color: transparent;
+  }
+}
+
+.accordion li div {
+  display:block;
+  clear:both;
+  padding-bottom: 25px;
+  padding-left: 25px;
+
+  p {
+    &:first-child {
+      margin-top: 0;
+    }
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.accordion a.title {
+  text-decoration:none;
+  display:block;
+  cursor:pointer;
+}
+
+.accordion {
+
+  .title {
+    .sentinel();
+    color: @black;
+    font-size: 28px;
+    display: block;
+    position: relative;
+    padding-left: 25px;
+
+    @media @mobile {
+      padding: 8px 0;
+      padding-left: 25px;
+      .font_size(16);
+    }
+
+    @media @tablet {
+      padding: 10px 0;
+      padding-left: 25px;
+      .font_size(23);
+    }
+
+    @media @desktop {
+      padding: 8px 0;
+      padding-left: 25px;
+      .font_size(28);
+    }
+
+
+    &:before {
+      font-family: 'SSGizmo';
+      content: '▻';
+      display: block;
+      position: absolute;
+      font-size: 20px;
+      padding: 8px 0;
+      left: 0;
+      color: @lighterGray;
+
+      @media @mobile {
+        font-size: 15px;
+        padding: 3px 0;
+      }
+
+      @media @tablet {
+        font-size: 14px;
+        padding: 5px 0;
+      }
+
+      @media @desktop {
+        font-size: 20px;
+        padding: 8px 0;
+      }
+
+    }
+
+  }
+
+  .active {
+
+    .title {
+      &:before {
+        color: @aloudpink;
+        transform: rotate(45deg);
+      }
+    }
+
+  }
+
+}

@@ -1,0 +1,41 @@
+.accordion {
+  list-style-type:none;
+  padding:0;
+}
+
+.accordion ul {
+  padding:0;
+  margin:0;
+  float:left;
+  display:block;
+  width:100%
+}
+
+.accordion li {
+  cursor:pointer;
+  list-style-type:none;
+  padding:0;
+  margin:0;
+  display:block;
+  width:100%;
+  border-bottom: 2px solid @bgGray;
+  &:last-child {
+    border-color: transparent;
+  }
+}
+
+.accordion li div {
+  display:block;
+  clear:both;
+  padding-bottom: 25px;
+  padding-left: 25px;
+
+  p {
+    &:first-child {
+      margin-top: 0;
+    }
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}

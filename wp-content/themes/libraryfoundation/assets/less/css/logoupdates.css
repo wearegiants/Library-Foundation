@@ -1,0 +1,15 @@
+#logo.general-logo .face {
+  background-image: url(/assets/img/logos/logo-general.png);
+}
+#logo.logo-aloud .face {
+  background-image: url(/assets/img/logos/logo-aloud.png);
+}
+#logo.yl-logo .face {
+  background-image: url(/assets/img/logos/logo-yl.png);
+}
+#logo.ls-logo .face {
+  background-image: url(/assets/img/logos/logo-ls.png);
+}
+#logo.member-logo .face {
+  background-image: url(/assets/img/logos/logo-members.png);
+}

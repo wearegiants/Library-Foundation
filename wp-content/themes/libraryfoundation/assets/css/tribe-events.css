@@ -1,0 +1,7 @@
+.single-tribe_events .tribe-events-event-image {
+  text-align: left!important;
+}
+.single-tribe_events .tribe-events-event-image img {
+  display: block;
+  width: 100%!important;
+}

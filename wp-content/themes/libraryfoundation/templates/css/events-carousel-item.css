@@ -1,0 +1,6 @@
+#upcoming-events-carousel {
+  display: none;
+}
+#upcoming-events-carousel .slide {
+  padding: 0 20px;
+}

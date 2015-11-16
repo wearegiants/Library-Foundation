@@ -1,0 +1,190 @@
+@logoWidthMin: 60px;
+@logoWidthMax: 135px;
+
+
+#head {
+
+  .overlay();
+  padding: 30px 0;
+  width: 100%;
+  z-index: 50;
+  width: 100%;
+  border-bottom: 1px solid @white25;
+  transition: 150ms ease;
+
+  @media @mobile {
+    padding: 20px 0;
+    width: 100%;
+  }
+
+  @media @tablet {
+    padding: 30px 0;
+    width: 100%;
+    border-bottom: 1px solid @white25;
+  }
+
+  &:hover {
+    //border-color: transparent;
+  }
+
+  &.stuck {
+
+    @media @mobile {
+      position: relative;
+      background: transparent;
+    }
+
+    @media @tablet {
+      position: relative;
+      background: transparent;
+    }
+
+    @media @desktop {
+
+      position: fixed;
+      top: 0;
+      padding: 10px 0;
+      background: @black75;
+      border-bottom: 0;
+      z-index: 999;
+
+    }
+
+    #logo {
+
+      max-width: 60px;
+      display: block;
+      margin-right: @gutter;
+      margin-top: -10px;
+      height: 30px;
+
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
+    }
+
+    #swiper {
+
+      width: @logoWidthMin;
+      height: @logoWidthMin;
+      max-width: @logoWidthMin;
+
+      &.pushover {
+
+        .swiper-wrapper {
+
+          left: 38px;
+
+        }
+
+      }
+
+    }
+
+    .swiper-container {
+
+      width: @logoWidthMin;
+      height: @logoWidthMin;
+      max-width: @logoWidthMin;
+      position: relative;
+
+    }
+
+    .swiper-slide {
+
+      background-position: center;
+      background-size: cover;
+      width: @logoWidthMin;
+      height: @logoWidthMin;
+      max-width: @logoWidthMin;
+
+    }
+
+  }
+
+  #swiper {
+
+    width: @logoWidthMax;
+    height: @logoWidthMax;
+    position: relative;
+    float: left;
+
+    @media @mobileC {
+      width: 80px;
+      height: 80px;
+    }
+
+  }
+  .swiper-container {
+
+    width: @logoWidthMax;
+    height: @logoWidthMax;
+    position: absolute;
+
+    @media @mobileC {
+      width: 80px;
+      height: 80px;
+    }
+
+  }
+  .swiper-slide {
+
+    background-position: center;
+    background-size: cover;
+
+  }
+
+  #logo {
+
+    max-width: @logoWidthMax;
+
+    @media @mobileC {
+      max-width: 70px;
+    }
+
+    display: block;
+    margin-top: -@gutter;
+    margin-right: @gutter;
+    transition: 150ms ease;
+    padding: 0;
+    position: relative;
+    overflow: visible;
+
+    .logo-wrapper {
+      display: block;
+      position: relative;
+    }
+
+    .face {
+      display: block;
+      position: absolute;
+      .cover();
+      background: url(/assets/img/lflalogo.png);
+      background-size: cover;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+  }
+
+}
+
+.header-wrapper {
+  position: absolute;
+  width: 100%;
+  top: 5px;
+}
+
+
+.page-home {
+ #head {
+  @media @desktop {
+    border-bottom: 0;
+  }
+ }
+}

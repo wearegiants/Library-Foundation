@@ -1,0 +1,60 @@
+#event-nav-bar {
+
+  border-top: 2px solid @bgGray;
+  border-bottom: 3px solid @bgGray;
+
+  ul {
+
+    padding: 0;
+    margin: 0;
+
+    li {
+
+      margin: 0 -2px;
+      display: inline-block;
+
+      &:before {
+        display: none;
+      }
+
+      > a {
+        display: block;
+        padding: 0 10px;
+        color: @lighterGray;
+        .parent-links();
+        font-size: 13px;
+        font-weight: 500;
+
+        &.sf-with-ul {
+          padding-right: 25px;
+          &:after {
+            border-top-color: @lighterGray;
+          }
+        }
+
+        &.strong {
+          color: @aloudpink;
+          font-weight: 900;
+          letter-spacing: 0;
+        }
+
+      }
+
+      .sub-menu {
+        border: 3px solid @bgGray;
+        border-top-color: @white;
+      }
+
+    }
+
+    > li {
+      &:hover {
+        a {
+          color: @textGray;
+        }
+      }
+    }
+
+  }
+
+}

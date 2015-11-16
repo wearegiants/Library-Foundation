@@ -1,0 +1,11 @@
+wp-content/themes/libraryfoundation/lib/woo-disablebilling.php:/****************************** Start Miles Modification **************************/
+wp-content/plugins/wootickets/classes/class-wootickets.php:		/****************************** Start Miles Modification **************************/
+wp-content/plugins/wootickets/classes/class-wootickets.php:				/****************************** Start Miles Modification **************************/
+wp-content/plugins/wootickets/classes/class-wootickets.php:/****************************** Start Miles Modification **************************/
+wp-content/plugins/wootickets/classes/class-wootickets.php:/****************************** Start Miles Modification **************************/
+wp-content/plugins/wootickets/classes/class-wootickets.php:/****************************** Start Miles Modification **************************/
+wp-content/plugins/wootickets/classes/class-wootickets.php:/****************************** Start Miles Modification **************************/				
+wp-content/plugins/the-events-calendar/lib/tickets/tribe-tickets-pro.php:/****************************** Start Miles Modification **************************/
+wp-content/plugins/the-events-calendar/lib/tickets/tribe-tickets-pro.php:/****************************** Start Miles Modification **************************/
+wp-content/plugins/the-events-calendar/lib/tickets/tribe-tickets-pro.php:/****************************** Start Miles Modification **************************/		
+wp-content/plugins/the-events-calendar/lib/tickets/tribe-tickets-pro.php:/****************************** Start Miles Modification **************************/

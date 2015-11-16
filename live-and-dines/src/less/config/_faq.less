@@ -1,0 +1,45 @@
+// Reset
+
+#faq-accordion {
+
+  padding: 0;
+
+  li {
+
+    &:before {
+      display: none;
+    }
+
+    > div {
+      padding: 0;
+    }
+
+  }
+
+}
+
+// Styles
+
+#faq-accordion {
+
+  .title {
+
+    display: block;
+    color: @blue;
+    border-bottom: 1px solid @lightGray;
+    line-height: 1.4;
+    padding: @spaced/2 0;
+    .font_size(20);
+
+    &.ui-accordion-header-active {
+      border-bottom: 1px solid transparent;
+      color: @blue;
+    }
+
+    &:hover {
+      color: darken(@blue, 10%);
+    }
+
+  }
+
+}

@@ -1,0 +1,7 @@
+#image-slider .royalslider {
+  position: relative;
+}
+#image-slider .royalslider .meta {
+  bottom: 0;
+  left: 0;
+}

@@ -1,0 +1,139 @@
+<html>
+  <head>
+    <title>With Pegasus [script]</title>
+    <style>
+      body {
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+        padding: 50px;
+        color: #5C5C5C;
+      }
+
+      a {
+        text-decoration: none;
+        color: #999;
+      }
+
+      a.current, a:hover {
+        text-decoration: underline;
+        color: #000;
+      }
+
+      ul {
+        margin: 0;
+        padding: 0;
+        text-align: center;
+      }
+
+      li {
+        display: inline-block;
+        margin: 0 10px 0 10px;
+      }
+
+      
+      h1 {
+        font-size: 96px;
+        font-family: Raleway; 
+        font-weight: 300;
+        margin: 120px 0 60px 0;
+        color: rgb(20, 189, 147);
+      }
+
+      #intro {
+        margin-bottom: 160px;
+      }
+
+      .block {
+        padding-bottom: 80px;
+      }
+
+      .center {
+        text-align: center;
+      }
+
+      .narrow {
+        max-width: 620px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .notice {
+        background: #F9F9F9;
+        padding: 10px;
+        display: inline-block;
+      }
+
+      .jumbotron, #time {
+        color: rgb(20, 189, 147);
+        font-size: 2em;
+      }
+    </style>
+  </head>
+  <body>
+    <ul>
+      <li>
+        <a href="https://github.com/typicode/pegasus">GitHub</a>
+      </li>
+      <li>
+        <a href="index.html">intro</a>
+      </li>
+      <li>
+        <a href="without.html">without Pegasus</a>
+      </li>
+      <li>
+        <a href="with-embedded.html">with Pegasus [embedded]</a>
+      </li>
+      <li>
+        <a href="with.html" class="current">with Pegasus [script]</a>
+      </li>
+    </ul>
+
+    <div class="narrow">
+      <p class="jumbotron">
+        Time to display data<br>
+        <span id="time">&nbsp;</span>
+      </p>
+      <p>
+        <strong>Data</strong>: <span id="data">&nbsp;</span>
+      </p>
+
+      <div class="notice">
+        <p>
+          Data and jQuery are loaded <strong>in parallel</strong>.
+        </p>
+        <p>
+          On average data is displayed faster with Pegasus. To see it, it's 
+          recommended to <strong>disable cache</strong> and <strong>reload many times</strong>.
+        </p>
+      </div>
+      
+      <p>
+        Built by <a href="https://github.com/typicode">@typicode</a>
+      </p>      
+    </div>
+
+    <!-- This is where things are happening -->
+    <script>
+      var start = new Date().getTime();
+    </script>
+
+    <script src="scripts/pegasus.min.js"></script>
+    
+    <!-- Request will be started as soon as pegasus.min.js is loaded -->
+    <script>
+      var request = pegasus('post.json');
+    </script>
+    
+    <script src="scripts/jquery.min.js"></script>
+    <script>
+      request.then(function(data) {
+
+        var end = new Date().getTime(),
+            time = ((end - start) / 1000).toFixed(3);
+
+        $('#data').text(data.title);
+        $('#time').text(time + 's');
+
+      });
+    </script>
+  </body>
+</html>

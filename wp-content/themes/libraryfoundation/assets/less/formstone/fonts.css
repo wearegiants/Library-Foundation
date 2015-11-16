@@ -1,0 +1,176 @@
+/*-------------------------------------------
+  Fonts
+-------------------------------------------*/
+
+  /* Adobe Caslon */
+  @font-face {
+    font-family: 'Caslon';
+    src: url('/assets/fonts/ACaslonProRegular.eot');
+    src: url('/assets/fonts/ACaslonProRegular.eot') format('embedded-opentype'),
+         url('/assets/fonts/ACaslonProRegular.woff2') format('woff2'),
+         url('/assets/fonts/ACaslonProRegular.woff') format('woff'),
+         url('/assets/fonts/ACaslonProRegular.ttf') format('truetype'),
+         url('/assets/fonts/ACaslonProRegular.svg#ACaslonProRegular') format('svg');
+    font-weight: 200;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Caslon';
+    src: url('/assets/fonts/ACaslonProItalic.eot');
+    src: url('/assets/fonts/ACaslonProItalic.eot') format('embedded-opentype'),
+         url('/assets/fonts/ACaslonProItalic.woff2') format('woff2'),
+         url('/assets/fonts/ACaslonProItalic.woff') format('woff'),
+         url('/assets/fonts/ACaslonProItalic.ttf') format('truetype'),
+         url('/assets/fonts/ACaslonProItalic.svg#ACaslonProItalic') format('svg');
+    font-weight: 200;
+    font-style: italic;
+  }
+
+  /* Letter Gothic */
+  @font-face {
+    font-family: 'Letter Gothic';
+    src: url('/assets/fonts/LetterGothicMTStd.eot');
+    src: url('/assets/fonts/LetterGothicMTStd.eot') format('embedded-opentype'),
+         url('/assets/fonts/LetterGothicMTStd.woff2') format('woff2'),
+         url('/assets/fonts/LetterGothicMTStd.woff') format('woff'),
+         url('/assets/fonts/LetterGothicMTStd.ttf') format('truetype'),
+         url('/assets/fonts/LetterGothicMTStd.svg#LetterGothicMTStd') format('svg');
+  }
+
+
+	/* Sentinel Book */
+	@font-face {
+    font-family: 'Sentinel';
+    src: url('/assets/fonts/SentinelBook.eot');
+    src: url('/assets/fonts/SentinelBook.eot') format('embedded-opentype'),
+         url('/assets/fonts/SentinelBook.woff2') format('woff2'),
+         url('/assets/fonts/SentinelBook.woff') format('woff'),
+         url('/assets/fonts/SentinelBook.ttf') format('truetype'),
+         url('/assets/fonts/SentinelBook.svg#SentinelBook') format('svg');
+    font-weight: 200;
+		font-style: normal;
+	}
+
+  /* Gotham Medium */
+  @font-face {
+    font-family: 'Gotham';
+    src: url('/assets/fonts/GothamMedium.eot');
+    src: url('/assets/fonts/GothamMedium.eot') format('embedded-opentype'),
+         url('/assets/fonts/GothamMedium.woff2') format('woff2'),
+         url('/assets/fonts/GothamMedium.woff') format('woff'),
+         url('/assets/fonts/GothamMedium.ttf') format('truetype'),
+         url('/assets/fonts/GothamMedium.svg#GothamMedium') format('svg');
+    font-weight: 400;
+    font-style: normal;
+  }
+
+	/* Gotham Bold */
+	@font-face {
+    font-family: 'Gotham';
+    src: url('/assets/fonts/GothamBold.eot');
+    src: url('/assets/fonts/GothamBold.eot') format('embedded-opentype'),
+         url('/assets/fonts/GothamBold.woff2') format('woff2'),
+         url('/assets/fonts/GothamBold.woff') format('woff'),
+         url('/assets/fonts/GothamBold.ttf') format('truetype'),
+         url('/assets/fonts/GothamBold.svg#GothamBold') format('svg');
+    font-weight: 700;
+		font-style: normal;
+	}
+
+	/* Gotham Black */
+	@font-face {
+    font-family: 'Gotham';
+    src: url('/assets/fonts/GothamBlack.eot');
+    src: url('/assets/fonts/GothamBlack.eot') format('embedded-opentype'),
+         url('/assets/fonts/GothamBlack.woff2') format('woff2'),
+         url('/assets/fonts/GothamBlack.woff') format('woff'),
+         url('/assets/fonts/GothamBlack.ttf') format('truetype'),
+         url('/assets/fonts/GothamBlack.svg#GothamBlack') format('svg');
+    font-weight: 900;
+		font-style: normal;
+	}
+
+	/* PT Mono */
+	@font-face {
+	    font-family: 'PTMono';
+	    src: url('/assets/fonts/PTM55FT-webfont.eot');
+	    src: url('/assets/fonts/PTM55FT-webfont.eot?#iefix') format('embedded-opentype'),
+	         url('/assets/fonts/PTM55FT-webfont.woff') format('woff'),
+	         url('/assets/fonts/PTM55FT-webfont.ttf') format('truetype'),
+	         url('/assets/fonts/PTM55FT-webfont.svg#PTMonoRegular') format('svg');
+	    font-weight: normal;
+	    font-style: normal;
+	}
+
+	/* Lato Bold */
+	@font-face {
+		font-family: 'Lato';
+		src: url('/assets/fonts/lato-bol-webfont.eot');
+		src: url('/assets/fonts/lato-bol-webfont.eot?#iefix') format('embedded-opentype'),
+			 url('/assets/fonts/lato-bol-webfont.woff') format('woff'),
+			 url('/assets/fonts/lato-bol-webfont.ttf') format('truetype'),
+			 url('/assets/fonts/lato-bol-webfont.svg#latobold') format('svg');
+		font-weight: 700;
+		font-style: normal;
+	}
+
+	/* Lato Bold Italic */
+	@font-face {
+		font-family: 'Lato';
+		src: url('/assets/fonts/lato-bolita-webfont.eot');
+		src: url('/assets/fonts/lato-bolita-webfont.eot?#iefix') format('embedded-opentype'),
+			 url('/assets/fonts/lato-bolita-webfont.woff') format('woff'),
+			 url('/assets/fonts/lato-bolita-webfont.ttf') format('truetype'),
+			 url('/assets/fonts/lato-bolita-webfont.svg#latobold_italic') format('svg');
+		font-weight: 700;
+		font-style: italic;
+	}
+
+	/* Lato Light */
+	@font-face {
+		font-family: 'Lato';
+		src: url('/assets/fonts/lato-lig-webfont.eot');
+		src: url('/assets/fonts/lato-lig-webfont.eot?#iefix') format('embedded-opentype'),
+			 url('/assets/fonts/lato-lig-webfont.woff') format('woff'),
+			 url('/assets/fonts/lato-lig-webfont.ttf') format('truetype'),
+			 url('/assets/fonts/lato-lig-webfont.svg#latolight') format('svg');
+		font-weight: 300;
+		font-style: normal;
+	}
+
+	/* Lato Light Italic */
+	@font-face {
+		font-family: 'Lato';
+		src: url('/assets/fonts/lato-ligita-webfont.eot');
+		src: url('/assets/fonts/lato-ligita-webfont.eot?#iefix') format('embedded-opentype'),
+			 url('/assets/fonts/lato-ligita-webfont.woff') format('woff'),
+			 url('/assets/fonts/lato-ligita-webfont.ttf') format('truetype'),
+			 url('/assets/fonts/lato-ligita-webfont.svg#latolight_italic') format('svg');
+		font-weight: 300;
+		font-style: italic;
+	}
+
+	/* Lato */
+	@font-face {
+		font-family: 'Lato';
+		src: url('/assets/fonts/lato-reg-webfont.eot');
+		src: url('/assets/fonts/lato-reg-webfont.eot?#iefix') format('embedded-opentype'),
+			 url('/assets/fonts/lato-reg-webfont.woff') format('woff'),
+			 url('/assets/fonts/lato-reg-webfont.ttf') format('truetype'),
+			 url('/assets/fonts/lato-reg-webfont.svg#latoregular') format('svg');
+		font-weight: normal;
+		font-style: normal;
+	}
+
+	/* Lato Italic */
+	@font-face {
+		font-family: 'Lato';
+		src: url('/assets/fonts/lato-regita-webfont.eot');
+		src: url('/assets/fonts/lato-regita-webfont.eot?#iefix') format('embedded-opentype'),
+			 url('/assets/fonts/lato-regita-webfont.woff') format('woff'),
+			 url('/assets/fonts/lato-regita-webfont.ttf') format('truetype'),
+			 url('/assets/fonts/lato-regita-webfont.svg#latoitalic') format('svg');
+		font-weight: normal;
+		font-style: italic;
+	}
