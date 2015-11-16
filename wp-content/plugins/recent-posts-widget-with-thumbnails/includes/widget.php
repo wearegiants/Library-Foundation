@@ -8,21 +8,21 @@
 				$is_thumb = false;
 				// if only first image
 				if ( $only_1st_img ) :
-					// try to find and display the first post's image and return success
-					$is_thumb = $this->the_first_posts_image( get_the_content(), $size );
+					// try to find and to display the first post image and to return success
+					$is_thumb = $this->the_first_post_image();
 				else :
 					// else 
 					// look for featured image
 					if ( has_post_thumbnail() ) : 
 						// if there is featured image then show featured image
-						echo wp_get_attachment_image( get_post_thumbnail_id(), $size ); // alt: the_post_thumbnail( $size ); use wp_get_attachment_image() instead to have the same behaviour as in $this->the_first_posts_image()
+						echo wp_get_attachment_image( get_post_thumbnail_id(), $this->current_thumb_dimensions ); // use wp_get_attachment_image() instead to have the same behaviour as in $this->the_first_post_image()
 						$is_thumb = true;
 					else :
 						// else 
 						// if user wishes first image trial
 						if ( $try_1st_img ) :
-							// try to find and display the first post's image and return success
-							$is_thumb = $this->the_first_posts_image( get_the_content(), $size );
+							// try to find and to display the first post image and to return success
+							$is_thumb = $this->the_first_post_image();
 						endif; // try_1st_img 
 					endif; // has_post_thumbnail
 				endif; // only_1st_img
@@ -45,6 +45,9 @@
 			endif;
 			if ( $show_excerpt ) : 
 				?><div class="rpwwt-post-excerpt"><?php echo $this->get_the_trimmed_excerpt( $excerpt_length, $excerpt_more ); ?></div><?php 
+			endif;
+			if ( $show_comments_number ) : 
+				?><div class="rpwwt-post-comments-number"><?php echo get_comments_number_text(); ?></div><?php 
 			endif; ?></li>
 	<?php endwhile; ?>
 	</ul>

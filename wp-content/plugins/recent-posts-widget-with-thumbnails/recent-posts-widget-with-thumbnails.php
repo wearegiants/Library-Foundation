@@ -3,10 +3,10 @@
 Plugin Name: Recent Posts Widget With Thumbnails
 Plugin URI:  http://wordpress.org/plugins/recent-posts-widget-with-thumbnails/
 Description: Small and fast plugin to display in the sidebar a list of linked titles and thumbnails of the most recent postings
-Version:     4.1
+Version:     4.4
 Author:      Martin Stehle
 Author URI:  http://stehle-internet.de
-Text Domain: recent-posts-thumbnails
+Text Domain: recent-posts-widget-with-thumbnails
 Domain Path: /languages
 License:     GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
@@ -29,12 +29,21 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 	var $default_excerpt_length; // number of chars of excerpt
 	var $default_excerpt_more; // characters to indicate further text
 	var $default_category_ids; // selected categories
-	var $text_domain; // text domain of this plugin
 	var $css_file_path; // path of the public css file
+	var $current_thumb_dimensions; // set size of the thumbnail
 
 	function __construct() {
-		switch ( get_locale() ) {
-			case 'de_DE':
+		$language_codes = explode( '_', get_locale() );
+		switch ( $language_codes[ 0 ] ) {
+			case 'ar':
+				$widget_name = 'آخر المقالات مع الصوّر المصغّرة';
+				$widget_desc = 'قائمة موقعك المشاركات الأخيرة، مع عنوان نقر والصور المصغرة';
+				break;
+			case 'fa':
+				$widget_name = 'نوشته های اخیر با تصویر بندانگشتی';
+				$widget_desc = 'فهرست سایت شما ارسال جدید، با عنوان قابل کلیک و عکسها';
+				break;
+			case 'de':
 				$widget_name = 'Letzte Beitr&auml;ge, mit Vorschaubildern';
 				$widget_desc = 'Liste deiner aktuellsten Beitr&auml;ge, mit klickbaren &Uuml;berschriften und Vorschaubildern.';
 				break;
@@ -43,16 +52,15 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 				$widget_desc = 'List of your site&#8217;s most recent posts, with clickable title and thumbnails.';
 		}
 		$this->plugin_slug				= 'recent-posts-widget-with-thumbnails';
-		$this->plugin_version			= '4.1';
+		$this->plugin_version			= '4.4';
 		$this->default_number_posts		= 5;
 		$this->default_thumb_dimensions	= 'custom';
 		$this->default_thumb_width		= absint( round( get_option( 'thumbnail_size_w', 110 ) / 2 ) );
 		$this->default_thumb_height 	= absint( round( get_option( 'thumbnail_size_h', 110 ) / 2 ) );
-		$this->default_excerpt_length	= apply_filters( 'excerpt_length', 55 );
+		$this->default_excerpt_length	= absint( apply_filters( 'excerpt_length', 55 ) );
 		$this->default_excerpt_more		= apply_filters( 'excerpt_more', ' ' . '[&hellip;]' );
 		$this->default_category_ids		= array( 0 );
 		$this->default_thumb_url		= plugins_url( 'default_thumb.gif', __FILE__ );
-		$this->text_domain				= 'recent-posts-thumbnails';
 		$this->css_file_path			= dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'public.css';
 		
 		$widget_ops = array( 'classname' => $this->plugin_slug, 'description' => $widget_desc );
@@ -64,6 +72,9 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		add_action( 'switch_theme', array( $this, 'flush_widget_cache' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_public_style' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_style' ) );
+
+		$widget_name = __( 'Recent Posts, With Thumbnails', 'recent-posts-widget-with-thumbnails' );
+		$widget_desc = __( 'List of your site&#8217;s most recent posts, with clickable title and thumbnails.', 'recent-posts-widget-with-thumbnails' );
 	}
 
 	function widget( $args, $instance ) {
@@ -89,27 +100,28 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		extract( $args );
 
 		// get and sanitize values
-		$title				= ( ! empty( $instance[ 'title' ] ) )				? esc_attr( $instance[ 'title' ] )						: __( 'Recent Posts With Thumbnails', $this->text_domain );
-		$title				= apply_filters( 'widget_title', $title, $instance, $this->id_base );
-		$category_ids 		= ( ! empty( $instance[ 'category_ids' ] ) )		? array_map( 'absint', $instance[ 'category_ids' ] )	: $this->default_category_ids;
-		$default_url 		= ( ! empty( $instance[ 'default_url' ] ) )			? esc_url( $instance[ 'default_url' ] )					: $this->default_thumb_url;
-		$excerpt_length 	= ( ! empty( $instance[ 'excerpt_length' ] ) )		? absint( $instance[ 'excerpt_length' ] )				: $this->default_excerpt_length;
-		$number_posts		= ( ! empty( $instance[ 'number_posts' ] ) )		? absint( $instance[ 'number_posts' ] )					: $this->default_number_posts;
-		$thumb_dimensions	= ( ! empty( $instance[ 'thumb_dimensions' ] ) )	? esc_attr( $instance[ 'thumb_dimensions' ] )			: $this->default_thumb_dimensions;
-		$hide_current_post	= ( isset( $instance[ 'hide_current_post' ] ) ) 	? (bool) $instance[ 'hide_current_post' ]				: false;
-		$hide_title			= ( isset( $instance[ 'hide_title' ] ) ) 			? (bool) $instance[ 'hide_title' ]						: false;
-		$keep_aspect_ratio	= ( isset( $instance[ 'keep_aspect_ratio' ] ) )		? (bool) $instance[ 'keep_aspect_ratio' ]				: false;
-		$keep_sticky		= ( isset( $instance[ 'keep_sticky' ] ) )			? (bool) $instance[ 'keep_sticky' ]						: false;
-		$only_1st_img		= ( isset( $instance[ 'only_1st_img' ] ) )			? (bool) $instance[ 'only_1st_img' ]					: false;
-		$show_date			= ( isset( $instance[ 'show_date' ] ) )				? (bool) $instance[ 'show_date' ]						: false;
-		$show_excerpt		= ( isset( $instance[ 'show_excerpt' ] ) )			? (bool) $instance[ 'show_excerpt' ]					: false;
-		$show_thumb			= ( isset( $instance[ 'show_thumb' ] ) )			? (bool) $instance[ 'show_thumb' ]						: false;
-		$try_1st_img		= ( isset( $instance[ 'try_1st_img' ] ) )			? (bool) $instance[ 'try_1st_img' ]						: false;
-		$use_default		= ( isset( $instance[ 'use_default' ] ) )			? (bool) $instance[ 'use_default' ]						: false;
+		$title					= ( ! empty( $instance[ 'title' ] ) )				? $instance[ 'title' ]									: __( 'Recent Posts With Thumbnails', 'recent-posts-widget-with-thumbnails' );
+		$title					= apply_filters( 'widget_title', $title, $instance, $this->id_base );
+		$category_ids 			= ( ! empty( $instance[ 'category_ids' ] ) )		? array_map( 'absint', $instance[ 'category_ids' ] )	: $this->default_category_ids;
+		$default_url 			= ( ! empty( $instance[ 'default_url' ] ) )			? $instance[ 'default_url' ]							: $this->default_thumb_url;
+		$excerpt_length 		= ( ! empty( $instance[ 'excerpt_length' ] ) )		? absint( $instance[ 'excerpt_length' ] )				: $this->default_excerpt_length;
+		$number_posts			= ( ! empty( $instance[ 'number_posts' ] ) )		? absint( $instance[ 'number_posts' ] )					: $this->default_number_posts;
+		$thumb_dimensions		= ( ! empty( $instance[ 'thumb_dimensions' ] ) )	? $instance[ 'thumb_dimensions' ]						: $this->default_thumb_dimensions;
+		$hide_current_post		= ( isset( $instance[ 'hide_current_post' ] ) ) 	? (bool) $instance[ 'hide_current_post' ]				: false;
+		$hide_title				= ( isset( $instance[ 'hide_title' ] ) ) 			? (bool) $instance[ 'hide_title' ]						: false;
+		$keep_aspect_ratio		= ( isset( $instance[ 'keep_aspect_ratio' ] ) )		? (bool) $instance[ 'keep_aspect_ratio' ]				: false;
+		$keep_sticky			= ( isset( $instance[ 'keep_sticky' ] ) )			? (bool) $instance[ 'keep_sticky' ]						: false;
+		$only_1st_img			= ( isset( $instance[ 'only_1st_img' ] ) )			? (bool) $instance[ 'only_1st_img' ]					: false;
+		$show_date				= ( isset( $instance[ 'show_date' ] ) )				? (bool) $instance[ 'show_date' ]						: false;
+		$show_comments_number	= ( isset( $instance[ 'show_comments_number' ] ) )	? (bool) $instance[ 'show_comments_number' ]			: false;
+		$show_excerpt			= ( isset( $instance[ 'show_excerpt' ] ) )			? (bool) $instance[ 'show_excerpt' ]					: false;
+		$show_thumb				= ( isset( $instance[ 'show_thumb' ] ) )			? (bool) $instance[ 'show_thumb' ]						: false;
+		$try_1st_img			= ( isset( $instance[ 'try_1st_img' ] ) )			? (bool) $instance[ 'try_1st_img' ]						: false;
+		$use_default			= ( isset( $instance[ 'use_default' ] ) )			? (bool) $instance[ 'use_default' ]						: false;
 
 		// let empty string
 		if ( ! empty( $instance[ 'excerpt_more' ] ) ) {
-			$excerpt_more = esc_attr( $instance[ 'excerpt_more' ] );
+			$excerpt_more = $instance[ 'excerpt_more' ];
 		} elseif ( '' == $instance[ 'excerpt_more' ] ) {
 			$excerpt_more = '';
 		} else {
@@ -138,12 +150,12 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		}
 
 		// set image dimension array
-		$size = array( $thumb_width, $thumb_height );
+		$this->current_thumb_dimensions = array( $thumb_width, $thumb_height );
 
 		// set default image code
 		$default_attr = array(
 			'src'	=> $default_url,
-			'class'	=> "attachment-" . join( 'x', $size ),
+			'class'	=> "attachment-" . join( 'x', $this->current_thumb_dimensions ),
 			'alt'	=> '',
 		);
 		$default_img = '<img ';
@@ -202,28 +214,29 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 	function update( $new_widget_settings, $old_widget_settings ) {
 		$instance = $old_widget_settings;
 		// sanitize user input before update
-		$instance[ 'title' ] 			= ( isset( $new_widget_settings[ 'title' ] ) )				? strip_tags( $new_widget_settings[ 'title' ] )					: '';
-		$instance[ 'default_url' ] 		= ( isset( $new_widget_settings[ 'default_url' ] ) )		? strip_tags( $new_widget_settings[ 'default_url' ] )			: $this->default_thumb_url;
-		$instance[ 'thumb_dimensions' ] = ( isset( $new_widget_settings[ 'thumb_dimensions' ] ) )	? strip_tags( $new_widget_settings[ 'thumb_dimensions' ] )		: $this->default_thumb_dimensions;
-		$instance[ 'category_ids' ]   	= ( isset( $new_widget_settings[ 'category_ids' ] ) )		? array_map( 'absint', $new_widget_settings[ 'category_ids' ] )	: $this->default_category_ids;
-		$instance[ 'excerpt_length' ] 	= ( isset( $new_widget_settings[ 'excerpt_length' ] ) )		? absint( $new_widget_settings[ 'excerpt_length' ] )			: $this->default_excerpt_length;
-		$instance[ 'number_posts' ]		= ( isset( $new_widget_settings[ 'number_posts' ] ) )		? absint( $new_widget_settings[ 'number_posts' ] )				: $this->default_number_posts;
-		$instance[ 'thumb_height' ] 	= ( isset( $new_widget_settings[ 'thumb_height' ] ) )		? absint( $new_widget_settings[ 'thumb_height' ] )				: $this->default_thumb_height;
-		$instance[ 'thumb_width' ] 		= ( isset( $new_widget_settings[ 'thumb_width' ] ) )		? absint( $new_widget_settings[ 'thumb_width' ] )				: $this->default_thumb_width;
-		$instance[ 'hide_current_post' ]= ( isset( $new_widget_settings[ 'hide_current_post' ] ) )	? (bool) $new_widget_settings[ 'hide_current_post' ]			: false;
-		$instance[ 'hide_title' ] 		= ( isset( $new_widget_settings[ 'hide_title' ] ) )			? (bool) $new_widget_settings[ 'hide_title' ]					: false;
-		$instance[ 'keep_aspect_ratio'] = ( isset( $new_widget_settings[ 'keep_aspect_ratio' ] ) )	? (bool) $new_widget_settings[ 'keep_aspect_ratio' ]			: false;
-		$instance[ 'keep_sticky' ] 		= ( isset( $new_widget_settings[ 'keep_sticky' ] ) )		? (bool) $new_widget_settings[ 'keep_sticky' ]					: false;
-		$instance[ 'only_1st_img' ] 	= ( isset( $new_widget_settings[ 'only_1st_img' ] ) )		? (bool) $new_widget_settings[ 'only_1st_img' ]					: false;
-		$instance[ 'show_date' ] 		= ( isset( $new_widget_settings[ 'show_date' ] ) )			? (bool) $new_widget_settings[ 'show_date' ]					: false;
-		$instance[ 'show_excerpt' ] 	= ( isset( $new_widget_settings[ 'show_excerpt' ] ) )		? (bool) $new_widget_settings[ 'show_excerpt' ]					: false;
-		$instance[ 'show_thumb' ] 		= ( isset( $new_widget_settings[ 'show_thumb' ] ) )			? (bool) $new_widget_settings[ 'show_thumb' ]					: false;
-		$instance[ 'try_1st_img' ] 		= ( isset( $new_widget_settings[ 'try_1st_img' ] ) )		? (bool) $new_widget_settings[ 'try_1st_img' ]					: false;
-		$instance[ 'use_default' ] 		= ( isset( $new_widget_settings[ 'use_default' ] ) )		? (bool) $new_widget_settings[ 'use_default' ]					: false;
+		$instance[ 'title' ] 				= ( isset( $new_widget_settings[ 'title' ] ) )					? strip_tags( $new_widget_settings[ 'title' ] )					: '';
+		$instance[ 'default_url' ] 			= ( isset( $new_widget_settings[ 'default_url' ] ) )			? strip_tags( $new_widget_settings[ 'default_url' ] )			: $this->default_thumb_url;
+		$instance[ 'thumb_dimensions' ] 	= ( isset( $new_widget_settings[ 'thumb_dimensions' ] ) )		? strip_tags( $new_widget_settings[ 'thumb_dimensions' ] )		: $this->default_thumb_dimensions;
+		$instance[ 'category_ids' ]   		= ( isset( $new_widget_settings[ 'category_ids' ] ) )			? array_map( 'absint', $new_widget_settings[ 'category_ids' ] )	: $this->default_category_ids;
+		$instance[ 'excerpt_length' ] 		= ( isset( $new_widget_settings[ 'excerpt_length' ] ) )			? absint( $new_widget_settings[ 'excerpt_length' ] )			: $this->default_excerpt_length;
+		$instance[ 'number_posts' ]			= ( isset( $new_widget_settings[ 'number_posts' ] ) )			? absint( $new_widget_settings[ 'number_posts' ] )				: $this->default_number_posts;
+		$instance[ 'thumb_height' ] 		= ( isset( $new_widget_settings[ 'thumb_height' ] ) )			? absint( $new_widget_settings[ 'thumb_height' ] )				: $this->default_thumb_height;
+		$instance[ 'thumb_width' ] 			= ( isset( $new_widget_settings[ 'thumb_width' ] ) )			? absint( $new_widget_settings[ 'thumb_width' ] )				: $this->default_thumb_width;
+		$instance[ 'hide_current_post' ]	= ( isset( $new_widget_settings[ 'hide_current_post' ] ) )		? (bool) $new_widget_settings[ 'hide_current_post' ]			: false;
+		$instance[ 'hide_title' ] 			= ( isset( $new_widget_settings[ 'hide_title' ] ) )				? (bool) $new_widget_settings[ 'hide_title' ]					: false;
+		$instance[ 'keep_aspect_ratio'] 	= ( isset( $new_widget_settings[ 'keep_aspect_ratio' ] ) )		? (bool) $new_widget_settings[ 'keep_aspect_ratio' ]			: false;
+		$instance[ 'keep_sticky' ] 			= ( isset( $new_widget_settings[ 'keep_sticky' ] ) )			? (bool) $new_widget_settings[ 'keep_sticky' ]					: false;
+		$instance[ 'only_1st_img' ] 		= ( isset( $new_widget_settings[ 'only_1st_img' ] ) )			? (bool) $new_widget_settings[ 'only_1st_img' ]					: false;
+		$instance[ 'show_date' ] 			= ( isset( $new_widget_settings[ 'show_date' ] ) )				? (bool) $new_widget_settings[ 'show_date' ]					: false;
+		$instance[ 'show_comments_number' ]	= ( isset( $new_widget_settings[ 'show_comments_number' ] ) )	? (bool) $new_widget_settings[ 'show_comments_number' ]			: false;
+		$instance[ 'show_excerpt' ] 		= ( isset( $new_widget_settings[ 'show_excerpt' ] ) )			? (bool) $new_widget_settings[ 'show_excerpt' ]					: false;
+		$instance[ 'show_thumb' ] 			= ( isset( $new_widget_settings[ 'show_thumb' ] ) )				? (bool) $new_widget_settings[ 'show_thumb' ]					: false;
+		$instance[ 'try_1st_img' ] 			= ( isset( $new_widget_settings[ 'try_1st_img' ] ) )			? (bool) $new_widget_settings[ 'try_1st_img' ]					: false;
+		$instance[ 'use_default' ] 			= ( isset( $new_widget_settings[ 'use_default' ] ) )			? (bool) $new_widget_settings[ 'use_default' ]					: false;
 
 		// let empty string
 		if ( isset( $new_widget_settings[ 'excerpt_more' ] ) ) {
-			$instance[ 'excerpt_more' ] = strip_tags( $new_widget_settings[ 'excerpt_more' ] );
+			$instance[ 'excerpt_more' ] = $new_widget_settings[ 'excerpt_more' ];
 		} elseif ( '' == $new_widget_settings[ 'excerpt_more' ] ) {
 			$instance[ 'excerpt_more' ] = '';
 		} else {
@@ -259,31 +272,32 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 
 	function form( $instance ) {
 		// get and sanitize values
-		$title				= ( isset( $instance[ 'title' ] ) ) 			? esc_attr( $instance[ 'title' ] )						: '';
-		$thumb_dimensions	= ( isset( $instance[ 'thumb_dimensions' ] ) )	? esc_attr( $instance[ 'thumb_dimensions' ] )			: $this->default_thumb_dimensions;
-		$default_url		= ( isset( $instance[ 'default_url' ] ) )		? esc_url( $instance[ 'default_url' ] )					: $this->default_thumb_url;
-		$excerpt_length		= ( isset( $instance[ 'excerpt_length' ] ) )	? absint( $instance[ 'excerpt_length' ] )				: $this->default_excerpt_length;
-		$number_posts		= ( isset( $instance[ 'number_posts' ] ) )		? absint( $instance[ 'number_posts' ] )					: $this->default_number_posts;
-		$thumb_height		= ( isset( $instance[ 'thumb_height' ] ) )		? absint( $instance[ 'thumb_height' ] )					: $this->default_thumb_height;
-		$thumb_width		= ( isset( $instance[ 'thumb_width' ] ) )		? absint( $instance[ 'thumb_width' ] )					: $this->default_thumb_width;
-		$category_ids		= ( isset( $instance[ 'category_ids' ] ) )		? array_map( 'absint', $instance[ 'category_ids' ] )	: $this->default_category_ids;
-		$hide_current_post	= ( isset( $instance[ 'hide_current_post' ] ) )	? (bool) $instance[ 'hide_current_post' ]				: false;
-		$hide_title			= ( isset( $instance[ 'hide_title' ] ) )		? (bool) $instance[ 'hide_title' ]						: false;
-		$keep_aspect_ratio	= ( isset( $instance[ 'keep_aspect_ratio' ] ) )	? (bool) $instance[ 'keep_aspect_ratio' ]				: false;
-		$keep_sticky		= ( isset( $instance[ 'keep_sticky' ] ) )		? (bool) $instance[ 'keep_sticky' ]						: false;
-		$only_1st_img		= ( isset( $instance[ 'only_1st_img' ] ) )		? (bool) $instance[ 'only_1st_img' ]					: false;
-		$show_date			= ( isset( $instance[ 'show_date' ] ) )			? (bool) $instance[ 'show_date' ]						: false;
-		$show_excerpt		= ( isset( $instance[ 'show_excerpt' ] ) )		? (bool) $instance[ 'show_excerpt' ]					: false;
-		$show_thumb			= ( isset( $instance[ 'show_thumb' ] ) )		? (bool) $instance[ 'show_thumb' ]						: true;
-		$try_1st_img		= ( isset( $instance[ 'try_1st_img' ] ) )		? (bool) $instance[ 'try_1st_img' ]						: false;
-		$use_default		= ( isset( $instance[ 'use_default' ] ) )		? (bool) $instance[ 'use_default' ]						: false;
+		$title					= ( isset( $instance[ 'title' ] ) ) 				? $instance[ 'title' ]									: '';
+		$thumb_dimensions		= ( isset( $instance[ 'thumb_dimensions' ] ) )		? $instance[ 'thumb_dimensions' ]						: $this->default_thumb_dimensions;
+		$default_url			= ( isset( $instance[ 'default_url' ] ) )			? $instance[ 'default_url' ]							: $this->default_thumb_url;
+		$excerpt_length			= ( isset( $instance[ 'excerpt_length' ] ) )		? absint( $instance[ 'excerpt_length' ] )				: $this->default_excerpt_length;
+		$number_posts			= ( isset( $instance[ 'number_posts' ] ) )			? absint( $instance[ 'number_posts' ] )					: $this->default_number_posts;
+		$thumb_height			= ( isset( $instance[ 'thumb_height' ] ) )			? absint( $instance[ 'thumb_height' ] )					: $this->default_thumb_height;
+		$thumb_width			= ( isset( $instance[ 'thumb_width' ] ) )			? absint( $instance[ 'thumb_width' ] )					: $this->default_thumb_width;
+		$category_ids			= ( isset( $instance[ 'category_ids' ] ) )			? array_map( 'absint', $instance[ 'category_ids' ] )	: $this->default_category_ids;
+		$hide_current_post		= ( isset( $instance[ 'hide_current_post' ] ) )		? (bool) $instance[ 'hide_current_post' ]				: false;
+		$hide_title				= ( isset( $instance[ 'hide_title' ] ) )			? (bool) $instance[ 'hide_title' ]						: false;
+		$keep_aspect_ratio		= ( isset( $instance[ 'keep_aspect_ratio' ] ) )		? (bool) $instance[ 'keep_aspect_ratio' ]				: false;
+		$keep_sticky			= ( isset( $instance[ 'keep_sticky' ] ) )			? (bool) $instance[ 'keep_sticky' ]						: false;
+		$only_1st_img			= ( isset( $instance[ 'only_1st_img' ] ) )			? (bool) $instance[ 'only_1st_img' ]					: false;
+		$show_date				= ( isset( $instance[ 'show_date' ] ) )				? (bool) $instance[ 'show_date' ]						: false;
+		$show_comments_number	= ( isset( $instance[ 'show_comments_number' ] ) ) ? (bool) $instance[ 'show_comments_number' ]				: false;
+		$show_excerpt			= ( isset( $instance[ 'show_excerpt' ] ) )			? (bool) $instance[ 'show_excerpt' ]					: false;
+		$show_thumb				= ( isset( $instance[ 'show_thumb' ] ) )			? (bool) $instance[ 'show_thumb' ]						: true;
+		$try_1st_img			= ( isset( $instance[ 'try_1st_img' ] ) )			? (bool) $instance[ 'try_1st_img' ]						: false;
+		$use_default			= ( isset( $instance[ 'use_default' ] ) )			? (bool) $instance[ 'use_default' ]						: false;
 
 		// let empty string
 		if ( isset( $instance[ 'excerpt_more' ] ) ) { 
 			if ( '' == $instance[ 'excerpt_more' ] ) {
 				$excerpt_more = '';
 			} else {
-				$excerpt_more = esc_attr( $instance[ 'excerpt_more' ] );
+				$excerpt_more = $instance[ 'excerpt_more' ];
 			}
 		} else {
 			 $excerpt_more = $this->default_excerpt_more;
@@ -304,25 +318,26 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		if ( ! $thumb_width )		$thumb_width		= $this->default_thumb_width;
 		
 		// compute ids only once to improve performance
-		$id_category_ids		= $this->get_field_id( 'category_ids' );
-		$id_default_url			= $this->get_field_id( 'default_url' );
-		$id_excerpt_length		= $this->get_field_id( 'excerpt_length' );
-		$id_excerpt_more		= $this->get_field_id( 'excerpt_more' );
-		$id_hide_current_post	= $this->get_field_id( 'hide_current_post' );
-		$id_hide_title			= $this->get_field_id( 'hide_title' );
-		$id_keep_aspect_ratio 	= $this->get_field_id( 'keep_aspect_ratio' );
-		$id_keep_sticky			= $this->get_field_id( 'keep_sticky' );
-		$id_number_posts		= $this->get_field_id( 'number_posts' );
-		$id_only_1st_img		= $this->get_field_id( 'only_1st_img' );
-		$id_show_date			= $this->get_field_id( 'show_date' );
-		$id_show_excerpt		= $this->get_field_id( 'show_excerpt' );
-		$id_show_thumb			= $this->get_field_id( 'show_thumb' );
-		$id_thumb_dimensions	= $this->get_field_id( 'thumb_dimensions' );
-		$id_thumb_height		= $this->get_field_id( 'thumb_height' );
-		$id_thumb_width			= $this->get_field_id( 'thumb_width' );
-		$id_title				= $this->get_field_id( 'title' );
-		$id_try_1st_img			= $this->get_field_id( 'try_1st_img' );
-		$id_use_default			= $this->get_field_id( 'use_default' );
+		$id_category_ids			= $this->get_field_id( 'category_ids' );
+		$id_default_url				= $this->get_field_id( 'default_url' );
+		$id_excerpt_length			= $this->get_field_id( 'excerpt_length' );
+		$id_excerpt_more			= $this->get_field_id( 'excerpt_more' );
+		$id_hide_current_post		= $this->get_field_id( 'hide_current_post' );
+		$id_hide_title				= $this->get_field_id( 'hide_title' );
+		$id_keep_aspect_ratio 		= $this->get_field_id( 'keep_aspect_ratio' );
+		$id_keep_sticky				= $this->get_field_id( 'keep_sticky' );
+		$id_number_posts			= $this->get_field_id( 'number_posts' );
+		$id_only_1st_img			= $this->get_field_id( 'only_1st_img' );
+		$id_show_date				= $this->get_field_id( 'show_date' );
+		$id_show_comments_number	= $this->get_field_id( 'show_comments_number' );
+		$id_show_excerpt			= $this->get_field_id( 'show_excerpt' );
+		$id_show_thumb				= $this->get_field_id( 'show_thumb' );
+		$id_thumb_dimensions		= $this->get_field_id( 'thumb_dimensions' );
+		$id_thumb_height			= $this->get_field_id( 'thumb_height' );
+		$id_thumb_width				= $this->get_field_id( 'thumb_width' );
+		$id_title					= $this->get_field_id( 'title' );
+		$id_try_1st_img				= $this->get_field_id( 'try_1st_img' );
+		$id_use_default				= $this->get_field_id( 'use_default' );
 		
 		// get texts and values for image sizes dropdown
 		global $_wp_additional_image_sizes;
@@ -374,16 +389,16 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		$number_of_cats = count( $categories );
 		
 		// get size (number of rows to display) of selection box: not more than 10
-		$size = ( 10 > $number_of_cats ) ? $number_of_cats + 1 : 10;
+		$number_of_rows = ( 10 > $number_of_cats ) ? $number_of_cats + 1 : 10;
 
 		// start selection box
-		$output = sprintf(
+		$selection_element = sprintf(
 			'<select name="%s[]" id="%s" class="rpwwt-cat-select" multiple size="%d">',
 			$this->get_field_name( 'category_ids' ),
 			$id_category_ids,
-			$size
+			$number_of_rows
 		);
-		$output .= "\n";
+		$selection_element .= "\n";
 
 		// make selection box entries
 		$cat_list = array();
@@ -449,24 +464,24 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 
 			// make HTML of selection box
 			$selected = ( in_array( 0, $category_ids ) ) ? ' selected="selected"' : '';
-			$output .= "\t";
-			$output .= '<option value="0"' . $selected . '>' . $label_all_cats . '</option>';
-			$output .= "\n";
+			$selection_element .= "\t";
+			$selection_element .= '<option value="0"' . $selected . '>' . $label_all_cats . '</option>';
+			$selection_element .= "\n";
 
 			foreach ( $cat_list as $category ) {
 				$cat_name = apply_filters( 'list_cats', $category[ 'name' ], $category );
 				$pad = ( 0 < $category[ 'depth' ] ) ? str_repeat('&ndash;&nbsp;', $category[ 'depth' ] ) : '';
-				$output .= "\t";
-				$output .= '<option value="' . $category[ 'id' ] . '"';
-				$output .= ( in_array( $category[ 'id' ], $category_ids ) ) ? ' selected="selected"' : '';
-				$output .= '>' . $pad . $cat_name . '</option>';
-				$output .= "\n";
+				$selection_element .= "\t";
+				$selection_element .= '<option value="' . $category[ 'id' ] . '"';
+				$selection_element .= ( in_array( $category[ 'id' ], $category_ids ) ) ? ' selected="selected"' : '';
+				$selection_element .= '>' . $pad . $cat_name . '</option>';
+				$selection_element .= "\n";
 			}
 			
 		}
 
 		// close selection box
-		$output .= "</select>\n";
+		$selection_element .= "</select>\n";
 		
 		// print form in widgets page
 		include 'includes/form.php';
@@ -542,8 +557,7 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 	 */
 	public function load_plugin_textdomain() {
 
-		$domain = $this->text_domain;
-		load_plugin_textdomain( $domain, false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+		load_plugin_textdomain( 'recent-posts-widget-with-thumbnails', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 
 	}
 
@@ -555,45 +569,48 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 	 *
 	 * @return    integer    the post id of the first content image
 	 */
-	private function get_first_content_image_id ( $content ) {
+	private function get_first_content_image_id () {
 		// set variables
 		global $wpdb;
-		// look for images in HTML code
-		preg_match_all( '/<img[^>]+>/i', $content, $all_img_tags );
-		if ( $all_img_tags ) {
-			foreach ( $all_img_tags[ 0 ] as $img_tag ) {
-				// find class attribute and catch its value
-				preg_match( '/<img.*?class\s*=\s*[\'"]([^\'"]+)[\'"][^>]*>/i', $img_tag, $img_class );
-				if ( $img_class ) {
-					// Look for the WP image id
-					preg_match( '/wp-image-([\d]+)/i', $img_class[ 1 ], $found_id );
-					// if first image id found: check whether is image
-					if ( $found_id ) {
-						$img_id = absint( $found_id[ 1 ] );
-						// if is image: return its id
-						if ( wp_get_attachment_image_src( $img_id ) ) {
-							return $img_id;
-						}
-					} // if(found_id)
-				} // if(img_class)
-				
-				// else: try to catch image id by its url as stored in the database
-				// find src attribute and catch its value
-				preg_match( '/<img.*?src\s*=\s*[\'"]([^\'"]+)[\'"][^>]*>/i', $img_tag, $img_src );
-				if ( $img_src ) {
-					// delete optional query string in img src
-					$url = preg_replace( '/([^?]+).*/', '\1', $img_src[ 1 ] );
-					// delete image dimensions data in img file name, just take base name and extension
-					$guid = preg_replace( '/(.+)-\d+x\d+\.(\w+)/', '\1.\2', $url );
-					// look up its ID in the db
-					$found_id = $wpdb->get_var( $wpdb->prepare( "SELECT `ID` FROM $wpdb->posts WHERE `guid` = '%s'", $guid ) );
-					// if first image id found: return it
-					if ( $found_id ) {
-						return absint( $found_id );
-					} // if(found_id)
-				} // if(img_src)
-			} // foreach(img_tag)
-		} // if(all_img_tags)
+		$post = get_post();
+		if ( $post and isset( $post->post_content ) ) {
+			// look for images in HTML code
+			preg_match_all( '/<img[^>]+>/i', $post->post_content, $all_img_tags );
+			if ( $all_img_tags ) {
+				foreach ( $all_img_tags[ 0 ] as $img_tag ) {
+					// find class attribute and catch its value
+					preg_match( '/<img.*?class\s*=\s*[\'"]([^\'"]+)[\'"][^>]*>/i', $img_tag, $img_class );
+					if ( $img_class ) {
+						// Look for the WP image id
+						preg_match( '/wp-image-([\d]+)/i', $img_class[ 1 ], $found_id );
+						// if first image id found: check whether is image
+						if ( $found_id ) {
+							$img_id = absint( $found_id[ 1 ] );
+							// if is image: return its id
+							if ( wp_get_attachment_image_src( $img_id ) ) {
+								return $img_id;
+							}
+						} // if(found_id)
+					} // if(img_class)
+					
+					// else: try to catch image id by its url as stored in the database
+					// find src attribute and catch its value
+					preg_match( '/<img.*?src\s*=\s*[\'"]([^\'"]+)[\'"][^>]*>/i', $img_tag, $img_src );
+					if ( $img_src ) {
+						// delete optional query string in img src
+						$url = preg_replace( '/([^?]+).*/', '\1', $img_src[ 1 ] );
+						// delete image dimensions data in img file name, just take base name and extension
+						$guid = preg_replace( '/(.+)-\d+x\d+\.(\w+)/', '\1.\2', $url );
+						// look up its id in the db
+						$found_id = $wpdb->get_var( $wpdb->prepare( "SELECT `ID` FROM $wpdb->posts WHERE `guid` = '%s'", $guid ) );
+						// if id is available: return it
+						if ( $found_id ) {
+							return absint( $found_id );
+						} // if(found_id)
+					} // if(img_src)
+				} // foreach(img_tag)
+			} // if(all_img_tags)
+		} // if (post content)
 		
 		// if nothing found: return 0
 		return 0;
@@ -607,12 +624,12 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 	 *
 	 * @return    bool    success on finding an image
 	 */
-	private function the_first_posts_image ( $content, $size ) {
+	private function the_first_post_image () {
 		// look for first image
-		$thumb_id = $this->get_first_content_image_id( $content );
+		$thumb_id = $this->get_first_content_image_id();
 		// if there is first image then show first image
 		if ( $thumb_id ) :
-			echo wp_get_attachment_image( $thumb_id, $size );
+			echo wp_get_attachment_image( $thumb_id, $this->current_thumb_dimensions );
 			return true;
 		else :
 			return false;
@@ -631,15 +648,19 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		$set_default = true;
 
 		// generate CSS
-		$css_code  = ".rpwwt-widget ul { list-style: outside none none; }\n"; 
+		$css_code  = ".rpwwt-widget ul { list-style: outside none none; margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; }\n"; 
 		$css_code .= ".rpwwt-widget ul li { overflow: hidden; margin: 0 0 1.5em; }\n"; 
-		$css_code .= ".rpwwt-widget ul li img { display: inline; float: left; margin: .3em .75em .75em 0; }\n";
+		if ( is_rtl() ) {
+			$css_code .= ".rpwwt-widget ul li img { display: inline; float: right; margin: .3em 0 .75em .75em; }\n";
+		} else {
+			$css_code .= ".rpwwt-widget ul li img { display: inline; float: left; margin: .3em .75em .75em 0; }\n";
+		}
 
 		foreach ( $all_instances as $number => $settings ) {
 			// set width and height
 			$thumb_width = $this->default_thumb_width;
 			$thumb_height = $this->default_thumb_height;
-			$thumb_dimensions = isset( $settings[ 'thumb_dimensions' ] ) ? esc_attr( $settings[ 'thumb_dimensions' ] )  : $this->default_thumb_dimensions;
+			$thumb_dimensions = isset( $settings[ 'thumb_dimensions' ] ) ? $settings[ 'thumb_dimensions' ] : $this->default_thumb_dimensions;
 			if ( $thumb_dimensions == $this->default_thumb_dimensions ) {
 				if ( isset( $settings[ 'thumb_width' ] ) ) {
 					$thumb_width  = absint( $settings[ 'thumb_width' ]  );
@@ -757,6 +778,6 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
  * @since 1.0
  */
 function register_recent_posts_widget_with_thumbnails () {
-	register_widget('Recent_Posts_Widget_With_Thumbnails');
+	register_widget( 'Recent_Posts_Widget_With_Thumbnails' );
 }
-add_action('init', 'register_recent_posts_widget_with_thumbnails', 1);
+add_action( 'widgets_init', 'register_recent_posts_widget_with_thumbnails', 1 );
