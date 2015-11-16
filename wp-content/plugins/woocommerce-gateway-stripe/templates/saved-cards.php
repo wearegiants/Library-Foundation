@@ -8,9 +8,13 @@
 		</tr>
 	</thead>
 	<tbody>
-		<?php foreach ( $cards as $card ) : ?>
+		<?php foreach ( $cards as $card ) :
+			if ( 'card' !== $card->object ) {
+				continue;
+			}
+		?>
 		<tr>
-            <td><?php printf( __( '%s card ending in %s', 'woocommerce-gateway-stripe' ), ( isset( $card->type ) ? $card->type : $card->brand ), $card->last4 ); ?></td>
+            <td><?php printf( __( '%s card ending in %s', 'woocommerce-gateway-stripe' ), $card->brand, $card->last4 ); ?></td>
             <td><?php printf( __( 'Expires %s/%s', 'woocommerce-gateway-stripe' ), $card->exp_month, $card->exp_year ); ?></td>
 			<td>
                 <form action="" method="POST">

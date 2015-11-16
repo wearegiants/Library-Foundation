@@ -25,7 +25,7 @@ class WC_Gateway_Stripe_Saved_Cards {
 		}
 		$stripe = new WC_Gateway_Stripe();
 		$cards  = $stripe->get_saved_cards( $customer_id );
-		
+
 		if ( $cards ) {
 			wc_get_template( 'saved-cards.php', array( 'cards' => $cards ), 'woocommerce-gateway-stripe/', WC_STRIPE_TEMPLATE_PATH );
 		}
@@ -42,7 +42,7 @@ class WC_Gateway_Stripe_Saved_Cards {
 			wp_die( __( 'Unable to verify deletion, please try again', 'woocommerce-gateway-stripe' ) );
 		}
 		$stripe = new WC_Gateway_Stripe();
-		$result = $stripe->stripe_request( array(), 'customers/' . $customer_id . '/cards/' . sanitize_text_field( $_POST['stripe_delete_card'] ), 'DELETE' );
+		$result = $stripe->stripe_request( array(), 'customers/' . $customer_id . '/sources/' . sanitize_text_field( $_POST['stripe_delete_card'] ), 'DELETE' );
 
 		delete_transient( 'stripe_cards_' . $customer_id );
 

@@ -1,12 +1,12 @@
-jQuery( function() {
+jQuery( function( $ ) {
 
 	var stripe_submit = false;
 
-	jQuery( 'form.checkout' ).on( 'checkout_place_order_stripe', function() {
+	$( 'form.checkout' ).on( 'checkout_place_order_stripe', function() {
 		return stripeFormHandler();
     });
 
-    jQuery( 'form#order_review' ).submit( function() {
+    $( 'form#order_review' ).submit( function() {
 		return stripeFormHandler();
     });
 
@@ -16,50 +16,45 @@ jQuery( function() {
 			return true;
 		}
 
-		if ( ! jQuery( '#payment_method_stripe' ).is( ':checked' ) ) {
+		if ( ! $( '#payment_method_stripe' ).is( ':checked' ) ) {
 			return true;
 		}
 
-		if ( jQuery( 'input[name=stripe_card_id]' ).length > 0 && jQuery( 'input[name=stripe_card_id]:checked' ).val() !== 'new' ) {
+		if ( $( 'input[name=stripe_card_id]' ).length > 0 && $( 'input[name=stripe_card_id]:checked' ).val() !== 'new' ) {
 			return true;
 		}
 
-		if ( jQuery( 'input#terms' ).size() === 1 && jQuery( 'input#terms:checked' ).size() === 0 ) {
-			alert( wc_stripe_params.i18n_terms );
-
-			return false;
+		if ( $( 'input#terms' ).size() === 1 && $( 'input#terms:checked' ).size() === 0 ) {
+			return true;
 		}
 
-		if ( jQuery( '#createaccount' ).is( ':checked' ) && jQuery( '#account_password' ).length && jQuery( '#account_password' ).val() === '' ) {
-			alert( wc_stripe_params.i18n_required_fields );
-
-			return false;
+		if ( $( '#createaccount' ).is( ':checked' ) && $( '#account_password' ).length && $( '#account_password' ).val() === '' ) {
+			return true;
 		}
 		
 		// check to see if we need to validate shipping address
-		if ( jQuery( '#ship-to-different-address-checkbox' ).is( ':checked' ) ) {
-			$required_inputs = jQuery( '.woocommerce-billing-fields .validate-required, .woocommerce-shipping-fields .validate-required' );
+		if ( $( '#ship-to-different-address-checkbox' ).is( ':checked' ) ) {
+			$required_inputs = $( '.woocommerce-billing-fields .validate-required, .woocommerce-shipping-fields .validate-required' );
 		} else {
-			$required_inputs = jQuery( '.woocommerce-billing-fields .validate-required' );
+			$required_inputs = $( '.woocommerce-billing-fields .validate-required' );
 		}
 
 		if ( $required_inputs.size() ) {
 			var required_error = false;
 			
 			$required_inputs.each( function() {
-				if ( jQuery( this ).find( 'input.input-text, select' ).not( jQuery( '#account_password' ) ).val() === '' ) {
+				if ( $( this ).find( 'input.input-text, select' ).not( $( '#account_password, #account_username' ) ).val() === '' ) {
 					required_error = true;
 				}
 			});
 
 			if ( required_error ) {
-				alert( wc_stripe_params.i18n_required_fields );
-				return false;
+				return true;
 			}
 		}
 
-		var $form            = jQuery( 'form.checkout, form#order_review' ),
-			$stripe_new_card = jQuery( '.stripe_new_card' ),
+		var $form            = $( 'form.checkout, form#order_review' ),
+			$stripe_new_card = $( '.stripe_new_card' ),
 			token            = $form.find( 'input.stripe_token' );
 
 		token.val( '' );
@@ -82,7 +77,7 @@ jQuery( function() {
 			image:       $stripe_new_card.data( 'image' ),
 			bitcoin:     $stripe_new_card.data( 'bitcoin' ),
 			refund_mispayments: true, // for bitcoin payments let Stripe handle refunds if too little is paid
-			email: 		 jQuery( '#billing_email' ).val(),
+			email: 		 $( '#billing_email' ).val(),
 			token:       token_action
 		});
 
