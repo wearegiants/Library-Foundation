@@ -159,11 +159,18 @@ class GFExport {
 		$form_ids = GFAPI::add_forms( $forms );
 
 		if ( is_wp_error( $form_ids ) ) {
-			$form_ids = 0;
+			$form_ids = array();
 		} else {
 			foreach ( $form_ids as $key => $form_id ){
 				$forms[ $key ]['id'] = $form_id;
 			}
+			/**
+			 * Fires after forms have been imported.
+			 *
+			 * @param array $forms An array imported form objects.
+			 *
+			 */
+			do_action( 'gform_forms_post_import', $forms );
 		}
 
 		return sizeof( $form_ids );
@@ -669,6 +676,11 @@ class GFExport {
 
 			GFCommon::log_debug( "GFExport::start_export(): Header for field ID {$field_id}: {$value}" );
 
+			if ( strpos( $value, '=' ) === 0 ) {
+				// Prevent Excel formulas
+				$value = "'" . $value;
+			}
+
 			$headers[ $field_id ] = $value;
 
 			$subrow_count = isset( $field_rows[ $field_id ] ) ? intval( $field_rows[ $field_id ] ) : 0;
@@ -704,27 +716,9 @@ class GFExport {
 							$value           = date_i18n( 'Y-m-d H:i:s', $lead_local_time, true );
 							break;
 						default :
-							$long_text = '';
-							if ( strlen( rgar( $lead, $field_id ) ) >= ( GFORMS_MAX_FIELD_LENGTH - 10 ) ) {
-								$long_text = RGFormsModel::get_field_value_long( $lead, $field_id, $form );
-							}
+							$field = RGFormsModel::get_field( $form, $field_id );
 
-							$value = ! empty( $long_text ) ? $long_text : rgar( $lead, $field_id );
-
-							$field      = RGFormsModel::get_field( $form, $field_id );
-							$input_type = RGFormsModel::get_input_type( $field );
-
-							if ( $input_type == 'checkbox' ) {
-								//pass in label value that has not had quotes escaped so the is_checkbox_checked function compares the unchanged label value with the lead value
-								$header_label_not_escaped = GFCommon::get_label( $field, $field_id );
-								$value = GFFormsModel::is_checkbox_checked( $field_id, $header_label_not_escaped, $lead, $form );
-								if ( $value === false ) {
-									$value = '';
-								}
-							} else if ( $input_type == 'fileupload' && $field->multipleFiles ) {
-								$value = ! empty( $value ) ? implode( ' , ', json_decode( $value, true ) ) : '';
-							}
-
+							$value = is_object( $field ) ? $field->get_value_export( $lead, $field_id, false, true ) : rgar( $lead, $field_id );
 							$value = apply_filters( 'gform_export_field_value', $value, $form_id, $field_id, $lead );
 
 							GFCommon::log_debug( "GFExport::start_export(): Value for field ID {$field_id}: {$value}" );
@@ -737,6 +731,12 @@ class GFExport {
 						foreach ( $list as $row ) {
 							$row_values = array_values( $row );
 							$row_str    = implode( '|', $row_values );
+
+							if ( strpos( $row_str, '=' ) === 0 ) {
+								// Prevent Excel formulas
+								$row_str = "'" . $row_str;
+							}
+
 							$lines .= '"' . str_replace( '"', '""', $row_str ) . '"' . $separator;
 						}
 
@@ -749,6 +749,11 @@ class GFExport {
 						$value = maybe_unserialize( $value );
 						if ( is_array( $value ) ) {
 							$value = implode( '|', $value );
+						}
+
+						if ( strpos( $value, '=' ) === 0 ) {
+							// Prevent Excel formulas
+							$value = "'" . $value;
 						}
 
 						$lines .= '"' . str_replace( '"', '""', $value ) . '"' . $separator;
