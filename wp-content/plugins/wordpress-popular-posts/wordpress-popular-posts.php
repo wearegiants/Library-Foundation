@@ -3,7 +3,7 @@
 Plugin Name: WordPress Popular Posts
 Plugin URI: http://wordpress.org/extend/plugins/wordpress-popular-posts
 Description: WordPress Popular Posts is a highly customizable widget that displays the most popular posts on your blog
-Version: 3.2.3
+Version: 3.3.2
 Author: Hector Cabrera
 Author URI: http://cabrerahector.com
 Author Email: hcabrerab@gmail.com
@@ -61,7 +61,7 @@ if ( !class_exists('WordpressPopularPosts') ) {
 		 * @since	1.3.0
 		 * @var		string
 		 */
-		private $version = '3.2.3';
+		private $version = '3.3.2';
 
 		/**
 		 * Plugin identifier.
@@ -235,7 +235,9 @@ if ( !class_exists('WordpressPopularPosts') ) {
 					'responsive' => false
 				),
 				'log' => array(
-					'level' => 1
+					'level' => 1,
+					'limit' => 0,
+					'expires_after' => 180
 				),
 				'cache' => array(
 					'active' => false,
@@ -398,16 +400,29 @@ if ( !class_exists('WordpressPopularPosts') ) {
 
 			// Add shortcode
 			add_shortcode('wpp', array(&$this, 'shortcode'));
+			
+			// Purge post data from DB on deletion
+			add_action( 'admin_init', array($this, 'purge_post_init') );
 
 			// Enable data purging at midnight
-			add_action( 'wpp_cache_event', array($this, 'purge_data') );
-			if ( !wp_next_scheduled('wpp_cache_event') ) {
-				$tomorrow = time() + 86400;
-				$midnight  = mktime(0, 0, 0,
-					date("m", $tomorrow),
-					date("d", $tomorrow),
-					date("Y", $tomorrow));
-				wp_schedule_event( $midnight, 'daily', 'wpp_cache_event' );
+			if ( 1 == $this->user_settings['tools']['log']['limit'] ) {
+				
+				add_action( 'wpp_cache_event', array($this, 'purge_data') );
+				if ( !wp_next_scheduled('wpp_cache_event') ) {
+					$tomorrow = time() + 86400;
+					$midnight  = mktime(0, 0, 0,
+						date("m", $tomorrow),
+						date("d", $tomorrow),
+						date("Y", $tomorrow));
+					wp_schedule_event( $midnight, 'daily', 'wpp_cache_event' );
+				}
+				
+			} else {
+				// Remove the scheduled event if exists
+				if ( $timestamp = wp_next_scheduled('wpp_cache_event') ) {
+					wp_unschedule_event( $timestamp, 'wpp_cache_event' );
+				}
+				
 			}
 
 		} // end constructor
@@ -675,7 +690,7 @@ if ( !class_exists('WordpressPopularPosts') ) {
 				wp_enqueue_script( 'thickbox' );
 				wp_enqueue_style( 'thickbox' );
 				wp_enqueue_script( 'media-upload' );
-				wp_enqueue_script( $this->plugin_slug .'-admin-script', plugins_url( 'js/admin.js', __FILE__ ), array('jquery'), $this->version );
+				wp_enqueue_script( $this->plugin_slug .'-admin-script', plugins_url( 'js/admin.js', __FILE__ ), array('jquery'), $this->version, true );
 			}
 
 		} // end register_admin_scripts
@@ -986,14 +1001,12 @@ if ( !class_exists('WordpressPopularPosts') ) {
 
 					$result = $wpdb->query( $sql );
 
-					// Rename old caching table
-					if ( $result ) {
-						$result = $wpdb->query( "RENAME TABLE {$prefix}datacache TO {$prefix}datacache_backup;" );
-					}
-
 				}
 
 			}
+			
+			// Deletes old caching tables, if found
+			$wpdb->query( "DROP TABLE IF EXISTS {$prefix}datacache, {$prefix}datacache_backup;" );
 
 			// Check storage engine
 			$storage_engine_data = $wpdb->get_var("SELECT `ENGINE` FROM `information_schema`.`TABLES` WHERE `TABLE_SCHEMA`='{$wpdb->dbname}' AND `TABLE_NAME`='{$prefix}data';");
@@ -1124,7 +1137,41 @@ if ( !class_exists('WordpressPopularPosts') ) {
 		/*--------------------------------------------------*/
 
 		/**
-		 * Purges deleted posts from data/summary tables.
+		 * Purges post from data/summary tables.
+		 *
+		 * @since	3.3.0
+		 */
+		public function purge_post_init() {
+
+			if ( current_user_can( 'delete_posts' ) )
+				add_action( 'delete_post', array( $this, 'purge_post' ), 10 );
+
+		} // end purge_post_init
+
+		/**
+		 * Purges post from data/summary tables.
+		 *
+		 * @since	3.3.0
+		 * @global	object	$wpdb
+		 * @return	bool
+		 */
+		public function purge_post( $pID ) {
+
+			global $wpdb;
+
+			if ( $wpdb->get_var( $wpdb->prepare( "SELECT postid FROM {$wpdb->prefix}popularpostsdata WHERE postid = %d", $pID ) ) ) {
+				// Delete from data table
+				$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}popularpostsdata WHERE postid = %d;", $pID ) );
+				// Delete from summary table
+				$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}popularpostssummary WHERE postid = %d;", $pID ) );				
+			}
+			
+			return true;
+
+		} // end purge_post
+
+		/**
+		 * Purges old post data from summary table.
 		 *
 		 * @since	2.0.0
 		 * @global	object	$wpdb
@@ -1133,17 +1180,7 @@ if ( !class_exists('WordpressPopularPosts') ) {
 
 			global $wpdb;
 
-			if ( $missing = $wpdb->get_results( "SELECT v.postid AS id FROM {$wpdb->prefix}popularpostsdata v WHERE NOT EXISTS (SELECT p.ID FROM {$wpdb->posts} p WHERE v.postid = p.ID);" ) ) {
-				$to_be_deleted = '';
-
-				foreach ( $missing as $deleted )
-					$to_be_deleted .= $deleted->id . ",";
-
-				$to_be_deleted = rtrim( $to_be_deleted, "," );
-
-				$wpdb->query( "DELETE FROM {$wpdb->prefix}popularpostsdata WHERE postid IN({$to_be_deleted});" );
-				$wpdb->query( "DELETE FROM {$wpdb->prefix}popularpostssummary WHERE postid IN({$to_be_deleted});" );
-			}
+			$wpdb->query( "DELETE FROM {$wpdb->prefix}popularpostssummary WHERE view_date < DATE_SUB('{$this->__curdate()}', INTERVAL {$this->user_settings['tools']['log']['expires_after']} DAY);" );
 
 		} // end purge_data
 
@@ -1268,7 +1305,7 @@ if ( !class_exists('WordpressPopularPosts') ) {
 		 */
 		public function print_ajax(){
 
-			if ( $this->current_post_id ) {
+			if ( 0 != $this->current_post_id ) {
 				?>
 				<!-- WordPress Popular Posts v<?php echo $this->version; ?> -->
 				<script type="text/javascript">//<![CDATA[
@@ -1357,7 +1394,12 @@ if ( !class_exists('WordpressPopularPosts') ) {
 			// WPML support, get original post/page ID
 			if ( defined('ICL_LANGUAGE_CODE') && function_exists('icl_object_id') ) {
 				global $sitepress;
-				$id = icl_object_id( $id, get_post_type( $id ), true, $sitepress->get_default_language() );
+				if ( isset( $sitepress )) { // avoids a fatal error with Polylang
+					$id = icl_object_id( $id, get_post_type( $id ), true, $sitepress->get_default_language() );
+				}
+				else if ( function_exists( 'pll_default_language' ) ) { // adds Polylang support
+					$id = icl_object_id( $id, get_post_type( $id ), true, pll_default_language() );
+				}
 			}
 
 			$now = $this->__now();
@@ -1479,6 +1521,7 @@ if ( !class_exists('WordpressPopularPosts') ) {
 				if ( count($types) > 1 ) {
 
 					foreach ( $types as $post_type ) {
+						$post_type = trim($post_type); // required in case user places whitespace between commas
 						$sql_post_types .= "'{$post_type}',";
 					}
 
@@ -1701,6 +1744,10 @@ if ( !class_exists('WordpressPopularPosts') ) {
 				$this->defaults,
 				$instance
 			);
+			
+			// Pass the widget ID, might come in handy
+			if ( isset($this->id) )
+				$instance['widget_id'] = $this->id;
 
 			$content = "";
 
@@ -1768,7 +1815,7 @@ if ( !class_exists('WordpressPopularPosts') ) {
 
 			// No posts to show
 			if ( !is_array($mostpopular) || empty($mostpopular) ) {
-				return "<p class=\"wpp-no-data\">".__('Sorry. No data so far.', $this->plugin_slug)."</p>";
+				return apply_filters( 'wpp_no_data', "<p class=\"wpp-no-data\">" . __('Sorry. No data so far.', $this->plugin_slug) . "</p>" );
 			}
 
 			// Allow WP themers / coders access to raw data
@@ -1869,7 +1916,7 @@ if ( !class_exists('WordpressPopularPosts') ) {
 				  : '';
 				
 				$content =
-					'<li>'
+					'<li' . ( ( $this->current_post_id == $p->id ) ? ' class="current"' : '' ) . '>'
 					. $thumb
 					. '<a ' . ( ( $this->current_post_id == $p->id ) ? '' : 'href="' . $permalink . '"' ) . ' title="' . esc_attr($title) . '" class="wpp-post-title" target="' . $this->user_settings['tools']['link']['target'] . '">' . $title_sub . '</a> '
 					. $excerpt . $_stats
@@ -2483,33 +2530,36 @@ if ( !class_exists('WordpressPopularPosts') ) {
 
 				/** @var wpdb $wpdb */
 				global $wpdb;
+				
+				if ( $content = $wpdb->get_var( "SELECT post_content FROM {$wpdb->posts} WHERE ID = {$id};" ) ) {
 
-				$content = $wpdb->get_results("SELECT post_content FROM {$wpdb->posts} WHERE ID = " . $id, ARRAY_A);
-				$count = substr_count($content[0]['post_content'], '<img');
-
-				// images have been found
-				// TODO: try to merge these conditions into one IF.
-				if ($count > 0) {
-
-					preg_match_all('/<img.+src=[\'"]([^\'"]+)[\'"].*>/i', $content[0]['post_content'], $content_images);
-
-					if (isset($content_images[1][0])) {
-						$attachment_id = $this->__get_attachment_id($content_images[1][0]);
-
-						// image from Media Library
-						if ($attachment_id) {
-							$file_path = get_attached_file($attachment_id);
-							// There's a file path, so return it
-							if ( !empty($file_path) )
-								return $file_path;
-						} // external image?
-						else {
-							$external_image = $this->__fetch_external_image($id, $content_images[1][0]);
-							if ( $external_image ) {
-								return $external_image;
+					// at least one image has been found
+					if ( preg_match( '/<img[^>]+>/i', $content, $img ) ) {
+						
+						// get img src attribute from the first image found
+						preg_match( '/(src)="([^"]*)"/i', $img[0], $src_attr );
+						
+						if ( isset($src_attr[2]) && !empty($src_attr[2]) ) {
+						
+							// image from Media Library
+							if ( $attachment_id = $this->__get_attachment_id( $src_attr[2] ) ) {
+								
+								$file_path = get_attached_file($attachment_id);
+								
+								// There's a file path, so return it
+								if ( !empty($file_path) ) {
+									return $file_path;
+								}
+								
+							} // external image?
+							else {
+								return $this->__fetch_external_image($id, $src_attr[2]);
 							}
+						
 						}
+						
 					}
+					
 				}
 
 			}
@@ -2535,6 +2585,10 @@ if ( !class_exists('WordpressPopularPosts') ) {
 
 			if ($error) {
 				$msg = '<!-- ' . $error . ' --> ';
+			}
+			
+			if ( is_ssl() ) {
+				$src = str_ireplace( "http://", "https://", $src );
 			}
 
 			return apply_filters( 'wpp_render_image', $msg .
@@ -2600,29 +2654,38 @@ if ( !class_exists('WordpressPopularPosts') ) {
 
 			if ( !is_wp_error($response) && in_array(wp_remote_retrieve_response_code($response), $accepted_status_codes) ) {
 				
-				if ( function_exists('exif_imagetype') ) {
-					$image_type = exif_imagetype( $url );
-				} else {
-					$image_type = getimagesize( $url );
-					$image_type = ( isset($image_type[2]) ) ? $image_type[2] : NULL;
-				}
-
-				if ( in_array($image_type, array(IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG)) ) {
-					require_once( ABSPATH . 'wp-admin/includes/file.php' );
-
-					$url = str_replace( 'https://', 'http://', $url );
-					$tmp = download_url( $url );
-
-					// move file to Uploads
-					if ( !is_wp_error( $tmp ) && rename($tmp, $full_image_path) ) {
-						// borrowed from WP - set correct file permissions
-						$stat = stat( dirname( $full_image_path ));
-						$perms = $stat['mode'] & 0000644;
-						@chmod( $full_image_path, $perms );
-
-						return $full_image_path;
+				require_once( ABSPATH . 'wp-admin/includes/file.php' );
+				$url = str_replace( 'https://', 'http://', $url );
+				$tmp = download_url( $url );
+				
+				if ( !is_wp_error( $tmp ) ) {
+					
+					if ( function_exists('exif_imagetype') ) {
+						$image_type = exif_imagetype( $tmp );
+					} else {
+						$image_type = getimagesize( $tmp );
+						$image_type = ( isset($image_type[2]) ) ? $image_type[2] : NULL;
 					}
+	
+					if ( in_array($image_type, array(IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG)) ) {
+	
+						// move file to Uploads
+						if ( @rename($tmp, $full_image_path) ) {
+							// borrowed from WP - set correct file permissions
+							$stat = stat( dirname( $full_image_path ));
+							$perms = $stat['mode'] & 0000644;
+							@chmod( $full_image_path, $perms );
+	
+							return $full_image_path;
+						}
+						
+					}
+					
+					// remove temp file
+					@unlink( $tmp );
+					
 				}
+				
 			}
 
 			return false;
@@ -2885,20 +2948,12 @@ if ( !class_exists('WordpressPopularPosts') ) {
 				$string = str_replace( "{stats}", $data['stats'], $string );
 			}
 
-			if ( in_array("{excerpt}", $matches[0]) ) {
-				$string = str_replace( "{excerpt}", htmlentities($data['summary'], ENT_QUOTES, $this->charset), $string );
+			if ( in_array("{excerpt}", $matches[0]) || in_array("{summary}", $matches[0]) ) {
+				$string = str_replace( array("{excerpt}", "{summary}"), $data['summary'], $string );
 			}
 
-			if ( in_array("{summary}", $matches[0]) ) {
-				$string = str_replace( "{summary}", htmlentities($data['summary'], ENT_QUOTES, $this->charset), $string );
-			}
-
-			if ( in_array("{image}", $matches[0]) ) {
-				$string = str_replace( "{image}", $data['img'], $string );
-			}
-
-			if ( in_array("{thumb}", $matches[0]) ) {
-				$string = str_replace( "{thumb}", $data['img'], $string );
+			if ( in_array("{image}", $matches[0]) || in_array("{thumb}", $matches[0]) ) {
+				$string = str_replace( array("{image}", "{thumb}"), $data['img'], $string );
 			}
 			
 			if ( in_array("{thumb_img}", $matches[0]) ) {
