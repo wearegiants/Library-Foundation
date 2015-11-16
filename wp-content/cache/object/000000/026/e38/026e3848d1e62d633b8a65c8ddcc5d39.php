@@ -1,1 +1,0 @@
-‡coU<?php exit; ?>a:1:{s:7:"content";s:40:"Learn more about the Library Foundation.";}
