@@ -35,7 +35,6 @@ class WP_Embed {
 
 		// After a post is saved, cache oEmbed items via AJAX
 		add_action( 'edit_form_advanced', array( $this, 'maybe_run_ajax_cache' ) );
-		add_action( 'edit_page_form', array( $this, 'maybe_run_ajax_cache' ) );
 	}
 
 	/**
@@ -143,18 +142,6 @@ class WP_Embed {
 			return '';
 		}
 
-		/**
-		 * Optionally allow or block non-SSL embeds.
-		 *
-		 * @since 4.4.0
-		 *
-		 * @param bool   $allowed Flag to determine if non-SSL embeds should be allowed. Default true.
-		 * @param string $url     The URL being embedded.
-		 */
-		if ( 0 !== strpos( $url, 'https://' ) && ! apply_filters( 'allow_insecure_embeds', true, $url ) ) {
-			return false;
-		}
-
 		$rawattr = $attr;
 		$attr = wp_parse_args( $attr, wp_embed_defaults( $url ) );
 
@@ -245,13 +232,12 @@ class WP_Embed {
 			 * Filter whether to inspect the given URL for discoverable link tags.
 			 *
 			 * @since 2.9.0
-			 * @since 4.4.0 The default value changed to true.
 			 *
 			 * @see WP_oEmbed::discover()
 			 *
-			 * @param bool $enable Whether to enable `<link>` tag discovery. Default true.
+			 * @param bool $enable Whether to enable `<link>` tag discovery. Default false.
 			 */
-			$attr['discover'] = ( apply_filters( 'embed_oembed_discover', true ) );
+			$attr['discover'] = ( apply_filters( 'embed_oembed_discover', false ) && author_can( $post_ID, 'unfiltered_html' ) );
 
 			// Use oEmbed to get the HTML
 			$html = wp_oembed_get( $url, $attr );
@@ -285,7 +271,7 @@ class WP_Embed {
 		if ( empty($post_metas) )
 			return;
 
-		foreach ( $post_metas as $post_meta_key ) {
+		foreach( $post_metas as $post_meta_key ) {
 			if ( '_oembed_' == substr( $post_meta_key, 0, 8 ) )
 				delete_post_meta( $post_ID, $post_meta_key );
 		}
