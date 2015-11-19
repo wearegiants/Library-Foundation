@@ -6,14 +6,14 @@
 
     if( tribe_get_end_date( null, true, 'Y-m-d H:i:s' ) < date( 'Y-m-d H:i:s' )) {
 
-      $ticketStatus = '<a id="event-status-button"  href="#" class="button disabled">This Event Has Passed</a>';
+      $ticketStatus = '<a id="event-status-button"  href="#" class="button disabled ticket-status-1">This Event Has Passed</a>';
 
     } else {
 
       if (strlen($cost)>0) {
-        $ticketStatus = '<a id="event-status-button" href="#things" class="button jumpdown">Purchase Tickets</a>';
+        $ticketStatus = '<a id="event-status-button" href="#things" class="button jumpdown ticket-status-2">Purchase Tickets</a>';
       } else {
-        $ticketStatus = '<a id="event-status-button" href="#things" class="button jumpdown">RSVP</a>';
+        $ticketStatus = '<a id="event-status-button" href="#things" class="button jumpdown ticket-status-3">RSVP</a>';
       }
     }
 
@@ -21,7 +21,7 @@
 
     if( tribe_get_end_date( null, true, 'Y-m-d H:i:s' ) < date( 'Y-m-d H:i:s' )) {
 
-      $ticketStatus = '<a id="event-status-button"  href="#" class="button disabled">This Event Has Passed</a>';
+      $ticketStatus = '<a id="event-status-button"  href="#" class="button disabled ticket-status-4">This Event Has Passed</a>';
 
     } else {
 
@@ -32,14 +32,14 @@
 
 
         if (strlen($cost)>0) {
-          $ticketStatus = '<a id="event-status-button"  href="#tickets-form" class="button enabled">Purchase Tickets</a>';
+          $ticketStatus = '<a id="event-status-button"  href="#tickets-form" class="button enabled ticket-status-5">Purchase Tickets</a>';
         } else {
-          $ticketStatus = '<a id="event-status-button"  href="#tickets-form" class="button enabled">RSVP</a>';
+          $ticketStatus = '<a id="event-status-button"  href="#tickets-form" class="button enabled ticket-status-6">RSVP</a>';
         }
 
         } else {
 
-        $ticketStatus = '<a id="event-status-button"  href="#tickets-form" class="button enabled">Members Only</a>';
+        $ticketStatus = '<a id="event-status-button"  href="#tickets-form" class="button enabled ticket-status-7">Members Only</a>';
 
         }
 
@@ -49,9 +49,9 @@
 
         $soldoutimage = '/assets/img/aloud-cta.png';
         if (strlen($cost)>0) {
-          $ticketStatus = '<a id="event-status-button"  href="#" class="button disabled">Sold Out</a>'; 
+          $ticketStatus = '<a id="event-status-button"  href="#" class="button disabled ticket-status-8">Sold Out</a>'; 
         } else {
-          $ticketStatus = '<a id="event-status-button"  href="'.$soldoutimage.'" class="button closed">Full/Standby</a>';
+          $ticketStatus = '<a id="event-status-button"  href="'.$soldoutimage.'" class="button closed ticket-status-9">Full/Standby</a>';
           ?>
           <script>
           $(window).load(function(){
