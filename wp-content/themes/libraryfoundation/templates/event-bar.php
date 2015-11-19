@@ -2,6 +2,14 @@
 
   $cost = tribe_get_cost();
 
+  $yolo = strlen($cost);
+
+  if ( $cost == 'Free') {
+    $cost = 0;
+  } else {
+    $cost = tribe_get_cost();
+  }
+
   if( have_rows('related_ticket_groups') ) {
 
     if( tribe_get_end_date( null, true, 'Y-m-d H:i:s' ) < date( 'Y-m-d H:i:s' )) {
@@ -10,7 +18,8 @@
 
     } else {
 
-      if (strlen($cost)>0) {
+      if ($cost>0) {
+      //if (strlen($cost)>0) {
         $ticketStatus = '<a id="event-status-button" href="#things" class="button jumpdown ticket-status-2">Purchase Tickets</a>';
       } else {
         $ticketStatus = '<a id="event-status-button" href="#things" class="button jumpdown ticket-status-3">RSVP</a>';
@@ -31,7 +40,7 @@
 
 
 
-        if (strlen($cost)>0) {
+        if ($cost>0) {
           $ticketStatus = '<a id="event-status-button"  href="#tickets-form" class="button enabled ticket-status-5">Purchase Tickets</a>';
         } else {
           $ticketStatus = '<a id="event-status-button"  href="#tickets-form" class="button enabled ticket-status-6">RSVP</a>';
@@ -48,7 +57,7 @@
       if(tribe_events_has_soldout()){
 
         $soldoutimage = '/assets/img/aloud-cta.png';
-        if (strlen($cost)>0) {
+        if ($cost>0) {
           $ticketStatus = '<a id="event-status-button"  href="#" class="button disabled ticket-status-8">Sold Out</a>'; 
         } else {
           $ticketStatus = '<a id="event-status-button"  href="'.$soldoutimage.'" class="button closed ticket-status-9">Full/Standby</a>';
