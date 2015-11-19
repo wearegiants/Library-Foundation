@@ -88,7 +88,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   <hr class="hidden invisible">
   <?php
     $sd = tribe_get_start_date($post->ID, false, 'M j, Y');
-    $st = tribe_get_start_time($post->ID, false, 'g:i a');
+    $st = tribe_get_start_date($post, false, $format = ‘g:i A’ );
   ?>
 	<?php echo $sd; echo ' | '; echo $st; ?>
 </div>
