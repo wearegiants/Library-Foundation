@@ -100,7 +100,7 @@
 <?php endif; ?>
 
 <?php if ( (get_post_type() == 'tribe_events' && tribe_is_upcoming()) || tribe_is_month() || tribe_is_by_date() ): ?>
-  <?php include locate_template('templates/calendar-mediagraphic.php'); ?>
+  <?php // include locate_template('templates/calendar-mediagraphic.php'); ?>
 <?php endif; ?>
 
 <?php include locate_template('/templates/logotogglin.php' );?>
