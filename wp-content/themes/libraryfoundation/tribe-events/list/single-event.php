@@ -29,6 +29,12 @@ if ( ! defined( 'ABSPATH' ) ) {
   $cost = tribe_get_cost();
 	$organizer = tribe_get_organizer();
 
+  if ( $cost == 'Free') {
+    $cost = 0;
+  } else {
+    $cost = tribe_get_cost();
+  }
+
 ?>
 
 <?php
@@ -43,7 +49,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   	//$ticketStatus = 'hello';
   	if (tribe_events_has_tickets()) {
 
-      if (strlen($cost)>0) {
+      if ($cost>0) {
         $ticketStatus = '<a href="' . get_the_permalink( $id ) . '" class="button">Purchase Tickets</a>';
       } else {
         $ticketStatus = '<a href="' . get_the_permalink( $id ) . '" class="button">RSVP</a>';
@@ -57,7 +63,7 @@ if ( ! defined( 'ABSPATH' ) ) {
       //$ticketStatus = '<a id="event-status-button"  href="'.$soldoutimage.'" class="button closed">Full/Standby</a>';
       //$ticketStatus = '<a href="' . get_the_permalink( $id ) . '" class="button">Full/Standby</a>';
 
-      if (strlen($cost)>0) {
+      if ($cost>0) {
         $ticketStatus = '<a href="' . get_the_permalink( $id ) . '" class="button">Sold Out</a>';
       } else {
         $ticketStatus = '<a href="' . get_the_permalink( $id ) . '" class="button">Full/Standby</a>';
