@@ -47,7 +47,13 @@
 		$waive_benefits = get_post_meta($order_id, 'myfield24', true);
 		$do_not_share = get_post_meta($order_id, 'myfield27', true);
 		$bookplate_description = get_post_meta($order_id, 'myfield23', true);
-		$spouse_name = $order_data['billing_myfield7'] . ' '.$order_data['billing_myfield8'];
+		echo '<pre>'.print_r($order_data,true).'</pre>';
+		
+		$spouse_name = ($order_data['billing_spouse_title']!='' ? $order_data['billing_spouse_title'].' ':'').
+			$order_data['billing_myfield7'] . 
+			' '.$order_data['billing_spouse_middle'].
+			' '.$order_data['billing_myfield8'].'<br>'.
+			' '.$order_data['billing_myfield16'];
 		
 		$order = new WC_Order($order_id);
 
@@ -81,7 +87,7 @@
 					<tr>
 						<?php if (isset($this->settings['show_billing_address'])) { ?>
 						<td class="billing-address">
-							<?php echo $order_data['billing_myfield4']. ' ' .$order_data['billing_address']; ?><br/>
+							<?php echo $order_data['billing_myfield4']. ' |' .$order_data['billing_address']; ?>|<br/>
 							<?php echo $order_data['billing_phone']; ?><br/>
 							<?php echo $order_data['billing_email']; ?>
 							<?php do_action( 'wpo_wcol_billing_address', $order_id ); ?>
