@@ -87,7 +87,7 @@
 					<tr>
 						<?php if (isset($this->settings['show_billing_address'])) { ?>
 						<td class="billing-address">
-							<?php echo $order_data['billing_myfield4']. ' |' .$order_data['billing_address']; ?>|<br/>
+							<?php echo $order_data['billing_myfield4']. ' ' .$order_data['billing_address']; ?>|<br/>
 							<?php echo $order_data['billing_phone']; ?><br/>
 							<?php echo $order_data['billing_email']; ?>
 							<?php do_action( 'wpo_wcol_billing_address', $order_id ); ?>
