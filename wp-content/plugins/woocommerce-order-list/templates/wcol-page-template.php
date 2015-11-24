@@ -47,7 +47,7 @@
 		$waive_benefits = get_post_meta($order_id, 'myfield24', true);
 		$do_not_share = get_post_meta($order_id, 'myfield27', true);
 		$bookplate_description = get_post_meta($order_id, 'myfield23', true);
-		echo '<pre>'.print_r($order_data,true).'</pre>';
+		// echo '<pre>'.print_r($order_data,true).'</pre>';
 		
 		$spouse_name = ($order_data['billing_spouse_title']!='' ? $order_data['billing_spouse_title'].' ':'').
 			$order_data['billing_myfield7'] . 
