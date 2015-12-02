@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: arabic, aspect ratio, category, categories, current post, excerpt, featured, featured images, first post image, height, image, images, listed posts, post date, post title, recent posts, sticky, thumb, thumbnail, thumbnails, thumbs, widget, widgets, width, persian, farsi
 Requires at least: 2.9
 Tested up to: 4.3.1
-Stable tag: 4.4
+Stable tag: 4.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,24 +29,26 @@ You can set the width and heigth of the thumbnails in the list. The thumbnails a
 3. Hide current post in list
 4. Keep sticky posts on top of the list
 5. Hide post title
-6. Show post date
-7. Show post excerpt
-8. Show number of comments
-9. Excerpt length
-10. Signs after excerpt
-11. Show posts of selected categories (or of all categories)
-12. Show post thumbnail (featured image)
-13. Registered thumbnail dimensions
-14. Thumbnail width in px
-15. Thumbnail height in px
-16. Keep aspect ratio of thumbnails
-17. Try to take the first post image as thumbnail
-18. Only use the first post image as thumbnail
-19. Use default thumbnail if no thumbnail is available
-20. Default thumbnail URL
+6. Maximum length of post title
+7. Show post date
+8. Show post excerpt
+9. Show number of comments
+10. Excerpt length
+11. Signs after excerpt
+12. Show posts of selected categories (or of all categories)
+13. Show post thumbnail (featured image)
+14. Registered thumbnail dimensions
+15. Thumbnail width in px
+16. Thumbnail height in px
+17. Keep aspect ratio of thumbnails
+18. Try to take the first post image as thumbnail
+19. Only use the first post image as thumbnail
+20. Use default thumbnail if no thumbnail is available
+21. Default thumbnail URL
 
 = What users said =
 
+* **Number 1** in [Los 10 widgets de WordPress más prácticos](http://wpdirecto.com/los-10-widgets-de-wordpress-mas-practicos-1860/) by Jorge López on November 13, 2015
 * [How to show recent posts in WordPress blog](http://mayifix.com/how-to-show-recent-posts-in-wordpress-blog.html) by Robin on June 28, 2015
 * **Number 5** in [Best List of Free Recent Posts Widgets for WordPress](http://dotcave.com/wordpress/free-recent-posts-widgets-for-wordpress/) by jerry on November 29, 2014
 * **Number 1** in [Nützlich: Die 10 interessantesten Widgets für Ihre WordPress-Webseite](http://www.drweb.de/magazin/nuetzlich-die-10-interessantesten-widgets-fuer-ihre-wordpress-webseite-50307/) by Andreas Hecht on October 13, 2014
@@ -179,6 +181,10 @@ If you want to contribute a translation of the plugin in your language it would 
 
 == Changelog ==
 
+= 4.5 =
+* Added option: Post title length
+* Updated *.pot file and translations
+
 = 4.4 =
 * Added option: Show number of comments
 * Updated *.pot file and translations
@@ -289,6 +295,9 @@ Successfully tested with WordPress 4.0
 * The plugin was released.
 
 == Upgrade Notice ==
+
+= 4.5 =
+Added option: Post title length
 
 = 4.4 =
 Added option: Show number of comments

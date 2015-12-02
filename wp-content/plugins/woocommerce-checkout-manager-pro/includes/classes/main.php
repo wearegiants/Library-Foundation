@@ -584,7 +584,7 @@ function wccs_options_validate_pro( $input ) {
 						add_settings_error(
 									'wooccm_settings_errors',
 									esc_attr( 'settings_updated' ),
-									__( 'ERROR DETECTED: CANNOT HAVE VALUES IN BOTH ROLE OPTIONS', 'woocommerce-checkout-manager-pro' ),
+									__( 'Sorry! An error occurred. WooCheckout requires you to not have values in both role options. OK.', 'woocommerce-checkout-manager-pro' ),
 									'error'
 						);
 				} 
@@ -594,7 +594,7 @@ function wccs_options_validate_pro( $input ) {
 						add_settings_error(
 									'wooccm_settings_errors',
 									esc_attr( 'settings_updated' ),
-									__( 'ERROR DETECTED: CANNOT HAVE VALUES IN BOTH HIDDEN PRODUCT OPTIONS', 'woocommerce-checkout-manager-pro' ),
+									__( 'Sorry! An error occurred. WooCheckout requires you to not have values in both hidden product options. OK.', 'woocommerce-checkout-manager-pro' ),
 									'error'
 						);
 				} 
@@ -604,7 +604,7 @@ function wccs_options_validate_pro( $input ) {
 						add_settings_error(
 									'wooccm_settings_errors',
 									esc_attr( 'settings_updated' ),
-									__( 'ERROR DETECTED: CANNOT HAVE VALUES IN BOTH HIDDEN CATEGORY OPTIONS', 'woocommerce-checkout-manager-pro' ),
+									__( 'Sorry! An error occurred. WooCheckout requires you to not have values in both hidden category options. OK.', 'woocommerce-checkout-manager-pro' ),
 									'error'
 						);
 				} 
@@ -619,7 +619,7 @@ function wccs_options_validate_pro( $input ) {
 				add_settings_error(
         					'wooccm_settings_errors',
        	 					esc_attr( 'settings_updated' ),
-        					__( 'ERROR DETECTED: NO LABEL OR PLACEHOLDER ENTERED. FIELD # '.$fieldnum.' REMOVED!', 'woocommerce-checkout-manager-pro' ),
+        					__( 'Sorry! An error occurred. WooCheckout removed field # '.$fieldnum.' because no Label or Placeholder name was detected.', 'woocommerce-checkout-manager-pro' ),
         					'error'
     					);
 				}
@@ -644,7 +644,7 @@ function wccs_options_validate_pro( $input ) {
 				add_settings_error(
         					'wooccm_settings_errors',
        	 					esc_attr( 'settings_updated' ),
-        					__( 'ERROR DETECTED: NO LABEL OR PLACEHOLDER ENTERED. FIELD # '.$fieldnum.' REMOVED!', 'woocommerce-checkout-manager-pro' ),
+        					__( 'Sorry! An error occurred. WooCheckout removed field # '.$fieldnum.' because no Label or Placeholder name was detected.', 'woocommerce-checkout-manager-pro' ),
         					'error'
     					);
 				}
@@ -659,7 +659,7 @@ function wccs_options_validate_pro( $input ) {
 			add_settings_error(
 								'wooccm_settings_errors',
 								esc_attr( 'settings_updated' ),
-								__( 'STORAGE MESSAGE: SETTINGS SUCCESSFULLY SAVED!', 'woocommerce-checkout-manager-pro' ),
+								__( 'Your settings has been saved.', 'woocommerce-checkout-manager-pro' ),
 								'updated'
 			);
 		}
@@ -699,7 +699,7 @@ function wccs_options_validate_pro2( $input ) {
 						add_settings_error(
 									'wooccm_settings_errors',
 									esc_attr( 'settings_updated' ),
-									__( 'ERROR DETECTED: CANNOT HAVE VALUES IN BOTH ROLE OPTIONS', 'woocommerce-checkout-manager-pro' ),
+									__( 'Sorry! An error occurred. WooCheckout requires you to not have values in both role options.', 'woocommerce-checkout-manager-pro' ),
 									'error'
 						);
 				} 
@@ -709,7 +709,7 @@ function wccs_options_validate_pro2( $input ) {
 						add_settings_error(
 									'wooccm_settings_errors',
 									esc_attr( 'settings_updated' ),
-									__( 'ERROR DETECTED: CANNOT HAVE VALUES IN BOTH HIDDEN PRODUCT OPTIONS', 'woocommerce-checkout-manager-pro' ),
+									__( 'Sorry! An error occurred. WooCheckout requires you to not have values in both hidden product options.', 'woocommerce-checkout-manager-pro' ),
 									'error'
 						);
 				} 
@@ -719,7 +719,7 @@ function wccs_options_validate_pro2( $input ) {
 						add_settings_error(
 									'wooccm_settings_errors',
 									esc_attr( 'settings_updated' ),
-									__( 'ERROR DETECTED: CANNOT HAVE VALUES IN BOTH HIDDEN CATEGORY OPTIONS', 'woocommerce-checkout-manager-pro' ),
+									__( 'Sorry! An error occurred. WooCheckout requires you to not have values in both hidden category options.', 'woocommerce-checkout-manager-pro' ),
 									'error'
 						);
 				}
@@ -733,7 +733,7 @@ function wccs_options_validate_pro2( $input ) {
 					add_settings_error(
         					'wooccm_settings_errors',
        	 					esc_attr( 'settings_updated' ),
-        					__( 'ERROR DETECTED: NO LABEL OR PLACEHOLDER ENTERED. FIELD # '.$fieldnum.' REMOVED!', 'woocommerce-checkout-manager-pro' ),
+        					__( 'Sorry! An error occurred. WooCheckout removed field # '.$fieldnum.' because no Label or Placeholder name was detected.', 'woocommerce-checkout-manager-pro' ),
         					'error'
     					);
 				}
@@ -758,7 +758,7 @@ function wccs_options_validate_pro2( $input ) {
 				add_settings_error(
         					'wooccm_settings_errors',
        	 					esc_attr( 'settings_updated' ),
-        					__( 'ERROR DETECTED: NO LABEL OR PLACEHOLDER ENTERED. FIELD # '.$fieldnum.' REMOVED!', 'woocommerce-checkout-manager-pro' ),
+        					__( 'Sorry! An error occurred. WooCheckout removed field # '.$fieldnum.' because no Label or Placeholder name was detected.', 'woocommerce-checkout-manager-pro' ),
         					'error'
     					);
 				}
@@ -773,7 +773,7 @@ function wccs_options_validate_pro2( $input ) {
 			add_settings_error(
 								'wooccm_settings_errors',
 								esc_attr( 'settings_updated' ),
-								__( 'STORAGE MESSAGE: SETTINGS SUCCESSFULLY SAVED!', 'woocommerce-checkout-manager-pro' ),
+								__( 'Your settings has been saved.', 'woocommerce-checkout-manager-pro' ),
 								'updated'
 			);
 		}
@@ -813,7 +813,7 @@ function wccs_options_validate_pro3( $input ) {
 						add_settings_error(
 									'wooccm_settings_errors',
 									esc_attr( 'settings_updated' ),
-									__( 'ERROR DETECTED: CANNOT HAVE VALUES IN BOTH ROLE OPTIONS', 'woocommerce-checkout-manager-pro' ),
+									__( 'Sorry! An error occurred. WooCheckout requires you to not have values in both role options.', 'woocommerce-checkout-manager-pro' ),
 									'error'
 						);
 				} 
@@ -823,7 +823,7 @@ function wccs_options_validate_pro3( $input ) {
 						add_settings_error(
 									'wooccm_settings_errors',
 									esc_attr( 'settings_updated' ),
-									__( 'ERROR DETECTED: CANNOT HAVE VALUES IN BOTH HIDDEN PRODUCT OPTIONS', 'woocommerce-checkout-manager-pro' ),
+									__( 'Sorry! An error occurred. WooCheckout requires you to not have values in both hidden product options.', 'woocommerce-checkout-manager-pro' ),
 									'error'
 						);
 				} 
@@ -833,7 +833,7 @@ function wccs_options_validate_pro3( $input ) {
 						add_settings_error(
 									'wooccm_settings_errors',
 									esc_attr( 'settings_updated' ),
-									__( 'ERROR DETECTED: CANNOT HAVE VALUES IN BOTH HIDDEN CATEGORY OPTIONS', 'woocommerce-checkout-manager-pro' ),
+									__( 'Sorry! An error occurred. WooCheckout requires you to not have values in both hidden category options.', 'woocommerce-checkout-manager-pro' ),
 									'error'
 						);
 				}
@@ -847,7 +847,7 @@ function wccs_options_validate_pro3( $input ) {
 				add_settings_error(
         					'wooccm_settings_errors',
        	 					esc_attr( 'settings_updated' ),
-        					__( 'ERROR DETECTED: NO LABEL OR PLACEHOLDER ENTERED. FIELD # '.$fieldnum.' REMOVED!', 'woocommerce-checkout-manager-pro' ),
+        					__( 'Sorry! An error occurred. WooCheckout removed field # '.$fieldnum.' because no Label or Placeholder name was detected.', 'woocommerce-checkout-manager-pro' ),
         					'error'
     					);
 				}
@@ -873,7 +873,7 @@ function wccs_options_validate_pro3( $input ) {
 				add_settings_error(
         					'wooccm_settings_errors',
        	 					esc_attr( 'settings_updated' ),
-        					__( 'ERROR DETECTED: NO LABEL OR PLACEHOLDER ENTERED. FIELD # '.$fieldnum.' REMOVED!', 'woocommerce-checkout-manager-pro' ),
+        					__( 'Sorry! An error occurred. WooCheckout removed field # '.$fieldnum.' because no Label or Placeholder name was detected.', 'woocommerce-checkout-manager-pro' ),
         					'error'
     					);
 				}
@@ -889,7 +889,7 @@ function wccs_options_validate_pro3( $input ) {
 			add_settings_error(
 								'wooccm_settings_errors',
 								esc_attr( 'settings_updated' ),
-								__( 'STORAGE MESSAGE: SETTINGS SUCCESSFULLY SAVED!', 'woocommerce-checkout-manager-pro' ),
+								__( 'Your settings has been saved.', 'woocommerce-checkout-manager-pro' ),
 								'updated'
 			);
 		}
@@ -1212,7 +1212,14 @@ function remove_fields_filter3($fields){
     return $fields;
 }
 
-
+function woocmmatl() { 
+	global	$wp_version; 
+		wooccmadd();
+		if ( wooccmcurr() ){
+			return true;
+		}			
+			return false; 
+}
 
 if ( validator_changename() ) {
 function wccm_before_checkout() {

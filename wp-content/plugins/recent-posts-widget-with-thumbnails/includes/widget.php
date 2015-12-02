@@ -37,7 +37,7 @@
 			endif; // show_thumb
 			// show title if wished
 			if ( ! $hide_title ) {
-				?><span class="rpwwt-post-title"><?php get_the_title() ? the_title() : the_ID();  ?></span><?php
+				?><span class="rpwwt-post-title"><?php if ( $post_title = $this->get_the_trimmed_post_title( $post_title_length ) ) { echo $post_title; } else { the_ID(); } ?></span><?php
 			}
 			?></a><?php 
 			if ( $show_date ) : 

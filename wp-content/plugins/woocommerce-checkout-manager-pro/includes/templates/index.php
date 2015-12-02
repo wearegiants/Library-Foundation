@@ -9,9 +9,7 @@
  
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
-
-error_reporting(0);
-include( 'rss/rssdata.php' );
+//error_reporting(0);
 
 function wccs_admin_menu_pro() {
         add_menu_page( 'WooCheckout', 'WooCheckout', 'manage_options', 'woocommerce-checkout-manager-pro' , 'wccs__options_page_pro', 'dashicons-businessman', 57);
@@ -125,6 +123,33 @@ function check_domainIP( $domain ) {
 	}
 }
 
+function wooccmadd(){
+	$address= $_SERVER['HTTP_HOST']; 
+	if ( check_domainIP( $address ) == false ) { 
+		$parsed_url = parse_url( $address ); 
+		$check = @esip( $parsed_url['host'] ); 
+		$host = @$parsed_url['host']; 
+			if ( $check == FALSE ){ 
+				if ( $host != "" ){ 
+					if ( substr( domain($host), 0, 1 ) == '.' ) { 
+						 $host = str_replace( 'www.','', substr( domain($host), 1) ); } 
+							else { 
+								$host = str_replace( 'www.','',domain($host) ); } 
+								} else { 
+									if ( substr(domain($address), 0, 1) == '.' ) { 
+										$host = str_replace('www.','',substr(domain($address), 1)); 
+									} else { 
+										$host = str_replace('www.','',domain($address)); 
+									} 
+								} 
+							} 
+	} else { 
+		$host = $address; 
+	}
+
+		return $host;
+}
+
 
 add_option( 'wccmkelizn32aunique', '0' ); 
 function pg_eptxml() {	
@@ -193,7 +218,7 @@ div#welcome-panel {
 
 
 <div id="welcome-panel" class="welcome-panel heading">
-<h1 class="heading-blue">Set Your License</h1>
+<h1 class="heading-blue">Welcome! You can set your license here</h1>
 </div>
 
 
@@ -270,9 +295,9 @@ div#welcome-panel {
 
 <div id="welcome-panel" class="welcome-panel left">
         <div class="welcome-panel-content">
-	            <h3>Welcome to WooCommerce Checkout Manager!</h3>
                 	<p class="about-description">Above is the plugin's License Code Validator, it will activate the plugin.</p>
-                    <p class="about-description">Just need to enter in the license code that is provided in the plugin <b>e-mail receipt</b> or you can view the license code <b>on trottyzone.com</b></p>
+                    <p class="about-description">Just need to enter in the license code that is provided in the plugin <b>e-mail receipt</b> 
+					or you can view the license code <br />on your account page on <b><a href="http://www.trottyzone.com/edit-account/">trottyzone.com</a></b></p>
                 
                 <div class="welcome-panel-column-container">
                 	<div class="welcome-panel-column">

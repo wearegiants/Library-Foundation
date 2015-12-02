@@ -5,15 +5,15 @@ msgstr ""
 "Project-Id-Version: Recent Posts Widget With Thumbnails\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/plugins/recent-posts-widget-with-"
 "thumbnails\n"
-"POT-Creation-Date: 2015-10-27 11:05+0100\n"
-"PO-Revision-Date: 2015-10-27 11:07+0100\n"
+"POT-Creation-Date: 2015-11-17 18:17+0100\n"
+"PO-Revision-Date: 2015-11-17 18:21+0100\n"
 "Last-Translator: Martin Stehle <m.stehle@gmx.de>\n"
 "Language-Team: m.stehle@gmx.de\n"
 "Language: fa_IR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.5\n"
+"X-Generator: Poedit 1.8.6\n"
 "X-Poedit-KeywordsList: __;_e;_n;_x;esc_html_e;esc_html__;esc_attr_e;"
 "esc_attr__;_ex:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2;_x:1,2c;_n:1,2\n"
 "X-Poedit-Basepath: ..\n"
@@ -53,31 +53,35 @@ msgstr ""
 "مطمئن شوید که تصویر بندانگشتی پیشفرض برای نوشته های بدون تصویر بندانگشتی "
 "انتخاب کرده اید. در غیر اینصورت لینکی نمایش داده نخواهد شد."
 
-#: includes/form.php:19
-msgid "Show post date?"
-msgstr "نمایش تاریخ نوشته"
+#: includes/form.php:18
+msgid "Maximum length of post title"
+msgstr "حداکثر طول عنوان"
 
 #: includes/form.php:22
-msgid "Show number of comments?"
-msgstr "نمایش تعداد نظرات"
+msgid "Show post date?"
+msgstr "نمایش تاریخ نوشته"
 
 #: includes/form.php:25
 msgid "Show excerpt?"
 msgstr "نمایش خلاصه متن"
 
-#: includes/form.php:27
+#: includes/form.php:28
+msgid "Show number of comments?"
+msgstr "نمایش تعداد نظرات"
+
+#: includes/form.php:30
 msgid "Maximum length of excerpt"
 msgstr "حداکثر طول خلاصه متن"
 
-#: includes/form.php:30
+#: includes/form.php:33
 msgid "Signs after excerpt"
 msgstr "نشانه ی بعد از متن خلاصه"
 
-#: includes/form.php:34
+#: includes/form.php:37
 msgid "Show posts of selected categories only?"
 msgstr "نمایش نوشته ها فقط از دسته های انتخاب شده؟"
 
-#: includes/form.php:36
+#: includes/form.php:39
 #, php-format
 msgid ""
 "Click on the categories with pressed CTRL key to select multiple categories. "
@@ -86,23 +90,23 @@ msgstr ""
 "برای انتخاب چند دسته، کلید CTRL را نگه دارید. اگر %s انتخاب شده باشد، "
 "انتخابهای دیگر نادیده گرفته میشوند."
 
-#: includes/form.php:39
+#: includes/form.php:42
 msgid "Thumbnail Options"
 msgstr "تنظیمات تصویر بندانگشتی"
 
-#: includes/form.php:42
+#: includes/form.php:45
 msgid "Display post featured image?"
 msgstr "نمایش تصویر شاخص نوشته؟"
 
-#: includes/form.php:44
+#: includes/form.php:47
 msgid "Size of thumbnail"
 msgstr "اندازه تصویر بندانگشتی"
 
-#: includes/form.php:46
+#: includes/form.php:49
 msgid "Specified width and height"
 msgstr "عرض و ارتفاع تعیین شده"
 
-#: includes/form.php:56
+#: includes/form.php:59
 #, php-format
 msgid ""
 "If you use a specified size the following sizes will be taken, otherwise "
@@ -112,19 +116,19 @@ msgstr ""
 "میگیرند، در غیر اینصورت نادیده گرفته شده و اندازه های ذخیره شده در %s "
 "استفاده میشود. "
 
-#: includes/form.php:59
+#: includes/form.php:62
 msgid "Width of thumbnail"
 msgstr "عرض تصویر بندانگشتی"
 
-#: includes/form.php:62
+#: includes/form.php:65
 msgid "Height of thumbnail"
 msgstr "ارتفاع تصویر بندانگشتی"
 
-#: includes/form.php:66
+#: includes/form.php:69
 msgid "Use aspect ratios of original images?"
 msgstr "نسبت تصویر اصلی حفظ شود؟"
 
-#: includes/form.php:66
+#: includes/form.php:69
 msgid ""
 "If checked the given width is used to determine the height of the thumbnail "
 "automatically. This option also supports responsive web design."
@@ -133,40 +137,40 @@ msgstr ""
 "پهنا به طور اتوماتیک تعیین میشود. این گزینه برای طراحی واکنشگرا (ریسپانسیو) "
 "مفید است."
 
-#: includes/form.php:69
+#: includes/form.php:72
 msgid "Try to use the post's first image if post has no featured image?"
 msgstr "اگر تصویر شاخص وجود نداشت، از اولین تصویر نوشته استفاده شود؟"
 
-#: includes/form.php:72
+#: includes/form.php:75
 msgid "Use first image only, ignore featured image?"
 msgstr "استفاده از اولین تصویر نوشته، نادیده گرفتن تصویر شاخص؟"
 
-#: includes/form.php:75
+#: includes/form.php:78
 msgid "Use default thumbnail if no image could be determined?"
 msgstr "استفاده از تصویر پیشفرض اگر تصویری پیدا نشد؟"
 
-#: includes/form.php:77
+#: includes/form.php:80
 msgid "URL of default thumbnail (start with http://)"
 msgstr "آدرس تصویر بندانگشتی پیشفرض (با http:// شروع شود)"
 
-#: includes/form.php:80
+#: includes/form.php:83
 msgid "Do you like the plugin?"
 msgstr "از این افزونه راضی هستید؟"
 
-#: includes/form.php:80
+#: includes/form.php:83
 msgid "Please rate it at wordpress.org!"
 msgstr "لطفا در wordpress.org امتیاز دهید!"
 
-#: recent-posts-widget-with-thumbnails.php:76
+#: recent-posts-widget-with-thumbnails.php:78
 msgid "Recent Posts, With Thumbnails"
 msgstr "نوشته های اخیر با تصویر بندانگشتی"
 
-#: recent-posts-widget-with-thumbnails.php:77
+#: recent-posts-widget-with-thumbnails.php:79
 msgid ""
 "List of your site&#8217;s most recent posts, with clickable title and "
 "thumbnails."
 msgstr "فهرست سایت شما ارسال جدید، با عنوان قابل کلیک و عکسها."
 
-#: recent-posts-widget-with-thumbnails.php:103
+#: recent-posts-widget-with-thumbnails.php:105
 msgid "Recent Posts With Thumbnails"
 msgstr "نوشته های اخیر با تصویر بندانگشتی"
