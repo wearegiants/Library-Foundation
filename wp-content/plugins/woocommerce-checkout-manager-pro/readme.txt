@@ -1,8 +1,8 @@
 === WooCommerce Checkout Manager Pro ===
 Contributors: Emark
 Requires at least: 3.0
-Tested up to: 4.3
-Stable tag: 4.4.9
+Tested up to: 4.4
+Stable tag: 4.5.1
 
 Manages WooCommerce Checkout, the advance way.
 
@@ -12,6 +12,13 @@ Visit:
 http://www.trottyzone.com/product/woocommerce-checkout-manager-pro/
 
 == Changelog ==
+= 4.5.1 =
+* Validation Error Fixed.
+
+= 4.5 =
+* Fix minor security issues
+* Export Options fixed
+* Minor data display fixed
 
 = 4.4.9 =
 * User roles bug fix.

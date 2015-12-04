@@ -15,6 +15,9 @@
 <p><input class="checkbox" type="checkbox" <?php checked( $hide_title ); ?> id="<?php echo $id_hide_title; ?>" name="<?php echo $this->get_field_name( 'hide_title' ); ?>" />
 <label for="<?php echo $id_hide_title; ?>"><?php _e( 'Do not show post title?', 'recent-posts-widget-with-thumbnails' ); ?> <em><?php _e( 'Make sure you set a default thumbnail for posts without a thumbnail, otherwise there will be no link.', 'recent-posts-widget-with-thumbnails' ); ?></em></label></p>
 
+<p><label for="<?php echo $id_post_title_length; ?>"><?php _e( 'Maximum length of post title', 'recent-posts-widget-with-thumbnails' ); ?>:</label>
+<input id="<?php echo $id_post_title_length; ?>" name="<?php echo $this->get_field_name( 'post_title_length' ); ?>" type="text" value="<?php echo $post_title_length; ?>" size="3" /></p>
+
 <p><input class="checkbox" type="checkbox" <?php checked( $show_date ); ?> id="<?php echo $id_show_date; ?>" name="<?php echo $this->get_field_name( 'show_date' ); ?>" />
 <label for="<?php echo $id_show_date; ?>"><?php _e( 'Show post date?', 'recent-posts-widget-with-thumbnails' ); ?></label></p>
 

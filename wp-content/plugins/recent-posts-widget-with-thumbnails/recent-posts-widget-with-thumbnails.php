@@ -3,7 +3,7 @@
 Plugin Name: Recent Posts Widget With Thumbnails
 Plugin URI:  http://wordpress.org/plugins/recent-posts-widget-with-thumbnails/
 Description: Small and fast plugin to display in the sidebar a list of linked titles and thumbnails of the most recent postings
-Version:     4.4
+Version:     4.5
 Author:      Martin Stehle
 Author URI:  http://stehle-internet.de
 Text Domain: recent-posts-widget-with-thumbnails
@@ -26,6 +26,7 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 	var $default_thumb_width;  // custom width of the thumbnail
 	var $default_thumb_height; // custom height of the thumbnail
 	var $default_thumb_url; // URL of the default thumbnail
+	var $default_post_title_length; // number of chars of excerpt
 	var $default_excerpt_length; // number of chars of excerpt
 	var $default_excerpt_more; // characters to indicate further text
 	var $default_category_ids; // selected categories
@@ -52,11 +53,12 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 				$widget_desc = 'List of your site&#8217;s most recent posts, with clickable title and thumbnails.';
 		}
 		$this->plugin_slug				= 'recent-posts-widget-with-thumbnails';
-		$this->plugin_version			= '4.4';
+		$this->plugin_version			= '4.5';
 		$this->default_number_posts		= 5;
 		$this->default_thumb_dimensions	= 'custom';
 		$this->default_thumb_width		= absint( round( get_option( 'thumbnail_size_w', 110 ) / 2 ) );
 		$this->default_thumb_height 	= absint( round( get_option( 'thumbnail_size_h', 110 ) / 2 ) );
+		$this->default_post_title_length = 1000;
 		$this->default_excerpt_length	= absint( apply_filters( 'excerpt_length', 55 ) );
 		$this->default_excerpt_more		= apply_filters( 'excerpt_more', ' ' . '[&hellip;]' );
 		$this->default_category_ids		= array( 0 );
@@ -105,6 +107,7 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		$category_ids 			= ( ! empty( $instance[ 'category_ids' ] ) )		? array_map( 'absint', $instance[ 'category_ids' ] )	: $this->default_category_ids;
 		$default_url 			= ( ! empty( $instance[ 'default_url' ] ) )			? $instance[ 'default_url' ]							: $this->default_thumb_url;
 		$excerpt_length 		= ( ! empty( $instance[ 'excerpt_length' ] ) )		? absint( $instance[ 'excerpt_length' ] )				: $this->default_excerpt_length;
+		$post_title_length 		= ( ! empty( $instance[ 'post_title_length' ] ) )	? absint( $instance[ 'post_title_length' ] )			: $this->default_post_title_length;
 		$number_posts			= ( ! empty( $instance[ 'number_posts' ] ) )		? absint( $instance[ 'number_posts' ] )					: $this->default_number_posts;
 		$thumb_dimensions		= ( ! empty( $instance[ 'thumb_dimensions' ] ) )	? $instance[ 'thumb_dimensions' ]						: $this->default_thumb_dimensions;
 		$hide_current_post		= ( isset( $instance[ 'hide_current_post' ] ) ) 	? (bool) $instance[ 'hide_current_post' ]				: false;
@@ -218,6 +221,7 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		$instance[ 'default_url' ] 			= ( isset( $new_widget_settings[ 'default_url' ] ) )			? strip_tags( $new_widget_settings[ 'default_url' ] )			: $this->default_thumb_url;
 		$instance[ 'thumb_dimensions' ] 	= ( isset( $new_widget_settings[ 'thumb_dimensions' ] ) )		? strip_tags( $new_widget_settings[ 'thumb_dimensions' ] )		: $this->default_thumb_dimensions;
 		$instance[ 'category_ids' ]   		= ( isset( $new_widget_settings[ 'category_ids' ] ) )			? array_map( 'absint', $new_widget_settings[ 'category_ids' ] )	: $this->default_category_ids;
+		$instance[ 'post_title_length' ] 	= ( isset( $new_widget_settings[ 'post_title_length' ] ) )		? absint( $new_widget_settings[ 'post_title_length' ] )			: $this->default_post_title_length;
 		$instance[ 'excerpt_length' ] 		= ( isset( $new_widget_settings[ 'excerpt_length' ] ) )			? absint( $new_widget_settings[ 'excerpt_length' ] )			: $this->default_excerpt_length;
 		$instance[ 'number_posts' ]			= ( isset( $new_widget_settings[ 'number_posts' ] ) )			? absint( $new_widget_settings[ 'number_posts' ] )				: $this->default_number_posts;
 		$instance[ 'thumb_height' ] 		= ( isset( $new_widget_settings[ 'thumb_height' ] ) )			? absint( $new_widget_settings[ 'thumb_height' ] )				: $this->default_thumb_height;
@@ -276,6 +280,7 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		$thumb_dimensions		= ( isset( $instance[ 'thumb_dimensions' ] ) )		? $instance[ 'thumb_dimensions' ]						: $this->default_thumb_dimensions;
 		$default_url			= ( isset( $instance[ 'default_url' ] ) )			? $instance[ 'default_url' ]							: $this->default_thumb_url;
 		$excerpt_length			= ( isset( $instance[ 'excerpt_length' ] ) )		? absint( $instance[ 'excerpt_length' ] )				: $this->default_excerpt_length;
+		$post_title_length		= ( isset( $instance[ 'post_title_length' ] ) )		? absint( $instance[ 'post_title_length' ] )			: $this->default_post_title_length;
 		$number_posts			= ( isset( $instance[ 'number_posts' ] ) )			? absint( $instance[ 'number_posts' ] )					: $this->default_number_posts;
 		$thumb_height			= ( isset( $instance[ 'thumb_height' ] ) )			? absint( $instance[ 'thumb_height' ] )					: $this->default_thumb_height;
 		$thumb_width			= ( isset( $instance[ 'thumb_width' ] ) )			? absint( $instance[ 'thumb_width' ] )					: $this->default_thumb_width;
@@ -311,6 +316,7 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		// sanitize vars
 		if ( ! $category_ids )		$category_ids		= $this->default_category_ids;
 		if ( ! $default_url )		$default_url		= $this->default_thumb_url;
+		if ( ! $post_title_length )	$post_title_length	= $this->default_post_title_length;
 		if ( ! $excerpt_length )	$excerpt_length		= $this->default_excerpt_length;
 		if ( ! $number_posts )		$number_posts		= $this->default_number_posts;
 		if ( ! $thumb_dimensions )	$thumb_dimensions	= $this->default_thumb_dimensions;
@@ -320,6 +326,7 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		// compute ids only once to improve performance
 		$id_category_ids			= $this->get_field_id( 'category_ids' );
 		$id_default_url				= $this->get_field_id( 'default_url' );
+		$id_post_title_length		= $this->get_field_id( 'post_title_length' );
 		$id_excerpt_length			= $this->get_field_id( 'excerpt_length' );
 		$id_excerpt_more			= $this->get_field_id( 'excerpt_more' );
 		$id_hide_current_post		= $this->get_field_id( 'hide_current_post' );
@@ -738,6 +745,27 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		}
 		// return text
 		return $excerpt;
+	}
+
+	/**
+	 * Returns the shortened post title, must use in a loop.
+	 *
+	 * @since 4.5
+	 */
+	private function get_the_trimmed_post_title ( $len = 1000, $more = '&hellip;' ) {
+		
+		// get current post's post_title
+		$post_title = get_the_title();
+
+		// if post_title is longer than desired
+		if ( mb_strlen( $post_title ) > $len ) {
+			// get post_title in desired length
+			$post_title = mb_substr( $post_title, 0, $len );
+			// append ellipses
+			$post_title .= $more;
+		}
+		// return text
+		return $post_title;
 	}
 
 	/**

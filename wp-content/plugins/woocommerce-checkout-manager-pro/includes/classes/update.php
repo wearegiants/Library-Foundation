@@ -48,8 +48,6 @@ function wooccm_check_for_plugin_update($checked_data) {
 	return $checked_data;
 }
 
-
-// Take over the Plugin info screen
 add_filter('plugins_api', 'wooccm_plugin_api_call', 10, 3);
 
 function wooccm_plugin_api_call($def, $action, $args) {
@@ -86,6 +84,39 @@ function wooccm_plugin_api_call($def, $action, $args) {
 	}
 	
 	return $res;
+}
+
+function wooccmver(){
+	$valuexg = get_option('wccmkelizn32aunique'); 
+	$host = wooccmadd();
+		if ( !empty( $valuexg ) ) { 
+			$api_url = 'http://www.trottyzone.com/wp-content/plugins/wp-licensing/auth/verify.php'; 
+			$request_string = array( 
+				'body' => array( 'stepv' => 'wooccm', 
+								 'key' => $valuexg, 
+								 'domain' => $host, 
+								 'product' => 'woocommerce-checkout-manager-pro' 
+								), 
+				'user-agent' => 'WordPress/' . $wp_version . '; ' . get_bloginfo('url') ); 
+			$resultx = wp_remote_post($api_url, $request_string ); 
+			$result = wp_remote_retrieve_body( $resultx ); 
+				if ( is_wp_error($result) ) { 
+					update_option('errfafvetcgrt6434cwooccminfo15907833', 'connection_error'); 
+					update_option('hostnamewooccmerrfafvetcgrt6434cwooccminfo15907833', $host); 
+				}else { 
+					$result = json_decode($result, true); 
+						if ($result['valid'] == 'true') { 
+							update_option('errfafvetcgrt6434cwooccminfo15907833', 'clear'); 
+						} elseif ($result['info']['domain'] !== 'NA' && $result['valid'] == 'false' ) { 
+							update_option('errfafvetcgrt6434cwooccminfo15907833', 'change_site'); 
+						}elseif ($result['info']['domain'] == 'NA') { 
+							update_option('errfafvetcgrt6434cwooccminfo15907833', 'not_exsit'); 
+						} 
+				} 
+				if($result['valid'] == 'true') { 
+					return true; 
+				}
+		}
 }
 
 

@@ -5,7 +5,7 @@
  * Description: Manages WooCommerce Checkout, the advance way.
  * Author: Ephrain Marchan
  * Author URI: http://www.trottyzone.com
- * Version: 4.4.9
+ * Version: 4.5.1
  * Text Domain: woocommerce-checkout-manager-pro
  * Domain Path: /languages/
  */
@@ -456,9 +456,25 @@ function wooccm_pro_backend_scripts( $hook_suffix ) {
 		wp_enqueue_style( 'export', plugins_url('woocommerce-checkout-manager-pro/includes/classes/sc/export.css') );
 	}
 	
-	
 }
 
+function wooccmlocal(){
+	if ( substr( $_SERVER['REMOTE_ADDR'] , 0, 3) == "127" || $_SERVER['REMOTE_ADDR'] == "1" || $_SERVER['REMOTE_ADDR'] == "::1" ) { 
+		return true; 
+	} else {
+		if ( wooccmver() ){
+			return true;
+		}
+	} 
+}
+
+function wooccmcurr(){
+	if ( strpos( $_SERVER['REQUEST_URI'], 'License_check_slug') || strpos($_SERVER['REQUEST_URI'], 'woocommerce-checkout-manager-pro') ) { 
+		if( wooccmlocal() ) {
+			return true;
+		}
+	} 
+}
 
 
 if ( is_admin() ){ 
@@ -676,7 +692,7 @@ echo '<div class="refreshwooccm">';
 
 
 		
-            <?php require(plugin_dir_path( __FILE__ ).'includes/classes/ie.php'); ?>
+            <?php require(plugin_dir_path( __FILE__ ).'includes/classes/import.php'); ?>
 
 
 
