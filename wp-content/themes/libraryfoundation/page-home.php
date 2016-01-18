@@ -1,6 +1,8 @@
 <?php Themewrangler::setup_page();get_header(/***Template Name: Home Page */); ?>
 
-<div id="home-slider">
+<?php $off = 'style="display:none"' ?>
+
+<div id="home-slider" <?php echo $off; ?>>
     <div id="home-carousel" class="rsMinW">
 
     <?php if( have_rows('featured_slider', 'options') ): while ( have_rows('featured_slider', 'options') ) : the_row(); ?>
@@ -107,7 +109,7 @@
   </div>
 </div>
 
-<div id="books-bg">
+<div id="books-bg" <?php echo $off; ?>>
 
 <div class="row">
   <div class="desktop-12">
@@ -123,7 +125,7 @@
   </div>
 </div>
 
-<div class="row">
+<div class="row"  <?php echo $off; ?>>
   <div class="desktop-10 tablet-6 mobile-3 centered arrow-wrapper">
     <a href="#upcoming-events">
       <i class="ss-icon ss-gizmo home-arrow left">down</i>
@@ -134,7 +136,7 @@
 
 </div>
 
-<div id="home-upcoming">
+<div id="home-upcoming" <?php echo $off; ?>>
   <div class="row">
     <div class="desktop-10 centered">
       <div class="row">
@@ -202,36 +204,6 @@
   </div>
 </div>
 
-<div id="home-featured">
-  <div class="row">
-    <header class="desktop-10 tablet-6 mobile-3 centered">
-      <hr>
-      <a href="#spotlight-events">
-        <i class="ss-icon ss-gizmo home-arrow left ">down</i>
-        <h3 id="spotlight-events"><a href="/calendar">Spotlight<span> | View Full Calendar</span></a></h3>
-      </a>
-    </header>
-    <div class="desktop-12 tablet-6 mobile-3">
-      <div class="slider rsMinW">
-        <?php
-
-          if( have_rows('featured_slider_bottom', 'options') ):
-          while ( have_rows('featured_slider_bottom', 'options') ) : the_row();
-
-          $post_object = get_sub_field('slide_post');
-          $post = $post_object;
-          setup_postdata( $post );
-
-          get_template_part('templates/home/slider', 'bottom' );
-
-          wp_reset_postdata();
-          endwhile; endif;
-
-
-        ?>
-      </div>
-    </div>
-  </div>
-</div>
+<?php include locate_template('templates/home-spotlight.php' );?>
 
 <?php get_footer(); ?>
