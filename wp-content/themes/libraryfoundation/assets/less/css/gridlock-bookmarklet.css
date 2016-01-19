@@ -9,16 +9,16 @@ Variables
   height: auto;
 }
 .bg-green {
-  background: #86993f;
+  background: #86993F;
 }
 .bg-blue {
   background: #008bbe;
 }
 .bg-yellow {
-  background: #fed406;
+  background: #FED406;
 }
 .bg-brown {
-  background: #9e6927;
+  background: #9E6927;
 }
 /*-------------------------------------------
 Mixins
@@ -63,7 +63,7 @@ Mixins
 }
 .action-btn {
   font-size: 24px;
-  color: #ffffff;
+  color: #fff;
   left: 50%;
   position: absolute;
   top: 50%;
@@ -73,7 +73,7 @@ Mixins
   width: 48px;
   text-align: center;
   display: block;
-  border: 2px solid #ffffff;
+  border: 2px solid #fff;
   border-radius: 50%;
   pointer-events: none;
 }
@@ -92,6 +92,9 @@ Mixins
   position: absolute;
   top: 0;
   width: 100%;
+}
+.wrapper {
+  padding: 25px;
 }
 /*-------------------------------------------
   Bookmarklet

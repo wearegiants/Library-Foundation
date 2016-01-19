@@ -1,0 +1,105 @@
+@spaced: 25px;
+
+.section {
+
+  padding-top: @gutter*4;
+
+}
+
+.module {
+
+  position: relative;
+  margin-bottom: @gutter*2;
+  display: block;
+
+  &.min-height {
+
+    // .module.min-height
+
+    @media @mobile {
+      min-height: 225px;
+    }
+    @media @tablet {
+      min-height: 350px;
+    }
+
+    &_small {
+
+      // .module.min-height_small
+
+      @media @mobile {
+        min-height: 200px;
+      }
+      @media @tablet {
+        min-height: 200px;
+      }
+
+    }
+  }
+
+  .wrapper {
+
+    z-index: 10;
+    position: relative;
+
+  }
+
+}
+
+.covered {
+
+  .cover();
+  z-index: 3;
+
+  &.overlayed {
+    &:before {
+      content: '';
+      display: block;
+      z-index: 4;
+      background: fade(@black, 50%);
+      .cover();
+    }
+  }
+
+  // Helper to center and cover a background image.
+
+  &.bg {
+    background-size: cover;
+    background-position: center center;
+  }
+
+}
+
+// Colors
+
+.color {
+
+  &-white {
+    color: @white;
+  }
+
+  &-blue  {
+    color: @blue;
+  }
+
+}
+
+.bg-color {
+
+  &-lightgray {
+    background-color: @bgGray;
+  }
+
+}
+
+.margin {
+
+  &-none {
+    margin: 0;
+  }
+
+  &-bottom {
+    margin-bottom: @spaced/2;
+  }
+  
+}

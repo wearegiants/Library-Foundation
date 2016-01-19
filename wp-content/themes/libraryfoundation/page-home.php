@@ -1,6 +1,6 @@
 <?php Themewrangler::setup_page();get_header(/***Template Name: Home Page */); ?>
 
-<?php $off = 'style="display:none"' ?>
+<?php $off = '' ?>
 
 <div id="home-slider" <?php echo $off; ?>>
     <div id="home-carousel" class="rsMinW">

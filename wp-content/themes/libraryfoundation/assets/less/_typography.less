@@ -1,0 +1,61 @@
+.gotham(){
+  font-family: 'Gotham';
+  font-weight: 400;  
+}
+
+.section {
+
+  &-headline {
+
+    .gotham();  
+    letter-spacing: 1px;
+    .font_size(14);
+    margin-top: 0;
+
+    &.small {
+      .font_size(12)
+    }
+
+  }
+
+}
+
+.module {
+
+  &-headline {
+
+    // module-headline
+    // Used when overlaying type over an image.
+
+    .gotham();  
+    letter-spacing: 1px;
+
+    &_serif {
+
+      // module-headline_serif
+      // Transforms into a classy serif
+
+      .caslon();
+      .font_size(30);
+
+    }
+
+
+    &_small {
+      .font_size(24);
+    }
+
+  }
+
+  &-sublink {
+
+    // module-sublink
+    // Typically used as a link below a headline. 
+
+    .gotham();
+    letter-spacing: 1px;
+    .font_size(12);
+
+  }
+
+}

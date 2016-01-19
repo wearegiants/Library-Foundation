@@ -1435,6 +1435,9 @@ Mixins
   top: 0;
   width: 100%;
 }
+.wrapper {
+  padding: 25px;
+}
 /*---------------------------
 Transitions
 ---------------------------*/
@@ -7993,6 +7996,110 @@ p.demo_store {
 .woocommerce table.shop_table td,
 .woocommerce-page table.shop_table td {
   min-width: 0;
+}
+.section-headline {
+  font-family: 'Gotham';
+  font-weight: 400;
+  letter-spacing: 1px;
+  font-size: 14px;
+  font-size: 0.875rem;
+  margin-top: 0;
+}
+.section-headline.small {
+  font-size: 12px;
+  font-size: 0.75rem;
+}
+.module-headline {
+  font-family: 'Gotham';
+  font-weight: 400;
+  letter-spacing: 1px;
+}
+.module-headline_serif {
+  font-family: 'Caslon', serif;
+  text-rendering: optimizeLegibility;
+  font-size: 30px;
+  font-size: 1.875rem;
+}
+.module-headline_small {
+  font-size: 24px;
+  font-size: 1.5rem;
+}
+.module-sublink {
+  font-family: 'Gotham';
+  font-weight: 400;
+  letter-spacing: 1px;
+  font-size: 12px;
+  font-size: 0.75rem;
+}
+.section {
+  padding-top: 4.16666667%;
+}
+.module {
+  position: relative;
+  margin-bottom: 2.08333333%;
+  display: block;
+}
+@media screen and (min-width: 320px) {
+  .module.min-height {
+    min-height: 225px;
+  }
+}
+@media screen and (min-width: 740px) {
+  .module.min-height {
+    min-height: 350px;
+  }
+}
+@media screen and (min-width: 320px) {
+  .module.min-height_small {
+    min-height: 200px;
+  }
+}
+@media screen and (min-width: 740px) {
+  .module.min-height_small {
+    min-height: 200px;
+  }
+}
+.module .wrapper {
+  z-index: 10;
+  position: relative;
+}
+.covered {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 3;
+}
+.covered.overlayed:before {
+  content: '';
+  display: block;
+  z-index: 4;
+  background: rgba(51, 51, 51, 0.5);
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+.covered.bg {
+  background-size: cover;
+  background-position: center center;
+}
+.color-white {
+  color: #fff;
+}
+.color-blue {
+  color: #008bbe;
+}
+.bg-color-lightgray {
+  background-color: #f8f8f8;
+}
+.margin-none {
+  margin: 0;
+}
+.margin-bottom {
+  margin-bottom: 12.5px;
 }
 #head #logo.general-logo .face {
   background-image: url(/assets/img/logos/logo-general.png);
