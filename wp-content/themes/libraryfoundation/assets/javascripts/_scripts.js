@@ -267,6 +267,7 @@ $('#home-upcoming .selecter-selected')
 $('.tribe-bar-filters .tribe-events-button')
 .addClass('ss-glypish ss-calendar');
   // Image Slider
+  $(".carousel").royalSlider();
   $(".royalslider").royalSlider({
     keyboardNavEnabled: true,
     autoScaleSlider: true,
@@ -290,6 +291,7 @@ $('.tribe-bar-filters .tribe-events-button')
     controlNavigation: 'none',
     imageAlignCenter: false,
   });
+
   $("#past-events-slider.slider")
   .royalSlider({
     keyboardNavEnabled: true,
@@ -303,6 +305,26 @@ $('.tribe-bar-filters .tribe-events-button')
     transitionType: 'fade',
     arrowsNav: false,
     controlNavigation: 'none',
+  });
+
+  $(window).resize(function(){
+    headerSlider = $('.page-header.slider').outerHeight();
+    $(".header-slider, .header-slider > div").css({
+      height: headerSlider,
+    });
+  }).resize();
+
+  $(".header-slider")
+  .royalSlider({
+    keyboardNavEnabled: true,
+    imageScaleMode: 'fill',
+    slidesSpacing: 0,
+    loop: true,
+    transitionSpeed: 1200,
+    transitionType: 'fade',
+    controlNavigation: 'none',
+  }).css({
+    
   });
 
   if ($(window).width() > 500) {

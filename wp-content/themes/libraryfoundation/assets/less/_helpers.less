@@ -12,6 +12,10 @@
   margin-bottom: @gutter*2;
   display: block;
 
+  &.contained {
+    margin-bottom: 0;
+  }
+
   &.min-height {
 
     // .module.min-height
@@ -35,6 +39,20 @@
       }
 
     }
+
+     &_small {
+
+      // .module.min-height_medium
+
+      @media @mobile {
+        min-height: 200px;
+      }
+      @media @tablet {
+        min-height: 275px;
+      }
+
+    }
+
   }
 
   .wrapper {
@@ -56,7 +74,7 @@
       content: '';
       display: block;
       z-index: 4;
-      background: fade(@black, 50%);
+      background: rgba(0,0,0,.3);
       .cover();
     }
   }
@@ -88,6 +106,18 @@
 
   &-lightgray {
     background-color: @bgGray;
+  }
+
+  &-white {
+    background-color: @white;
+
+    &_25 {
+      background: @white25;
+    }
+    
+    &_50 {
+      background: @white50;
+    }
   }
 
 }

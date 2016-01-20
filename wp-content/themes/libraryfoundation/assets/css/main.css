@@ -1557,6 +1557,9 @@ hr {
   clear: both;
   margin: 15px 0;
 }
+hr.thin {
+  height: 1px;
+}
 pre,
 code {
   font-size: 14px;
@@ -8021,8 +8024,8 @@ p.demo_store {
   font-size: 1.875rem;
 }
 .module-headline_small {
-  font-size: 24px;
-  font-size: 1.5rem;
+  font-size: 20px;
+  font-size: 1.25rem;
 }
 .module-sublink {
   font-family: 'Gotham';
@@ -8038,6 +8041,9 @@ p.demo_store {
   position: relative;
   margin-bottom: 2.08333333%;
   display: block;
+}
+.module.contained {
+  margin-bottom: 0;
 }
 @media screen and (min-width: 320px) {
   .module.min-height {
@@ -8059,6 +8065,16 @@ p.demo_store {
     min-height: 200px;
   }
 }
+@media screen and (min-width: 320px) {
+  .module.min-height_small {
+    min-height: 200px;
+  }
+}
+@media screen and (min-width: 740px) {
+  .module.min-height_small {
+    min-height: 275px;
+  }
+}
 .module .wrapper {
   z-index: 10;
   position: relative;
@@ -8075,7 +8091,7 @@ p.demo_store {
   content: '';
   display: block;
   z-index: 4;
-  background: rgba(51, 51, 51, 0.5);
+  background: rgba(0, 0, 0, 0.3);
   height: 100%;
   left: 0;
   position: absolute;
@@ -8094,6 +8110,15 @@ p.demo_store {
 }
 .bg-color-lightgray {
   background-color: #f8f8f8;
+}
+.bg-color-white {
+  background-color: #fff;
+}
+.bg-color-white_25 {
+  background: rgba(255, 255, 255, 0.25);
+}
+.bg-color-white_50 {
+  background: rgba(255, 255, 255, 0.5);
 }
 .margin-none {
   margin: 0;
@@ -14072,6 +14097,16 @@ button.btn-success.btn-default {
 }
 @media screen and (min-width: 740px) {
   .sl-item_featured {
+    height: 550px;
+  }
+}
+@media screen and (min-width: 320px) {
+  .sl-item_featured > .carousel {
+    height: 137.5px;
+  }
+}
+@media screen and (min-width: 740px) {
+  .sl-item_featured > .carousel {
     height: 550px;
   }
 }

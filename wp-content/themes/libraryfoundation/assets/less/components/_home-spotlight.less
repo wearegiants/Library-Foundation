@@ -36,6 +36,18 @@
         height: @itemHeight*2;  
       }
 
+      > .carousel {
+
+        @media @mobile {
+          height: @itemHeight/2;
+        }
+
+        @media @tablet {
+          height: @itemHeight*2;  
+        }
+        
+      }
+
       background-color: darken(@lighterGray, 10%);
     }
 
