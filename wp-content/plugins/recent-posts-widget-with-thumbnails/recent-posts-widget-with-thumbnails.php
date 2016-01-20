@@ -3,7 +3,7 @@
 Plugin Name: Recent Posts Widget With Thumbnails
 Plugin URI:  http://wordpress.org/plugins/recent-posts-widget-with-thumbnails/
 Description: Small and fast plugin to display in the sidebar a list of linked titles and thumbnails of the most recent postings
-Version:     4.5
+Version:     4.6.1
 Author:      Martin Stehle
 Author URI:  http://stehle-internet.de
 Text Domain: recent-posts-widget-with-thumbnails
@@ -32,6 +32,8 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 	var $default_category_ids; // selected categories
 	var $css_file_path; // path of the public css file
 	var $current_thumb_dimensions; // set size of the thumbnail
+	var $in_categories_text; // translated text for 'In {categories}' 
+	var $comma_text; // translated text for ', ' 
 
 	function __construct() {
 		$language_codes = explode( '_', get_locale() );
@@ -53,7 +55,7 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 				$widget_desc = 'List of your site&#8217;s most recent posts, with clickable title and thumbnails.';
 		}
 		$this->plugin_slug				= 'recent-posts-widget-with-thumbnails';
-		$this->plugin_version			= '4.5';
+		$this->plugin_version			= '4.6.1';
 		$this->default_number_posts		= 5;
 		$this->default_thumb_dimensions	= 'custom';
 		$this->default_thumb_width		= absint( round( get_option( 'thumbnail_size_w', 110 ) / 2 ) );
@@ -102,7 +104,7 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		extract( $args );
 
 		// get and sanitize values
-		$title					= ( ! empty( $instance[ 'title' ] ) )				? $instance[ 'title' ]									: __( 'Recent Posts With Thumbnails', 'recent-posts-widget-with-thumbnails' );
+		$title					= ( ! empty( $instance[ 'title' ] ) )				? $instance[ 'title' ]									: '';
 		$title					= apply_filters( 'widget_title', $title, $instance, $this->id_base );
 		$category_ids 			= ( ! empty( $instance[ 'category_ids' ] ) )		? array_map( 'absint', $instance[ 'category_ids' ] )	: $this->default_category_ids;
 		$default_url 			= ( ! empty( $instance[ 'default_url' ] ) )			? $instance[ 'default_url' ]							: $this->default_thumb_url;
@@ -115,6 +117,7 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		$keep_aspect_ratio		= ( isset( $instance[ 'keep_aspect_ratio' ] ) )		? (bool) $instance[ 'keep_aspect_ratio' ]				: false;
 		$keep_sticky			= ( isset( $instance[ 'keep_sticky' ] ) )			? (bool) $instance[ 'keep_sticky' ]						: false;
 		$only_1st_img			= ( isset( $instance[ 'only_1st_img' ] ) )			? (bool) $instance[ 'only_1st_img' ]					: false;
+		$show_categories		= ( isset( $instance[ 'show_categories' ] ) )		? (bool) $instance[ 'show_categories' ]					: false;
 		$show_date				= ( isset( $instance[ 'show_date' ] ) )				? (bool) $instance[ 'show_date' ]						: false;
 		$show_comments_number	= ( isset( $instance[ 'show_comments_number' ] ) )	? (bool) $instance[ 'show_comments_number' ]			: false;
 		$show_excerpt			= ( isset( $instance[ 'show_excerpt' ] ) )			? (bool) $instance[ 'show_excerpt' ]					: false;
@@ -197,6 +200,11 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		$r = new WP_Query( apply_filters( 'widget_posts_args', $query_args ) );
 
 		if ( $r->have_posts()) :
+		
+			// translate repeately used texts once (for more performance)
+			$this->in_categories_text = _x( 'In', 'In {categories}', 'recent-posts-widget-with-thumbnails' );
+			$text = ', ';
+			$this->comma_text = __( $text );
 
 			// print list
 			include 'includes/widget.php';
@@ -231,6 +239,7 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		$instance[ 'keep_aspect_ratio'] 	= ( isset( $new_widget_settings[ 'keep_aspect_ratio' ] ) )		? (bool) $new_widget_settings[ 'keep_aspect_ratio' ]			: false;
 		$instance[ 'keep_sticky' ] 			= ( isset( $new_widget_settings[ 'keep_sticky' ] ) )			? (bool) $new_widget_settings[ 'keep_sticky' ]					: false;
 		$instance[ 'only_1st_img' ] 		= ( isset( $new_widget_settings[ 'only_1st_img' ] ) )			? (bool) $new_widget_settings[ 'only_1st_img' ]					: false;
+		$instance[ 'show_categories' ]		= ( isset( $new_widget_settings[ 'show_categories' ] ) )		? (bool) $new_widget_settings[ 'show_categories' ]				: false;
 		$instance[ 'show_date' ] 			= ( isset( $new_widget_settings[ 'show_date' ] ) )				? (bool) $new_widget_settings[ 'show_date' ]					: false;
 		$instance[ 'show_comments_number' ]	= ( isset( $new_widget_settings[ 'show_comments_number' ] ) )	? (bool) $new_widget_settings[ 'show_comments_number' ]			: false;
 		$instance[ 'show_excerpt' ] 		= ( isset( $new_widget_settings[ 'show_excerpt' ] ) )			? (bool) $new_widget_settings[ 'show_excerpt' ]					: false;
@@ -290,8 +299,9 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		$keep_aspect_ratio		= ( isset( $instance[ 'keep_aspect_ratio' ] ) )		? (bool) $instance[ 'keep_aspect_ratio' ]				: false;
 		$keep_sticky			= ( isset( $instance[ 'keep_sticky' ] ) )			? (bool) $instance[ 'keep_sticky' ]						: false;
 		$only_1st_img			= ( isset( $instance[ 'only_1st_img' ] ) )			? (bool) $instance[ 'only_1st_img' ]					: false;
+		$show_categories		= ( isset( $instance[ 'show_categories' ] ) )		? (bool) $instance[ 'show_categories' ]					: false;
 		$show_date				= ( isset( $instance[ 'show_date' ] ) )				? (bool) $instance[ 'show_date' ]						: false;
-		$show_comments_number	= ( isset( $instance[ 'show_comments_number' ] ) ) ? (bool) $instance[ 'show_comments_number' ]				: false;
+		$show_comments_number	= ( isset( $instance[ 'show_comments_number' ] ) )	? (bool) $instance[ 'show_comments_number' ]			: false;
 		$show_excerpt			= ( isset( $instance[ 'show_excerpt' ] ) )			? (bool) $instance[ 'show_excerpt' ]					: false;
 		$show_thumb				= ( isset( $instance[ 'show_thumb' ] ) )			? (bool) $instance[ 'show_thumb' ]						: true;
 		$try_1st_img			= ( isset( $instance[ 'try_1st_img' ] ) )			? (bool) $instance[ 'try_1st_img' ]						: false;
@@ -335,6 +345,7 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		$id_keep_sticky				= $this->get_field_id( 'keep_sticky' );
 		$id_number_posts			= $this->get_field_id( 'number_posts' );
 		$id_only_1st_img			= $this->get_field_id( 'only_1st_img' );
+		$id_show_categories			= $this->get_field_id( 'show_categories' );
 		$id_show_date				= $this->get_field_id( 'show_date' );
 		$id_show_comments_number	= $this->get_field_id( 'show_comments_number' );
 		$id_show_excerpt			= $this->get_field_id( 'show_excerpt' );
@@ -641,6 +652,37 @@ class Recent_Posts_Widget_With_Thumbnails extends WP_Widget {
 		else :
 			return false;
 		endif; // thumb_id
+	}
+
+	/**
+	 * Returns the assigned categories of a post in a string
+	 *
+	 * @access   private
+	 * @since     4.6
+	 *
+	 */
+	private function get_the_categories ( $id ) {
+		$terms = get_the_terms( $id, 'category' );
+
+		if ( is_wp_error( $terms ) ) {
+			return __( 'Error on listing categories', 'recent-posts-widget-with-thumbnails' );
+		}
+
+		if ( empty( $terms ) ) {
+			$text = 'No categories';
+			return __( $text );
+		}
+
+		$categories = array();
+
+		foreach ( $terms as $term ) {
+			$categories[] = $term->name;
+		}
+
+		$string = $this->in_categories_text . ' ';
+		$string .= join( $this->comma_text, $categories );
+		
+		return $string;
 	}
 
 	/**

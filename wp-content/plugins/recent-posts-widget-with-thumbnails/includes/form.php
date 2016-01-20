@@ -18,20 +18,23 @@
 <p><label for="<?php echo $id_post_title_length; ?>"><?php _e( 'Maximum length of post title', 'recent-posts-widget-with-thumbnails' ); ?>:</label>
 <input id="<?php echo $id_post_title_length; ?>" name="<?php echo $this->get_field_name( 'post_title_length' ); ?>" type="text" value="<?php echo $post_title_length; ?>" size="3" /></p>
 
+<p><input class="checkbox" type="checkbox" <?php checked( $show_categories ); ?> id="<?php echo $id_show_categories; ?>" name="<?php echo $this->get_field_name( 'show_categories' ); ?>" />
+<label for="<?php echo $id_show_categories; ?>"><?php _e( 'Show post categories?', 'recent-posts-widget-with-thumbnails' ); ?></label></p>
+
 <p><input class="checkbox" type="checkbox" <?php checked( $show_date ); ?> id="<?php echo $id_show_date; ?>" name="<?php echo $this->get_field_name( 'show_date' ); ?>" />
 <label for="<?php echo $id_show_date; ?>"><?php _e( 'Show post date?', 'recent-posts-widget-with-thumbnails' ); ?></label></p>
 
 <p><input class="checkbox" type="checkbox" <?php checked( $show_excerpt ); ?> id="<?php echo $id_show_excerpt; ?>" name="<?php echo $this->get_field_name( 'show_excerpt' ); ?>" />
 <label for="<?php echo $id_show_excerpt; ?>"><?php _e( 'Show excerpt?', 'recent-posts-widget-with-thumbnails' ); ?></label></p>
 
-<p><input class="checkbox" type="checkbox" <?php checked( $show_comments_number ); ?> id="<?php echo $id_show_comments_number; ?>" name="<?php echo $this->get_field_name( 'show_comments_number' ); ?>" />
-<label for="<?php echo $id_show_comments_number; ?>"><?php _e( 'Show number of comments?', 'recent-posts-widget-with-thumbnails' ); ?></label></p>
-
 <p><label for="<?php echo $id_excerpt_length; ?>"><?php _e( 'Maximum length of excerpt', 'recent-posts-widget-with-thumbnails' ); ?>:</label>
 <input id="<?php echo $id_excerpt_length; ?>" name="<?php echo $this->get_field_name( 'excerpt_length' ); ?>" type="text" value="<?php echo $excerpt_length; ?>" size="3" /></p>
 
 <p><label for="<?php echo $id_excerpt_more; ?>"><?php _e( 'Signs after excerpt', 'recent-posts-widget-with-thumbnails' ); ?>:</label>
 <input id="<?php echo $id_excerpt_more; ?>" name="<?php echo $this->get_field_name( 'excerpt_more' ); ?>" type="text" value="<?php echo esc_attr( $excerpt_more ); ?>" size="3" /></p>
+
+<p><input class="checkbox" type="checkbox" <?php checked( $show_comments_number ); ?> id="<?php echo $id_show_comments_number; ?>" name="<?php echo $this->get_field_name( 'show_comments_number' ); ?>" />
+<label for="<?php echo $id_show_comments_number; ?>"><?php _e( 'Show number of comments?', 'recent-posts-widget-with-thumbnails' ); ?></label></p>
 
 <p>
 	<label for="<?php echo $id_category_ids;?>"><?php _e( 'Show posts of selected categories only?', 'recent-posts-widget-with-thumbnails' ); ?></label><br />

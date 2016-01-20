@@ -40,6 +40,9 @@
 				?><span class="rpwwt-post-title"><?php if ( $post_title = $this->get_the_trimmed_post_title( $post_title_length ) ) { echo $post_title; } else { the_ID(); } ?></span><?php
 			}
 			?></a><?php 
+			if ( $show_categories ) : 
+				?><div class="rpwwt-post-categories"><?php echo $this->get_the_categories( $r->post->ID ); ?></div><?php 
+			endif;
 			if ( $show_date ) : 
 				?><div class="rpwwt-post-date"><?php echo get_the_date(); ?></div><?php 
 			endif;

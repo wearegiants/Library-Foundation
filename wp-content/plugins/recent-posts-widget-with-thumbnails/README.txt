@@ -1,10 +1,10 @@
 === Recent Posts Widget With Thumbnails ===
 Contributors: Hinjiriyo
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=SBF76TCGTRNX2
-Tags: arabic, aspect ratio, category, categories, current post, excerpt, featured, featured images, first post image, height, image, images, listed posts, post date, post title, recent posts, sticky, thumb, thumbnail, thumbnails, thumbs, widget, widgets, width, persian, farsi
+Tags: arabic, aspect ratio, category, categories, current post, excerpt, featured, featured images, first post image, height, image, images, listed posts, post date, post categories, post title, recent posts, sticky, thumb, thumbnail, thumbnails, thumbs, widget, widgets, width, persian, farsi
 Requires at least: 2.9
-Tested up to: 4.3.1
-Stable tag: 4.5
+Tested up to: 4.4
+Stable tag: 4.6.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,21 +30,22 @@ You can set the width and heigth of the thumbnails in the list. The thumbnails a
 4. Keep sticky posts on top of the list
 5. Hide post title
 6. Maximum length of post title
-7. Show post date
-8. Show post excerpt
-9. Show number of comments
-10. Excerpt length
-11. Signs after excerpt
-12. Show posts of selected categories (or of all categories)
-13. Show post thumbnail (featured image)
-14. Registered thumbnail dimensions
-15. Thumbnail width in px
-16. Thumbnail height in px
-17. Keep aspect ratio of thumbnails
-18. Try to take the first post image as thumbnail
-19. Only use the first post image as thumbnail
-20. Use default thumbnail if no thumbnail is available
-21. Default thumbnail URL
+7. Show post categories
+8. Show post date
+9. Show post excerpt
+10. Show number of comments
+11. Excerpt length
+12. Signs after excerpt
+13. Show posts of selected categories (or of all categories)
+14. Show post thumbnail (featured image)
+15. Registered thumbnail dimensions
+16. Thumbnail width in px
+17. Thumbnail height in px
+18. Keep aspect ratio of thumbnails
+19. Try to take the first post image as thumbnail
+20. Only use the first post image as thumbnail
+21. Use default thumbnail if no thumbnail is available
+22. Default thumbnail URL
 
 = What users said =
 
@@ -105,6 +106,9 @@ All images in the list (use that to set the margins around images):
 
 All post titles in the list:
 `.rpwwt-widget ul li a span.rpwwt-post-title`
+
+All post categories in the list:
+`.rpwwt-widget ul li div.rpwwt-post-categories`
 
 All post dates in the list:
 `.rpwwt-widget ul li div.rpwwt-post-date`
@@ -176,10 +180,23 @@ If you want to contribute a translation of the plugin in your language it would 
 
 == Screenshots ==
 
-1. The first screenshot shows the widget in the sidebar with five teasers of current posts. Each list item shows the title, image, date and excerpt of a post.
+1. The first screenshot shows the widget in the sidebar with five teasers of current posts. Each list item shows the title, image, date, assigned categories and excerpt of a post.
 2. The second screenshot shows the widget on the Widget Management Page in the backend.
 
 == Changelog ==
+
+= 4.6.1 =
+* Fixed: widget title. Now if no title is entered no title is displayed (instead of showing the plugin's name)
+* Fixed: commas in categories list. Commas are now internationalized (translated)
+
+= 4.6 =
+* Added option: Post categories
+* Updated *.pot file and translations
+* Updated screenshot of widget in the backend
+
+= 4.5.1 =
+* Moved comment checkbox to position after form fields for the excerpt options
+* Tested successfully with WordPress 4.4
 
 = 4.5 =
 * Added option: Post title length
@@ -295,6 +312,15 @@ Successfully tested with WordPress 4.0
 * The plugin was released.
 
 == Upgrade Notice ==
+
+= 4.6.1 =
+Fixed empty widget title, comma internationalization
+
+= 4.6 =
+Added option: Post categories
+
+= 4.5.1 =
+Moved comment checkbox, tested with WordPress 4.4
 
 = 4.5 =
 Added option: Post title length
