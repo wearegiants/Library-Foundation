@@ -29,7 +29,8 @@
         <div class="wrapper sizer-item">
 
           <?php
-            $event_date = tribe_get_start_date($pageID, false, "l, M j, Y | g:ia");
+            $pageID = get_the_ID();
+            $event_date = tribe_get_start_date(get_the_ID(), false, "l, M j, Y | g:ia");
           ?>
           <header>
             <p class="posted"><?php echo $event_date  ?></p>

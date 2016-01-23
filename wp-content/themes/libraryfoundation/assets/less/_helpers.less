@@ -53,6 +53,7 @@
 
     }
 
+
   }
 
   .wrapper {
@@ -60,6 +61,14 @@
     z-index: 10;
     position: relative;
 
+  }
+
+  &:hover {
+    .overlayed {
+      &:before {
+        background: rgba(0,0,0,.75);
+      }
+    }
   }
 
 }
@@ -71,6 +80,7 @@
 
   &.overlayed {
     &:before {
+      transition: 600ms ease;
       content: '';
       display: block;
       z-index: 4;
@@ -98,6 +108,14 @@
 
   &-blue  {
     color: @blue;
+  }
+
+  &-faded {
+    opacity: .5;
+    transition: 300ms ease;
+    &:hover {
+      opacity: 1;
+    }
   }
 
 }

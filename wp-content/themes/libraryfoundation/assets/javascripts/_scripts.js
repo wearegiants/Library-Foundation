@@ -267,7 +267,18 @@ $('#home-upcoming .selecter-selected')
 $('.tribe-bar-filters .tribe-events-button')
 .addClass('ss-glypish ss-calendar');
   // Image Slider
-  $(".carousel").royalSlider();
+  $(".carousel").royalSlider({
+    arrowsNav: true,
+    slidesSpacing: 0,
+    transitionSpeed: 1200,
+    autoPlay: {
+        // autoplay options go gere
+        enabled: true,
+        pauseOnHover: true,
+        delay: 5000,
+      },
+    //transitionType: 'fade',
+  });
   $(".royalslider").royalSlider({
     keyboardNavEnabled: true,
     autoScaleSlider: true,

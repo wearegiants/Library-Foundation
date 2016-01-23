@@ -7,7 +7,10 @@
     font-weight: 400;
     letter-spacing: 1px;
     color: @white;
-    .font_size(24);
+    .font_size(28);
+    &.large {
+      .font_size(46);
+    }
   }
 
   &-item {
@@ -23,6 +26,25 @@
 
     @media @tablet {
       height: @itemHeight;  
+    }
+
+    .more-link {
+      letter-spacing: 0;
+      margin-left: 8px;
+      position: relative;
+      display: inline-block;
+      opacity: 0;
+      transition:300ms;
+      transform: translateY(2px);
+    }
+
+    .special-project_link {
+      &:hover {
+        .more-link {
+          opacity: .5;
+          transform: translateY(0);
+        }
+      }
     }
     
 

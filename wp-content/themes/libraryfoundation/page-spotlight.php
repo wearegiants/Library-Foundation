@@ -79,7 +79,7 @@
 	$url = $currentProject['url'];
 
 	if ($counter == 1) {
-		$currentWidth = 'desktop-12 tablet-6 mobile-3';	
+		$currentWidth = 'desktop-6 tablet-3 mobile-3';	
 	} else {
 		$currentWidth = 'desktop-6 tablet-3 mobile-3';
 	}	
@@ -142,4 +142,4 @@
 	</div>
 </div>
 
-<?php get_footer(); ?>
+<?php get_footer('naked'); ?>
