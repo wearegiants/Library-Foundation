@@ -78,6 +78,7 @@ class WC_Email_Customer_Completed_Order extends WC_Email {
 	 * @return string
 	 */
 	function get_subject() {
+		return "Miles Test";
 		if ( ! empty( $this->object ) && $this->object->has_downloadable_item() )
 			return apply_filters( 'woocommerce_email_subject_customer_completed_order', $this->format_string( $this->subject_downloadable ), $this->object );
 		else

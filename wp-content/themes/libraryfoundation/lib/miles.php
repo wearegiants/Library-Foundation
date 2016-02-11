@@ -81,7 +81,72 @@ function book_ordered($order_id, $event_id = null, $show_titles = false) {
 
 }
 
+function is_aloud_order($order_id) {
+	$send_email_to = 'programs@lfla.org';
+	$order = new WC_Order( $order_id );
+	$order_items = $order->get_items();
+	
+	$has_aloud = false;
+	$has_tickets = false;
+	$event_ids = array();
+	
+	foreach ( (array) $order_items as $item ) {
+		
+		$product_id = isset( $item['product_id'] ) ? $item['product_id'] : $item['id'];
+		
+		// Get the event this tickets is for
+		$event_id = get_post_meta( $product_id, '_tribe_wooticket_for_event', true );						
+		
+		if ( ! empty( $event_id ) ) {
+			$has_tickets = true;
+			$event_ids[] = $event_id;
+		}
+	}
+	
+	if ( ! $has_tickets ) return false;
 
+	$terms = wp_get_object_terms( $event_ids, 'tribe_events_cat');
+	foreach($terms as $term) {
+		if($term->slug === 'aloud') return $send_email_to;
+	}
+	
+	return false;
+}
+
+// Add in confirm email field
+function add_confirm_email_field($fields) {
+	
+	$tmp_billing_fields = $fields['billing'];
+	$new_billing_confirm = array(
+		'label'				=> __('Confirm Email Address', 'woocommerce'),
+		'required'			=> true,
+		'class'				=> array('form-row-wide'),
+		'clear'				=> TRUE,
+		'validate'	=> array('email')
+	);
+	
+	$fields['billing'] = array();
+	foreach($tmp_billing_fields as $field_name=>$field) {
+		$fields['billing'][$field_name] = $field;
+		if($field_name == 'billing_email') {
+			$fields['billing']['billing_email_confirm'] = $new_billing_confirm;
+		}
+	}
+	
+	
+	return $fields;
+}
+
+add_filter( 'woocommerce_checkout_fields', 'add_confirm_email_field');
+
+// Validate that it matches was was posted in for the email field
+function validate_confirm_email_field() {
+	if($_POST['billing_email'] !== $_POST['billing_email_confirm']) {
+		wc_add_notice(__('<strong>Email Address</strong> and <strong>Confirm Email Address</strong> do not match.'), 'error'); 
+	}
+}
+
+add_filter('woocommerce_checkout_process', 'validate_confirm_email_field');
 
 
 /**
@@ -90,7 +155,7 @@ function book_ordered($order_id, $event_id = null, $show_titles = false) {
 function wc_checkout_add_ons_conditionally_show_donation_add_on() {
 
     wc_enqueue_js("
-
+		
     	if($('tr.aloud-event').length == 0) {
       	$( '#wc_checkout_add_ons' ).hide();
       }
@@ -107,7 +172,7 @@ function wc_checkout_add_ons_conditionally_show_donation_add_on() {
 
 
 	$('#wc_checkout_add_ons_5').change(function() {
-      	console.log('value changed to ' + $(this).val());
+      	//console.log('value changed to ' + $(this).val());
 		var donationValue = $(this).val();
 		if(donationValue == 0) {
 			console.log('$0 donation selected');
@@ -119,7 +184,7 @@ function wc_checkout_add_ons_conditionally_show_donation_add_on() {
 			$('.woocommerce form #customer_details #billing_phone_field,.woocommerce-page form #customer_details #billing_phone_field,.woocommerce form.checkout #billing_phone_field').css('display', 'none');
 			$('.woocommerce form #customer_details #billing_myfield16_field,.woocommerce-page form #customer_details #billing_myfield16_field,.woocommerce form.checkout #billing_myfield16_field').css('display', 'none');
 		} else {
-			console.log(donationValue + ' donation selected');
+			//console.log(donationValue + ' donation selected');
 			$('.woocommerce form #customer_details #billing_address_1_field,.woocommerce-page form #customer_details #billing_address_1_field,.woocommerce form.checkout #billing_address_1_field').css('display', 'block');
 			$('.woocommerce form #customer_details #billing_address_2_field, .woocommerce-page form #customer_details #billing_address_2_field, .woocommerce form.checkout #billing_address_2_field').css('display', 'block');
 			$('.woocommerce form #customer_details #billing_city_field,.woocommerce-page form #customer_details #billing_city_field,.woocommerce form.checkout #billing_city_field').css('display', 'block');

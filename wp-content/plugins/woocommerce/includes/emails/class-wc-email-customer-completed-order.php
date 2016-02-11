@@ -69,7 +69,18 @@ class WC_Email_Customer_Completed_Order extends WC_Email {
 		}
 
 		$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
+		
+		/****************************** Start Miles Modification **************************/
+		$send_additional = is_aloud_order($order_id);
+		if( $send_additional !== FALSE) {
+			$this->send( $send_additional, 'Order Email Sent: '.$this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
+		
+		}
+		/****************************** End Miles Modification   **************************/
+		
 	}
+
+
 
 	/**
 	 * get_subject function.
