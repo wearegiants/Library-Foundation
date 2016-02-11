@@ -1,16 +1,34 @@
 <?php
 /**
-	Plugin Name: WooCommerce - Autocomplete Order
-	Plugin URI: 
-	Description: Do you hate WooCommerce for obliging you to manually approve every order placed for non-downloadable goods? This plugin is the answer, since allows to automatically mark orders for **virtual** products as Completed after a successful payment (e.g. with PayPal or Credit Card).
-	Version: 1.1.1
-	Author: Mirko Grewing
-	Author URI: http://www.mirkogrewing.it	
+	Plugin Name: WooCommerce - Autocomplete Orders
+	Plugin URI: http://www.seriousplugins.com/woocommerce-autocomplete-orders/
+	Description: Would you buy twice from a website that does not give you instanctly access to the product you purchased? Why would you want that for your customer? Take back the ownership of your ecommerce!
+	Version: 1.1.3
+	Author: Serious Plugins
+	Author URI: http://www.seriousplugins.com	
 		
-		Copyright: © 2013 Mirko Grewing (email : mirko@grewing.co.uk)	
+		Copyright: (c)2016 Serious Plugins (email : social@seriousplugins.com)	
 		License: GNU General Public License v3.0	
 		License URI: http://www.gnu.org/licenses/gpl-3.0.html
 */
+
+/**
+ * register_plugins_links 
+ * Direct link to the settings page from the plugin page * @param  array  $links
+ * @param  string $file
+ * @return array
+ */
+function register_plugins_links ($links, $file)
+{
+	$base = plugin_basename(__FILE__);
+	if ($file == $base) {
+		$links[] = '<a href="admin.php?page=wc-settings&tab=mg_woo_eo">' . __('Settings','wooExtraOptions') . '</a>';
+		$links[] = '<a href="http://www.seriousplugins.com/woocommerce-autocomplete-orders/faqs/">' . __('FAQ','wooExtraOptions') . '</a>';
+		$links[] = '<a href="http://www.seriousplugins.com/woocommerce-autocomplete-orders/support/">' . __('Support','wooExtraOptions') . '</a>';
+	}
+	return $links;
+}
+add_filter('plugin_row_meta',  'register_plugins_links', 10, 2);
 
 if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
     load_plugin_textdomain('wooExtraOptions', false, dirname(plugin_basename(__FILE__)) . '/languages/');
@@ -25,7 +43,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
          * @copyright 2012-2015 Mirko Grewing
          * @license   http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License v3.0
          * @version   1.1.1
-         * @link      http://www.mirkogrewing.it
+         * @link      http://www.mirkogrewing.com
          * @since     Class available since Release 0.1
          *
          */
@@ -67,7 +85,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 			 * @return array
 			 */
 			function woocommerce_settings_tabs_array( $settings_tabs ) {
-				$settings_tabs[$this->id] = __('Woo Extra Options','wooExtraOptions');
+				$settings_tabs[$this->id] = __('Extra Options','wooExtraOptions');
 				return $settings_tabs;
 			}
 
@@ -99,21 +117,21 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 					'section_title' => array(
 						'name'     => __('Autocomplete Orders','wooExtraOptions'),
 						'type'     => 'title',
-						'desc'     => '',
+						'desc'     => 'Activate the plugin selecting the option that suits your needs',
 						'id'       => 'wc_'.$this->id.'_section_title'
 					),
 					'title' => array(
 						'name'     => __('Mode', 'wooExtraOptions'),
 						'type'     => 'select',
-						'desc'     => __('Select the type of autocompletion you want to activate.', 'wooExtraOptions'),
+						'desc'     => __('Select the modality you want to activate.', 'wooExtraOptions'),
 						'desc_tip' => true,
 						'default'  => 'off',
 						'id'       => 'wc_'.$this->id.'_mode',
 						'options' => array(
 							'off'     => 'Off',
-							'virtual' => 'Paid virtual products',
-							'paid'    => 'All paid products',
-							'all'     => 'All products'
+							'virtual' => 'Paid orders of virtual products only',
+							'paid'    => 'All paid orders of any product',
+							'all'     => 'Any order (!!!)'
 						)
 					),
 					'section_end' => array(
@@ -212,7 +230,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         if (!is_plugin_active('woocommerce/woocommerce.php')) {
             ob_start();
             ?><div class="error">
-                <p><strong><?php _e('WARNING', 'wooExtraOptions'); ?></strong>: <?php _e('WooCommerce is not active and WooCommerce Autocomplete Order will not work!', 'wooExtraOptions'); ?></p>
+                <p><strong><?php _e('WARNING', 'wooExtraOptions'); ?></strong>: <?php _e('WooCommerce is installed but not activated, therefore, WooCommerce Autocomplete Orders will not work!', 'wooExtraOptions'); ?></p>
             </div><?php
             echo ob_get_clean();
         }
