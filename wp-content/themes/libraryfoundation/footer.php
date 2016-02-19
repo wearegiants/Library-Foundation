@@ -119,7 +119,8 @@
     <hr style="height:1px; background:#ddd;" class="desktop-12 tablet-6 mobile-3">
     <div class="desktop-12">
       © 2015 Library Foundation of Los Angeles |
-      <a href="<?php echo get_permalink(4738); ?>">Contact Us</a>
+      <a href="<?php echo get_permalink(4738); ?>">Contact Us</a>|
+      <a href="<?php echo get_permalink(26929); ?>">Donors Privacy</a>
     </div>
   </div>
 </footer><!--Footer-->
