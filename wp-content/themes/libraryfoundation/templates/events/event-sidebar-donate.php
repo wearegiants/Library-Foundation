@@ -11,9 +11,9 @@ setup_postdata( $post );
 <div id="donation-module" class="widget">
 <?php woocommerce_get_template_part( 'content', 'single-product' ); ?>
 <?php if(get_field('min_donation')): ?>
-<small>We ask that you make donation of $<?php the_field('min_donation'); ?> or more. You may also make a contribution over the phone by calling 213.228.7500.</small>
+<small>We ask that you make a donation of $<?php the_field('min_donation'); ?> or more. You may also make a contribution over the phone by calling 213.228.7500.</small>
 <?php else: ?>
-<small>We ask that you make donation of $25 or more. You may also make a contribution over the phone by calling 213.228.7500.</small>
+<small>We ask that you make a donation of $25 or more. You may also make a contribution over the phone by calling 213.228.7500.</small>
 <?php endif; ?>
 </div>
 
