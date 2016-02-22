@@ -1,0 +1,62 @@
+.events__carousel {
+
+  padding: @spaced*2 0 @spaced;
+
+  &-select {
+    background: @white;
+    border: none;
+    width: 100%;
+    box-shadow: 0 0 @spaced/2 darken(@bgGray, 4%);
+    .font_size(13);
+    line-height: 43px;
+    //padding-left: 50px;
+  }
+
+  &-item {
+    color: @gray;
+    margin-right: 10px;
+  }
+
+  &-image {
+    background: @black;
+  }
+
+  &-tag {
+    position: absolute;
+    height: 28px;
+    line-height: 29px;
+    padding: 0 8px;
+    background: @blue;
+    &.cat {
+      &_aloud {
+        background: @pink;
+      }
+      &_library-store-on-wheels {
+        background: @blue;
+      }
+    }
+  }
+
+  &-date {
+    color: @gray;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  &-title {
+    margin: 0;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  &-content {
+    p {
+      margin-bottom: 0;
+    }
+  }
+
+  &-footer {
+    border-top: 1px solid @bgGray;
+  }
+
+}

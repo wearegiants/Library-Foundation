@@ -3341,17 +3341,13 @@ select {
   line-height: 40px;
   border: 0;
   -webkit-font-smoothing: antialiased;
-  font-size: 15px;
-  font-size: 0.9375rem;
   border-radius: 2px;
-  border: 1px solid #ebebeb;
   padding-right: 2.5em;
   background: url('/assets/img/icon--down.svg') center right 0.75em no-repeat;
   background-size: 10px auto;
   min-width: 150px;
 }
 select option {
-  font-weight: 400!important;
   -webkit-font-smoothing: antialiased;
 }
 table {
@@ -3867,8 +3863,8 @@ input[type=button] {
   font-weight: 100!important;
 }
 .title__sm {
-  font-size: 30px;
-  font-size: 1.875rem;
+  font-size: 26px;
+  font-size: 1.625rem;
 }
 .title__md {
   font-size: 48px;
@@ -3888,6 +3884,24 @@ input[type=button] {
 }
 @media screen and (min-width: 980px) {
   .title__lg {
+    font-size: 66px;
+    font-size: 4.125rem;
+  }
+}
+@media screen and (min-width: 300px) {
+  .title__xl {
+    font-size: 38px;
+    font-size: 2.375rem;
+  }
+}
+@media screen and (min-width: 740px) {
+  .title__xl {
+    font-size: 52px;
+    font-size: 3.25rem;
+  }
+}
+@media screen and (min-width: 980px) {
+  .title__xl {
     font-size: 66px;
     font-size: 4.125rem;
   }
@@ -3938,11 +3952,59 @@ input[type=button] {
   margin-bottom: 25px;
   font-family: 'Gotham', sans-serif;
   font-weight: 400;
-  font-weight: bold;
+  font-weight: 300;
 }
 .spotlight__item-bg {
   background-position: center center;
   background-size: cover;
   z-index: 8;
   opacity: .65;
+}
+.events__carousel {
+  padding: 50px 0 25px;
+}
+.events__carousel-select {
+  background: #fff;
+  border: none;
+  width: 100%;
+  box-shadow: 0 0 12.5px #eeeeee;
+  font-size: 13px;
+  font-size: 0.8125rem;
+  line-height: 43px;
+}
+.events__carousel-item {
+  color: #999999;
+  margin-right: 10px;
+}
+.events__carousel-image {
+  background: #333;
+}
+.events__carousel-tag {
+  position: absolute;
+  height: 28px;
+  line-height: 29px;
+  padding: 0 8px;
+  background: #1CA4DE;
+}
+.events__carousel-tag.cat_aloud {
+  background: #e2438c;
+}
+.events__carousel-tag.cat_library-store-on-wheels {
+  background: #1CA4DE;
+}
+.events__carousel-date {
+  color: #999999;
+  display: block;
+  margin-bottom: 5px;
+}
+.events__carousel-title {
+  margin: 0;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+.events__carousel-content p {
+  margin-bottom: 0;
+}
+.events__carousel-footer {
+  border-top: 1px solid #F8F8F8;
 }

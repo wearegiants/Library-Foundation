@@ -13,7 +13,7 @@
 <div class="banner banner__lg relative">
 
 <div class="home__carousel-content pinned pinned__bottom" style="margin-bottom:8px">
-<h2 class="home__carousel-title color__white title title__lg"><?php echo $slide['title']; ?></h2>
+<h2 class="home__carousel-title color__white title title__xl"><?php echo $slide['title']; ?></h2>
 <span class="home__carousel-subtitle bg__color-<?php echo $slide['color']; ?> color__white accent accent__sm"><?php echo $slide['link_text']; ?></span>
 <span class="home__carousel-subtitle fs-sm-hide fs-md-hide color__white accent accent__sm"><?php echo $slide['subtitle']; ?></span>
 </div>

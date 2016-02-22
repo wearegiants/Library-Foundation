@@ -4,7 +4,7 @@
   font-weight: 100!important;
 
   &__sm {
-    .font_size(30);
+    .font_size(26);
   }
 
   &__md {
@@ -12,6 +12,18 @@
   }
 
   &__lg {
+    @media @min {
+      .font_size(38);  
+    }
+    @media @tablet {
+      .font_size(52);
+    }
+    @media @desktop {
+      .font_size(66);
+    }
+  }
+
+  &__xl {
     @media @min {
       .font_size(38);  
     }
