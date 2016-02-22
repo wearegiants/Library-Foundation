@@ -28,6 +28,7 @@
         <div class="wrapper">
           <span class="spotlight__item-subtitle accent accent__sm color__white"><?php echo $slide['subtitle']; ?></span>
           <h3 class="spotlight__item-title title<?php echo $size; ?> color__white"><?php echo $slide['title']; ?></h3>
+          <span class="accent accent__sm color__white75">View More</span>
         </div>
       </div>
       <div class="covered spotlight__item-bg" style="background-image: url(<?php echo $slide['image']['sizes']['large']; ?>)"></div>

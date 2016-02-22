@@ -204,6 +204,6 @@
   </div>
 </div>
 
-<?php include locate_template('templates/home-featured.php' );?>
+<?php include locate_template('templates/home-spotlight.php' );?>
 
 <?php get_footer(); ?>

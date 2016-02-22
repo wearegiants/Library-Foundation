@@ -3059,6 +3059,12 @@ img.rounded {
 .color__white {
   color: #fff;
 }
+.color__white50 {
+  color: rgba(255, 255, 255, 0.5);
+}
+.color__white75 {
+  color: rgba(255, 255, 255, 0.75);
+}
 .color__gray {
   color: #666666;
 }
@@ -3926,10 +3932,13 @@ input[type=button] {
   display: block;
 }
 .spotlight__item-title {
-  font-weight: 300;
-  text-transform: lowercase;
+  text-transform: uppercase;
   line-height: 1.2;
   margin: 0;
+  margin-bottom: 25px;
+  font-family: 'Gotham', sans-serif;
+  font-weight: 400;
+  font-weight: bold;
 }
 .spotlight__item-bg {
   background-position: center center;
