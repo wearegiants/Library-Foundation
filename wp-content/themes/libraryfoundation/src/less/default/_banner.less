@@ -1,0 +1,46 @@
+@banner_sm: 450px;
+@banner_md: 550px;
+@banner_lg: 650px;
+
+.banner {
+
+  @media @min {
+    height: @banner_sm
+  }
+  @media @tablet {
+    height: @banner_md;
+  }
+  @media @desktop {
+    height: @banner_lg;
+  }
+
+  &__sm {
+    @media @min {
+      height: @banner_sm*.5
+    }
+    @media @tablet {
+      height: @banner_md*.5;
+    }
+    @media @desktop {
+      height: @banner_lg*.5;
+    }
+  }
+
+  &__md {
+    @media @min {
+      height: @banner_sm*.75
+    }
+    @media @tablet {
+      height: @banner_md*.75;
+    }
+    @media @desktop {
+      height: @banner_lg*.75;
+    }
+  }
+
+  &__padded {
+    height: auto;
+    padding: @spaced*4 0;
+  }
+
+}

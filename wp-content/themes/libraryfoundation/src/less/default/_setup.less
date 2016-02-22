@@ -1,0 +1,224 @@
+@root_font_size: 16;
+
+// Media Queries
+@min:     ~"screen and (min-width: 300px)";
+@mobile:  ~"screen and (min-width: 500px)";
+@tablet:  ~"screen and (min-width: 740px)";
+@desktop: ~"screen and (min-width: 980px)";
+@max:     ~"screen and (min-width: 1220px)";
+
+// Neutrals
+@textGray:    #666666;
+@bgGray:      #F8F8F8;
+@lighterGray: #E7E7EC;
+@lightGray:   #CBCBD2;
+@gray:        #999999;
+
+// Colors
+@yellow:      #FED406;
+@green:       #32B375;
+@darkgreen:   #0A693A;
+@blue:        #1CA4DE;
+@brown:       #9E6927;
+@orange:      #E37428;
+@pink:        RGBA(226, 67, 140, 1);
+@teal:        #3BB8EA;
+
+// UI
+@success:     #74C080;
+@warning:     #FA9F47;
+@error:       #D64242;
+
+@mainColor:   @error;
+
+@black0:      rgba(0, 0, 0, 0);
+@black25:     rgba(0, 0, 0, 0.25);
+@black50:     rgba(0, 0, 0, 0.5);
+@black75:     rgba(0, 0, 0, 0.75);
+@black90:     rgba(0, 0, 0, 0.9);
+@black100:    rgba(0, 0, 0, 1);
+
+@white0:      rgba(255, 255, 255, 0);
+@white25:     rgba(255, 255, 255, 0.25);
+@white50:     rgba(255, 255, 255, 0.5);
+@white75:     rgba(255, 255, 255, 0.75);
+
+@black:       #333;
+@white:       #fff;
+
+@spaced:      25px;
+
+// Mixins
+.font_size(@px_size) {
+  @px: @px_size;
+  @rem: (@px_size / @root_font_size);
+  font-size: ~"@{px}px";
+  font-size: ~"@{rem}rem";
+}
+
+.rgba_background(@base, @alpha) {
+  background-color: rgba(red(@base), green(@base), blue(@base), @alpha);
+}
+
+.cover() {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.center() {
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.absolute_center_parent() {
+  position: relative;
+}
+
+.absolute_center() {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  margin: auto;
+  right: 0;
+  top: 0;
+}
+
+.transition(){
+  transition: 300ms ease;
+}
+
+.ellipsis() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Helpers
+.img-responsive {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+img.rounded {
+  display: block;
+  border-radius: 50%;
+}
+
+.centered {
+  float: none!important;
+  margin: auto!important;
+}
+
+.wrapper {
+  padding: @spaced/1.5;
+}
+
+.covered{
+  .cover();
+}
+
+// Color Modifiers
+
+.bg__color {
+  &-black {
+    background: @black;
+  }
+  &-white {
+    background: @white;
+  }
+  &-gray {
+    background: @gray
+  }
+  &-bgGray {
+    background: @bgGray
+  }
+  &-orange {
+    background-color: @orange;
+  }
+  &-pink {
+    background-color: @pink;
+  }
+  &-blue {
+    background-color: @blue;
+  }
+  &-teal {
+    background-color: @teal;
+  }
+}
+
+.color {
+  &__black {
+    color: @black;
+  }
+  &__white {
+    color: @white;
+  }
+  &__gray {
+    color: @textGray
+  }
+  &__blue {
+    color: @blue;
+  }
+}
+
+.alert {
+
+  .font_size(15);
+  background: @lighterGray;
+  color: @textGray;
+  display: block;
+  margin: 0 0 10px 0;
+  font-weight: 400;
+  border-radius: 3px;
+  padding: 8px 15px;
+
+  p {
+    margin: 0;
+    color: inherit;
+  }
+
+  &.alert-danger {
+    background: @error;
+    color: @white;
+  }
+
+  &.alert-success {
+    background: @success;
+    color: @white;
+  }
+
+}
+
+.text {
+  &-left {
+    text-align: left;
+  }
+  &-center {
+    text-align: center;
+  }
+  &-right {
+    text-align: right;
+  }
+}
+
+.divider {
+  background: @lighterGray;
+  &.vertical {
+    width: 1px;
+    margin: auto;
+  }
+}
+
+.relative {
+  position: relative;
+}

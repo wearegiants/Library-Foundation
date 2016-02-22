@@ -1,0 +1,38 @@
+.title {
+
+  .headerFont();
+  font-weight: 100!important;
+
+  &__sm {
+    .font_size(20);
+  }
+
+  &__md {
+    .font_size(36);
+  }
+
+  &__lg {
+    @media @min {
+      .font_size(38);  
+    }
+    @media @tablet {
+      .font_size(52);
+    }
+    @media @desktop {
+      .font_size(66);
+    }
+  }
+
+}
+
+.accent {
+
+  .accentFont();
+  text-transform: uppercase;
+  letter-spacing: 1px;
+
+  &__sm {
+    .font_size(12);
+  }
+
+}

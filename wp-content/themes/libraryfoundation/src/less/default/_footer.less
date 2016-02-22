@@ -1,0 +1,41 @@
+.footer {
+
+  .mainFont();
+  font-weight: 400!important;
+
+  p {
+    font-weight: inherit;
+    color: inherit;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  &__module {
+    .btn {
+      margin-bottom: 0;
+      margin-top: @spaced/2;
+    }
+    &-title {
+      margin-bottom: 0;
+      font-weight: 100
+    }
+    &-wrapper {
+      @media @min {
+        height: 80px;
+      }
+      @media @tablet {
+        height: 140px;
+      }
+      @media @desktop {
+        height: 170px;
+      }
+    }
+    &-bg {
+      background-size: cover;
+      background-position: center center;
+    }
+  }
+
+}

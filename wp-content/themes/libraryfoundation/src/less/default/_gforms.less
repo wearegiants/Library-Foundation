@@ -1,0 +1,40 @@
+.gform {
+	&_wrapper {
+		min-width: 100%;
+		background: @white;
+		@media @mobile {
+			padding: 0;
+		}
+		@media @tablet {
+			padding: 10px 0px 10px 17px;
+			box-shadow: 0 1px 4px fade(@black, 20%);
+		}
+		@media @desktop {
+			padding: 10px 0px 10px 20px;
+		}
+	}
+	&_body {
+		min-width: 100%;
+	}
+	&_fields {
+		.gfield {
+			&_label {
+				font-weight: 400!important;
+				margin-bottom: 0px!important
+			}
+			&_description {
+				padding-top: 0!important;
+			}
+			input {
+				margin-bottom: 0;
+			}
+			&:before {
+				display: none;
+			}
+		}
+	}
+	&_footer {
+		margin-top: 0!important;
+		padding-bottom: 0!important;
+	}
+}

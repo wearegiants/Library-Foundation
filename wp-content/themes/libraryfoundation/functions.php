@@ -12,10 +12,6 @@ include_once locate_template('/lib/miles.php' );
 include_once locate_template('/lib/woo-confirmations.php' );
 include_once locate_template('/lib/videoembed.php' );
 //include_once locate_template('/lib/woo-ajax.php' );
-//include_once locate_template('/lib/htmlcleanup.php' );
-
-// HTML Compression
-// include_once ('lib/wp-html-compression/wp-html-compression.php' );
 
 // ACF Includes Nonsense
 
@@ -62,6 +58,8 @@ $settings = array(
   'available_scripts' => array(
     'jquery-g'          => array('//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js','1.11.1'),
     'scripts'           => array('/assets/javascripts/scripts.min.js'),
+    'new_scripts'       => array('/assets/js/new_main.min.js'),
+    'new_vendor'        => array('/assets/js/new_vendor.min.js'),
     ),
 
   'default_scripts'   => array(
@@ -69,6 +67,7 @@ $settings = array(
 
   'available_stylesheets' => array(
     'default'           => array('/assets/css/main.css'),
+    'new_default'       => array('/assets/css/new_main.min.css'),
     ),
 
   'default_stylesheets' => array(
