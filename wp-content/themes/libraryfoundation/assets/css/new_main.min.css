@@ -3024,6 +3024,7 @@ img.rounded {
   position: absolute;
   top: 0;
   width: 100%;
+  z-index: 50;
 }
 .bg__color-black {
   background: #333;
@@ -3314,7 +3315,6 @@ select {
   border-radius: 0;
   height: 40px;
   line-height: 40px;
-  background: transparent;
   border: 0;
   -webkit-font-smoothing: antialiased;
   font-size: 15px;
@@ -3371,7 +3371,6 @@ input[type=button] {
   border-radius: 0;
   height: 40px;
   line-height: 40px;
-  background: transparent;
   border: 0;
   -webkit-font-smoothing: antialiased;
   transition: background-color 300ms ease;
@@ -3392,7 +3391,6 @@ input[type=button] {
   border-radius: 0;
   height: 40px;
   line-height: 40px;
-  background: transparent;
   border: 0;
   -webkit-font-smoothing: antialiased;
   transition: background-color 300ms ease;
@@ -3465,8 +3463,8 @@ input[type=button] {
 @media screen and (min-width: 300px) {
   .btn__logo,
   .button__logo {
-    width: 125px;
-    height: 125px;
+    width: 82px;
+    height: 82px;
   }
 }
 @media screen and (min-width: 740px) {
@@ -3492,7 +3490,7 @@ input[type=button] {
 @media screen and (min-width: 300px) {
   .btn__logo-wrapper,
   .button__logo-wrapper {
-    width: 125px;
+    width: 82px;
   }
 }
 @media screen and (min-width: 740px) {
@@ -3734,6 +3732,16 @@ input[type=button] {
 .header .btn {
   color: #fff;
   margin-bottom: 0;
+}
+@media screen and (min-width: 980px) {
+  .header .hide__lg {
+    display: none;
+  }
+}
+@media screen and (min-width: 1220px) {
+  .header .hide__lg {
+    display: inline-block;
+  }
 }
 .footer {
   font-family: 'Source Sans Pro', sans-serif;

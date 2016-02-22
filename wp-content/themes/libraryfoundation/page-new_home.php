@@ -1,7 +1,7 @@
 <?php Themewrangler::setup_page('new_default','new_vendor | new_scripts');get_header('v2'/***Template Name: New Home */); ?>
 
 <div class="home fs-grid">
-<div class="home__carousel bg__color-black fs_carousel" data-carousel-options='{"controls":true,"pagination":false}'>
+<div class="home__carousel fs_carousel" data-carousel-options='{"controls":true,"pagination":false}'>
 
 <?php 
 	$slides = get_field('carousel', 4);
@@ -10,6 +10,7 @@
 ?>
 
 <div class="home__carousel-slide relative">
+<a href="<?php echo $slide['link']; ?>" class="covered"></a>
 <div class="fs-row">
 <div class="fs-cell fs-lg-10 fs-md-6 fs-sm-3">
 <div class="banner banner__md relative">
