@@ -3,6 +3,7 @@
 
 .buttons() {
   .accentFont();
+  .font_size(14);
   text-transform: uppercase;
   letter-spacing: 1px;
   cursor: pointer;
@@ -46,8 +47,7 @@ input[type=button] {
   } 
 
   &__rounded {
-    height: 40px;
-    line-height: 42px;
+    line-height: @height_default + 2;
     border-radius: 20px;
     padding: 0 20px;
   }

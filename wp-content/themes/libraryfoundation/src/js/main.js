@@ -7,7 +7,7 @@ function mobileMenu(){
 }
 
 function fs_defaults(){
-	$('.fs_carousel').carousel();
+	$('.fs__carousel').carousel();
 }
 
 $(document).ready(function(){

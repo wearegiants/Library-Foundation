@@ -3018,6 +3018,9 @@ img.rounded {
 .wrapper {
   padding: 16.66666667px;
 }
+.wrapper__extra {
+  padding: 37.5px;
+}
 .covered {
   height: 100%;
   left: 0;
@@ -3061,6 +3064,18 @@ img.rounded {
 }
 .color__blue {
   color: #1CA4DE;
+}
+.color__facebook {
+  color: #46619E;
+}
+.color__twitter {
+  color: #00BBF2;
+}
+.color__youtube {
+  color: #CA3738;
+}
+.color__flickr {
+  color: #EA2582;
 }
 .alert {
   font-size: 15px;
@@ -3304,6 +3319,9 @@ select {
   appearance: none;
   -webkit-appearance: none;
   font-family: 'Gotham', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 1px;
   cursor: pointer;
@@ -3355,11 +3373,21 @@ table tr th {
 table tr th {
   text-align: center;
 }
+@font-face {
+  font-family: "Gotham";
+  src: url('/assets/fonts/GothamMedium.eot');
+  src: url('/assets/fonts/GothamMedium.eot?#iefix') format('embedded-opentype'), url('/assets/fonts/GothamMedium.woff') format('woff'), url('/assets/fonts/GothamMedium.ttf') format('truetype'), url('/assets/fonts/GothamMedium.svg') format('svg');
+  font-weight: 300;
+  font-style: normal;
+}
 button,
 input[type=submit],
 input[type=search],
 input[type=button] {
   font-family: 'Gotham', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 1px;
   cursor: pointer;
@@ -3380,6 +3408,9 @@ input[type=button] {
 .btn,
 .button {
   font-family: 'Gotham', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 1px;
   cursor: pointer;
@@ -3413,7 +3444,6 @@ input[type=button] {
 }
 .btn__rounded,
 .button__rounded {
-  height: 40px;
   line-height: 42px;
   border-radius: 20px;
   padding: 0 20px;
@@ -3691,17 +3721,32 @@ input[type=button] {
 }
 @media screen and (min-width: 300px) {
   .banner__md {
-    height: 337.5px;
+    height: 315px;
   }
 }
 @media screen and (min-width: 740px) {
   .banner__md {
-    height: 412.5px;
+    height: 385px;
   }
 }
 @media screen and (min-width: 980px) {
   .banner__md {
-    height: 487.5px;
+    height: 456px;
+  }
+}
+@media screen and (min-width: 300px) {
+  .banner__md-half {
+    height: 158px;
+  }
+}
+@media screen and (min-width: 740px) {
+  .banner__md-half {
+    height: 193px;
+  }
+}
+@media screen and (min-width: 980px) {
+  .banner__md-half {
+    height: 228px;
   }
 }
 .banner__padded {
@@ -3725,7 +3770,7 @@ input[type=button] {
   position: fixed;
 }
 .header {
-  padding: 16.66666667px 0;
+  padding: 25px 0;
   z-index: 99;
   border-bottom: 1px solid rgba(255, 255, 255, 0.25);
 }
@@ -3747,6 +3792,7 @@ input[type=button] {
   font-family: 'Source Sans Pro', sans-serif;
   font-weight: 400;
   font-weight: 400!important;
+  padding-bottom: 50px;
 }
 .footer p {
   font-weight: inherit;
@@ -3754,6 +3800,13 @@ input[type=button] {
 }
 .footer a {
   text-decoration: none;
+}
+.footer__social {
+  font-size: 20px;
+  font-size: 1.25rem;
+}
+.footer__social a {
+  margin-left: 8px;
 }
 .footer__module .btn {
   margin-bottom: 0;
@@ -3808,12 +3861,12 @@ input[type=button] {
   font-weight: 100!important;
 }
 .title__sm {
-  font-size: 20px;
-  font-size: 1.25rem;
+  font-size: 30px;
+  font-size: 1.875rem;
 }
 .title__md {
-  font-size: 36px;
-  font-size: 2.25rem;
+  font-size: 48px;
+  font-size: 3rem;
 }
 @media screen and (min-width: 300px) {
   .title__lg {
@@ -3835,6 +3888,7 @@ input[type=button] {
 }
 .accent {
   font-family: 'Gotham', sans-serif;
+  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -3860,4 +3914,26 @@ input[type=button] {
   z-index: 0;
   background-size: cover;
   background-position: center top;
+}
+.spotlight__item {
+  background: #333;
+}
+.spotlight__item-content {
+  z-index: 9;
+}
+.spotlight__item-subtitle {
+  margin-bottom: 10px;
+  display: block;
+}
+.spotlight__item-title {
+  font-weight: 300;
+  text-transform: lowercase;
+  line-height: 1.2;
+  margin: 0;
+}
+.spotlight__item-bg {
+  background-position: center center;
+  background-size: cover;
+  z-index: 8;
+  opacity: .65;
 }

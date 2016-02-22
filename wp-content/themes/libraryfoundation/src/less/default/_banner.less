@@ -28,13 +28,24 @@
 
   &__md {
     @media @min {
-      height: @banner_sm*.75
+      height: @banner_sm*.70
     }
     @media @tablet {
-      height: @banner_md*.75;
+      height: @banner_md*.70;
     }
     @media @desktop {
-      height: @banner_lg*.75;
+      height: @banner_lg*.70 + 1;
+    }
+    &-half {
+      @media @min {
+        height: @banner_sm*.70 * .5 + .5;
+      }
+      @media @tablet {
+        height: @banner_md*.70 * .5 + .5;
+      }
+      @media @desktop {
+        height: @banner_lg*.70 * .5 + .5;
+      }
     }
   }
 

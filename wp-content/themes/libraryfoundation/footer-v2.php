@@ -1,18 +1,27 @@
-<hr class="divider compact">
+</div><!-- #wrapper -->
+
+<hr class="invisible">
 
 <?php include locate_template('partials/footer__modules.php' );?>
 
-<hr class="invisible">
+<hr class="divider">
 
 <footer class="footer fs-grid">
 <div class="fs-row">
 <div class="fs-cell fs-lg-fourth fs-md-half fs-sm-full"><a href="/">The Library Foundation<br>of Los Angeles</a></div>
 <div class="fs-cell fs-lg-fourth fs-md-half fs-sm-full">630 West 5th Street<br>Los Angeles, CA 90071</div>
 <div class="fs-cell fs-lg-fourth fs-md-half fs-sm-full">213.228.7500<br><a href="mailto:info@lfla.org">info@lfla.org</a></div>
-<div class="fs-cell fs-lg-fourth fs-md-half fs-sm-full"><?php the_field('social_links', 'option'); ?></div>
+<div class="fs-cell fs-lg-fourth fs-md-half fs-sm-full text-right">
+  <div class="footer__social">
+    <a href="#" class="ss-icon ss-social ss-facebook color__facebook"></a>
+    <a href="#" class="ss-icon ss-social ss-twitter color__twitter"></a>
+    <a href="#" class="ss-icon ss-social ss-youtube color__youtube"></a>
+    <a href="#" class="ss-icon ss-social ss-flickr color__flickr"></a>
+  </div>
+</div>
 <div class="fs-cell fs-all-full">
-<hr class="divider compact">
-© 2015 Library Foundation of Los Angeles |
+<hr class="divider">
+© <?php echo date('Y'); ?> Library Foundation of Los Angeles |
 <a href="<?php echo get_permalink(4738); ?>">Contact Us</a>|
 <a href="<?php echo get_permalink(26929); ?>">Donors Privacy</a>
 </div>
@@ -33,7 +42,7 @@
 <?php the_widget( 'WP_Widget_Text', 'text', 3 ); ?>
 
 <?php wp_footer(); ?>
-<?php include locate_template('/lib/photoswipe.php' );?>
+
 <?php include locate_template('/templates/search-footer.php' );?>
 <!--[if lte IE 6]><script src="/assets/warning/warning.js"></script><script>window.onload=function(){e("/assets/warning/")}</script><![endif]-->
 

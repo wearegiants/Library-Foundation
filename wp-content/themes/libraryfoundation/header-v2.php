@@ -25,16 +25,6 @@
 
 </head>
 
-<?php
-  $menuParameters = array(
-    'container'       => false,
-    'echo'            => false,
-    'items_wrap'      => '%3$s',
-    'theme_location'  =>'main-menu',
-    'walker'          => new MV_Cleaner_Walker_Nav_Menu(),
-    'depth'           => 0,
-  );
-?>
 
 <body <?php body_class(); ?>>
 
