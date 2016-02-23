@@ -7,10 +7,10 @@
 ?>
 
 <div class="home__carousel-slide relative">
-<a href="<?php echo $slide['link']; ?>" class="covered"></a>
+<!--<a href="<?php echo $slide['link']; ?>" class="covered"></a>-->
 <div class="fs-row">
 <div class="fs-cell fs-lg-10 fs-md-6 fs-sm-3">
-<div class="banner banner__md relative">
+<div class="banner banner__lg relative">
 
 <div class="home__carousel-content pinned pinned__bottom" style="margin-bottom:8px">
 <h2 class="home__carousel-title color__white title title__xl"><?php echo $slide['title']; ?></h2>

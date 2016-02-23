@@ -3,10 +3,16 @@
 <div class="home fs-grid">
 
 <?php include locate_template('partials/home__carousel.php' );?>
+
+</div><!-- .home .grid -->
+
+<div class="home fs-grid">
+
 <?php include locate_template('partials/home__about.php' );?>
 <?php include locate_template('partials/home__events.php' );?>
 <?php include locate_template('partials/home__spotlight.php' );?>
 
 </div><!-- .home .grid -->
+
 
 <?php get_footer('v2'); ?>

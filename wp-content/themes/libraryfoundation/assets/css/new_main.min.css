@@ -3723,7 +3723,7 @@ input[type=button] {
 }
 @media screen and (min-width: 300px) {
   .banner {
-    height: 550px;
+    height: 450px;
   }
 }
 @media screen and (min-width: 740px) {
@@ -3732,6 +3732,11 @@ input[type=button] {
   }
 }
 @media screen and (min-width: 980px) {
+  .banner {
+    height: 550px;
+  }
+}
+@media screen and (min-width: 1220px) {
   .banner {
     height: 650px;
   }
@@ -3800,6 +3805,16 @@ input[type=button] {
 }
 .pinned__fixed {
   position: fixed;
+}
+body {
+  max-width: 1480px;
+  margin: auto;
+  position: relative;
+  background: #fff;
+  box-shadow: 0 0 25px #ebebeb;
+}
+html {
+  background: #F8F8F8;
 }
 .header {
   z-index: 99;
@@ -3976,6 +3991,12 @@ input[type=button] {
   .title__xl {
     font-size: 66px;
     font-size: 4.125rem;
+  }
+}
+@media screen and (min-width: 1220px) {
+  .title__xl {
+    font-size: 90px;
+    font-size: 5.625rem;
   }
 }
 .accent {

@@ -5,12 +5,15 @@
 .banner {
 
   @media @min {
-    height: @banner_sm
+    height: @banner_sm - 100
   }
   @media @tablet {
     height: @banner_md;
   }
   @media @desktop {
+    height: @banner_md;
+  }
+  @media @max {
     height: @banner_lg;
   }
 
