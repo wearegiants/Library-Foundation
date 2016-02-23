@@ -14,5 +14,11 @@
 
 </div><!-- .home .grid -->
 
+<div id="mailchimp__signup" class="mfp_hide modal">
+	<div class="wrapper wrapper__extra bg__color-white">
+		<span class="title title__md color__blue">Join the LFLA newsletter</span>
+		<?php echo do_shortcode('[epm_mailchimp]' );?>
+	</div>
+</div>
 
 <?php get_footer('v2'); ?>

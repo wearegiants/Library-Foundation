@@ -11,7 +11,7 @@
         <div class="wrapper">
           <span class="accent accent__sm color__gray">Join the LFLA Newsletter</span><br>
           <em>We'd love to get to know you!</em>
-          <form class="fs-row">
+          <form id="home_sub" class="fs-row">
             <div class="fs-cell fs-all-full">
               <input placeholder="Your Email Address" type="text" class="btn__input fs-cell fs-lg-8 fs-md-4 fs-sm-3 fs-contained">
               <hr class="invisible compact fs-lg-hide fs-md-hide fs-sm-3">

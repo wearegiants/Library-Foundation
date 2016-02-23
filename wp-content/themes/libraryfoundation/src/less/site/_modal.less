@@ -1,0 +1,39 @@
+.modal {
+	max-width: 600px;
+	margin: auto;
+
+	.epm {
+		&-submit-chimp {
+			background-color: @blue;
+			color: @white;
+			border: none!important;
+			margin-bottom: 0;
+			margin-top: @spaced/2;
+			border-radius: 2px;
+			box-shadow: none;
+			line-height: 43px;
+			&:hover {
+				background-color: @blue;
+			}
+		}
+		&-form-field {
+			input {
+				padding: @spaced/2.5;
+				box-shadow: none!important;
+				background-color: @bgGray;
+			}
+		}
+		&-error {
+			background-color: fade(red, 30%);
+			border: 1px solid fade(red, 20%);
+			color: fade(red, 60%);
+			padding: @spaced/3;
+			margin-bottom: 10px;
+			border-radius: 3px;
+			p {
+				margin: 0;
+			}
+		}
+	}
+
+}

@@ -6,6 +6,17 @@ function mobileMenu(){
 	$(".mobile-toggle").swap();
 }
 
+function openSub(){
+	$("#home_sub").on('click', function(){
+		$.magnificPopup.open({
+			items: {
+        src: '#mailchimp__signup' 
+    	},
+    	type: 'inline'
+		});
+	});
+}
+
 function fs_defaults(){
 	$('.fs__carousel').carousel();
 }
@@ -13,4 +24,5 @@ function fs_defaults(){
 $(document).ready(function(){
 	//mobileMenu();
 	fs_defaults();
+	openSub();
 });
