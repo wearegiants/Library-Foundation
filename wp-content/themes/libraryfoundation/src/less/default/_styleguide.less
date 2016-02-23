@@ -1,10 +1,22 @@
 .title {
 
   .headerFont();
-  font-weight: 100!important;
+  font-weight: 100;
+
+  &__xs {
+    .font_size(17);
+  }
 
   &__sm {
-    .font_size(26);
+    @media @min {
+      .font_size(18);
+    }
+    @media @tablet {
+      .font_size(26);
+    }
+    @media @desktop {
+      .font_size(26); 
+    }
   }
 
   &__md {
@@ -45,6 +57,18 @@
 
   &__sm {
     .font_size(12);
+  }
+
+  &__lg {
+    @media @min {
+      .font_size(16);  
+    }
+    @media @tablet {
+      .font_size(16);
+    }
+    @media @desktop {
+      .font_size(18);
+    }
   }
 
 }

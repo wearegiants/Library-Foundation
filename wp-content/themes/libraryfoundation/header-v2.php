@@ -30,25 +30,26 @@
 
 <header class="header pinned pinned__top fs-grid fs-grid-fluid">
   <div class="fs-row">
-    <div class="fs-cell fs-lg-8 fs-md-hide fs-sm-hide">
+    <div class="fs-cell fs-lg-12 fs-md-hide fs-sm-hide">
       <a class="btn btn__nav btn__logo-wrapper" href="/"><span class="btn__logo">LFLA</span></a>
-      <a class="btn btn__nav" href="/what-we-fund/">What We Fund</a>
+      <a class="btn btn__nav  hide__lg" href="/what-we-fund/">What We Fund</a>
       <a class="btn btn__nav" href="/support-us/">Support Us</a>
       <a class="btn btn__nav" href="/calendar/category/aloud/">ALOUD</a>
       <a class="btn btn__nav" href="/calendar">Calendar</a>
       <a class="btn btn__nav hide__lg" href="http://shop.lfla.org/">The Library Store</a>
       <a class="btn btn__nav hide__lg" href="/cart">Cart</a>
       <a class="btn btn__nav hide__lg" href="/blog/">Blog</a>
-    </div>
-    <div class="fs-cell fs-lg-4 fs-md-hide fs-sm-hide text-right">
-      <a class="btn btn__rounded bg__color-blue" href="/what-we-fund/">Donate</a>
-      <a class="btn btn__rounded bg__color-blue" href="/support-us/">Become a Member</a>
+      <div class="fl__right">
+        <a class="btn btn__rounded bg__color-blue" href="/what-we-fund/">Donate</a>
+        <a class="btn btn__rounded bg__color-blue" href="/support-us/">Become a Member</a>
+      </div>
     </div>
     <div class="fs-cell fs-lg-hide fs-md-half fs-sm-half">
       <a class="btn btn__nav btn__logo-wrapper" href="/"><span class="btn__logo">LFLA</span></a>
     </div>
     <div class="fs-cell fs-lg-hide fs-md-half fs-sm-half text-right">
-      <a class="btn btn__nav" href="/what-we-fund/">Menu</a>
+      <a class="btn btn__nav mobile__nav" href="#">Menu</a>
+      <a class="btn btn__nav ss-gizmo ss-search" href="#"></a>
     </div>
   </div>
 </header>

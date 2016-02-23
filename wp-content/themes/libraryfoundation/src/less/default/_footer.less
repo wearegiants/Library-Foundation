@@ -13,14 +13,29 @@
     text-decoration: none;
   }
 
+  .text-right {
+    @media @min {
+      text-align: left;
+    }
+    @media @desktop {
+      text-align: right;
+    }
+  }
+
   &__social {
     .font_size(20);
     a {
       margin-left: 8px;
+      &:first-child {
+        margin-left: 0;
+      }
     }
   }
 
   &__module {
+
+    margin-bottom: @spaced*2;
+
     .btn {
       margin-bottom: 0;
       margin-top: @spaced/2;

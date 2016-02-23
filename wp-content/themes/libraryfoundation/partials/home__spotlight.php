@@ -1,5 +1,14 @@
 <hr class="invisible">
 
+<div class="fs-row">
+  <div class="fs-cell fs-full-all">
+    <hr class="invisible fs-lg-hide">
+    <h3 class="home__section-title accent accent__lg color__blue">Special Events</h3>
+  </div>
+</div>
+
+<hr class="invisible compact">
+
 <div class="spotlight">
 <div class="fs-row">
 <div class="fs-cell fs-all-full">
@@ -11,14 +20,24 @@
   $counter = 1;
   foreach($spotlight as $slide):
 
-  if ( $counter % 4 == 0 || $counter == 1 ) {
-    $half = '';
-    $size = '__md';
-    echo '<div class="fs_carousel-slide"><div class="fs-cell fs-all-full fs-contained">';
+  if (!wp_is_mobile()){
+
+    if ( $counter % 4 == 0 || $counter == 1 ) {
+      $half = '';
+      $size = '__md';
+      echo '<div class="fs_carousel-slide"><div class="fs-cell fs-all-full fs-contained">';
+    } else {
+      $half = '-half';
+      $size = '__sm';
+    }
+
   } else {
+
     $half = '-half';
     $size = '__sm';
+
   }
+
 
 ?>
 
@@ -36,8 +55,10 @@
   </div>
 
 <?php 
-  if ( $counter % 3 == 0 ) {
-    echo '</div></div>';
+  if (!wp_is_mobile()){
+    if ( $counter % 3 == 0 ) {
+      echo '</div></div>';
+    }
   }
 ?>
 

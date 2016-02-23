@@ -4,13 +4,16 @@
 
 <?php include locate_template('partials/footer__modules.php' );?>
 
-<hr class="divider">
+<hr class="divider compact">
 
 <footer class="footer fs-grid">
 <div class="fs-row">
-<div class="fs-cell fs-lg-fourth fs-md-half fs-sm-full"><a href="/">The Library Foundation<br>of Los Angeles</a></div>
-<div class="fs-cell fs-lg-fourth fs-md-half fs-sm-full">630 West 5th Street<br>Los Angeles, CA 90071</div>
-<div class="fs-cell fs-lg-fourth fs-md-half fs-sm-full">213.228.7500<br><a href="mailto:info@lfla.org">info@lfla.org</a></div>
+<div class="fs-cell fs-lg-fourth fs-md-half fs-sm-full"><a href="/">The Library Foundation <br class="fs-sm-hide">of Los Angeles</a></div>
+<hr class="divider compact fs-cell fs-lg-hide fs-md-hide fs-sm-3"/>
+<div class="fs-cell fs-lg-fourth fs-md-half fs-sm-full">630 West 5th Street <br class="fs-sm-hide">Los Angeles, CA 90071</div>
+<hr class="divider compact fs-cell fs-lg-hide fs-md-6 fs-sm-hide"/>
+<div class="fs-cell fs-lg-fourth fs-md-half fs-sm-full">213.228.7500 <span class="fs-lg-hide fs-md-hide">|</span> <br class="fs-sm-hide"><a href="mailto:info@lfla.org">info@lfla.org</a></div>
+<hr class="divider compact fs-cell fs-lg-hide fs-md-hide fs-sm-3"/>
 <div class="fs-cell fs-lg-fourth fs-md-half fs-sm-full text-right">
   <div class="footer__social">
     <a href="#" class="ss-icon ss-social ss-facebook color__facebook"></a>
@@ -20,8 +23,9 @@
   </div>
 </div>
 <div class="fs-cell fs-all-full">
-<hr class="divider">
-© <?php echo date('Y'); ?> Library Foundation of Los Angeles |
+<hr class="divider compact">
+© <?php echo date('Y'); ?> Library Foundation of Los Angeles <span class="fs-sm-hide">|</span>
+<br class="fs-lg-hide fs-md-hide">
 <a href="<?php echo get_permalink(4738); ?>">Contact Us</a>|
 <a href="<?php echo get_permalink(26929); ?>">Donors Privacy</a>
 </div>

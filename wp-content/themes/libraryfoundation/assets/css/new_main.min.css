@@ -3125,6 +3125,12 @@ img.rounded {
 .relative {
   position: relative;
 }
+.fl__right {
+  float: right;
+}
+.fl__left {
+  float: left;
+}
 *:link,
 *:visited,
 *:active,
@@ -3485,18 +3491,27 @@ input[type=button] {
 .button__nav:hover {
   background: transparent;
 }
+.btn--nav.ss-gizmo:before,
+.button--nav.ss-gizmo:before,
+.btn__nav.ss-gizmo:before,
+.button__nav.ss-gizmo:before {
+  position: relative;
+  top: .155em;
+  font-size: 16px;
+  font-size: 1rem;
+}
 .btn__logo,
 .button__logo {
   background-color: #1CA4DE;
   display: block;
   text-indent: -9999px;
-  transform: translateY(-25px);
 }
 @media screen and (min-width: 300px) {
   .btn__logo,
   .button__logo {
-    width: 82px;
-    height: 82px;
+    width: 100px;
+    height: 100px;
+    transform: translateY(-6.25px);
   }
 }
 @media screen and (min-width: 740px) {
@@ -3504,6 +3519,7 @@ input[type=button] {
   .button__logo {
     width: 125px;
     height: 125px;
+    transform: translateY(-25px);
   }
 }
 @media screen and (min-width: 980px) {
@@ -3522,7 +3538,7 @@ input[type=button] {
 @media screen and (min-width: 300px) {
   .btn__logo-wrapper,
   .button__logo-wrapper {
-    width: 82px;
+    width: 100px;
   }
 }
 @media screen and (min-width: 740px) {
@@ -3612,6 +3628,20 @@ input[type=button] {
 .button_full {
   width: 100%;
 }
+.btn__input,
+.button__input,
+.btn__submit,
+.button__submit {
+  height: 35px!important;
+  line-height: 35px!important;
+  margin: 0!important;
+  padding: 0 10px;
+}
+.btn__submit,
+.button__submit {
+  line-height: 37px!important;
+  background-color: #1CA4DE !important;
+}
 #error {
   position: relative;
 }
@@ -3693,7 +3723,7 @@ input[type=button] {
 }
 @media screen and (min-width: 300px) {
   .banner {
-    height: 450px;
+    height: 550px;
   }
 }
 @media screen and (min-width: 740px) {
@@ -3708,7 +3738,7 @@ input[type=button] {
 }
 @media screen and (min-width: 300px) {
   .banner__sm {
-    height: 225px;
+    height: 275px;
   }
 }
 @media screen and (min-width: 740px) {
@@ -3723,7 +3753,7 @@ input[type=button] {
 }
 @media screen and (min-width: 300px) {
   .banner__md {
-    height: 315px;
+    height: 385px;
   }
 }
 @media screen and (min-width: 740px) {
@@ -3738,7 +3768,7 @@ input[type=button] {
 }
 @media screen and (min-width: 300px) {
   .banner__md-half {
-    height: 158px;
+    height: 193px;
   }
 }
 @media screen and (min-width: 740px) {
@@ -3772,9 +3802,18 @@ input[type=button] {
   position: fixed;
 }
 .header {
-  padding: 25px 0;
   z-index: 99;
   border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+@media screen and (min-width: 300px) {
+  .header {
+    padding: 6.25px 0;
+  }
+}
+@media screen and (min-width: 740px) {
+  .header {
+    padding: 25px 0;
+  }
 }
 .header .btn {
   color: #fff;
@@ -3803,12 +3842,28 @@ input[type=button] {
 .footer a {
   text-decoration: none;
 }
+@media screen and (min-width: 300px) {
+  .footer .text-right {
+    text-align: left;
+  }
+}
+@media screen and (min-width: 980px) {
+  .footer .text-right {
+    text-align: right;
+  }
+}
 .footer__social {
   font-size: 20px;
   font-size: 1.25rem;
 }
 .footer__social a {
   margin-left: 8px;
+}
+.footer__social a:first-child {
+  margin-left: 0;
+}
+.footer__module {
+  margin-bottom: 50px;
 }
 .footer__module .btn {
   margin-bottom: 0;
@@ -3860,11 +3915,28 @@ input[type=button] {
 .title {
   font-family: 'Sentinel', serif;
   font-weight: 100;
-  font-weight: 100!important;
 }
-.title__sm {
-  font-size: 26px;
-  font-size: 1.625rem;
+.title__xs {
+  font-size: 17px;
+  font-size: 1.0625rem;
+}
+@media screen and (min-width: 300px) {
+  .title__sm {
+    font-size: 18px;
+    font-size: 1.125rem;
+  }
+}
+@media screen and (min-width: 740px) {
+  .title__sm {
+    font-size: 26px;
+    font-size: 1.625rem;
+  }
+}
+@media screen and (min-width: 980px) {
+  .title__sm {
+    font-size: 26px;
+    font-size: 1.625rem;
+  }
 }
 .title__md {
   font-size: 48px;
@@ -3916,6 +3988,37 @@ input[type=button] {
   font-size: 12px;
   font-size: 0.75rem;
 }
+@media screen and (min-width: 300px) {
+  .accent__lg {
+    font-size: 16px;
+    font-size: 1rem;
+  }
+}
+@media screen and (min-width: 740px) {
+  .accent__lg {
+    font-size: 16px;
+    font-size: 1rem;
+  }
+}
+@media screen and (min-width: 980px) {
+  .accent__lg {
+    font-size: 18px;
+    font-size: 1.125rem;
+  }
+}
+@media screen and (min-width: 300px) {
+  .home__about {
+    padding: 25px 0 18.75px;
+  }
+}
+@media screen and (min-width: 740px) {
+  .home__about {
+    padding: 50px 0 25px;
+  }
+}
+.home__about a {
+  color: #1CA4DE;
+}
 .home__carousel-title {
   margin: 0;
   margin-bottom: 25px;
@@ -3934,6 +4037,45 @@ input[type=button] {
   z-index: 0;
   background-size: cover;
   background-position: center top;
+}
+.home__widget {
+  box-shadow: 0 0 25px #E7E7EC;
+}
+.home__widget-footer {
+  border-top: 1px solid #E7E7EC;
+}
+.home__widget .social a {
+  font-size: 24px;
+  font-size: 1.5rem;
+  margin-right: 5px;
+  text-decoration: none;
+}
+.home__widget form {
+  padding-top: 12.5px;
+}
+.home__section-title {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  padding-left: 50px;
+  line-height: 1;
+  margin: 0;
+}
+.home__section-title:before {
+  content: '⬇';
+  font-family: 'SSGizmo';
+  color: #fff;
+  display: block;
+  height: 40px;
+  width: 40px;
+  line-height: 42px;
+  text-align: center;
+  background: #1CA4DE;
+  position: absolute;
+  top: 49%;
+  left: 0;
+  border-radius: 50%;
+  transform: translateY(-50%);
 }
 .spotlight__item {
   background: #333;
@@ -3962,15 +4104,28 @@ input[type=button] {
 }
 .events__carousel {
   padding: 50px 0 25px;
+  overflow: hidden;
 }
 .events__carousel-select {
   background: #fff;
   border: none;
   width: 100%;
   box-shadow: 0 0 12.5px #eeeeee;
-  font-size: 13px;
-  font-size: 0.8125rem;
+  font-size: 11px !important;
+  font-size: 0.6875rem !important;
+  color: #999999;
+}
+.events__carousel-select_menu {
+  margin-bottom: 0;
+  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 43px;
+}
+.events__carousel-select_icon {
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  border-right: 1px solid #F8F8F8;
 }
 .events__carousel-item {
   color: #999999;

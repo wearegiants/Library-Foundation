@@ -75,6 +75,13 @@ input[type=button] {
     &:hover {
       background: transparent;
     }
+    &.ss-gizmo {
+      &:before {
+        position: relative;
+        top: .155em;
+        .font_size(16);
+      }
+    }
   }
 
   &__logo {
@@ -82,20 +89,20 @@ input[type=button] {
     display: block;
     text-indent: -9999px;
 
-    transform: translateY(-@spaced);
-
-    @sm_height: 82px;
+    @sm_height: 100px;
     @md_height: 125px;
     @lg_height: 125px;
 
     @media @min {
       width: @sm_height;
       height: @sm_height;
+      transform: translateY(-@spaced*.25);
     }
 
     @media @tablet {
       width: @md_height;
       height: @md_height;
+      transform: translateY(-@spaced);
     }
 
     @media @desktop {
@@ -193,6 +200,17 @@ input[type=button] {
 
   &_full {
     width: 100%;
+  }
+
+  &__input, &__submit {
+    height: 35px!important;
+    line-height: 35px!important;
+    margin: 0!important;
+    padding: 0 10px;
+  }
+  &__submit {
+    line-height: 37px!important;
+    background-color: @blue!important;
   }
 
 }
