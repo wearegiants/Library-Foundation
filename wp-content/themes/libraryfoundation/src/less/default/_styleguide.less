@@ -1,7 +1,7 @@
 .title {
 
   .headerFont();
-  font-weight: 100;
+  font-weight: 300;
 
   &__xs {
     .font_size(17);
@@ -20,7 +20,15 @@
   }
 
   &__md {
-    .font_size(48);
+    @media @min {
+      .font_size(38);  
+    }
+    @media @tablet {
+      .font_size(52);
+    }
+    @media @desktop {
+      .font_size(66);
+    }
   }
 
   &__lg {
@@ -31,7 +39,7 @@
       .font_size(52);
     }
     @media @desktop {
-      .font_size(66);
+      .font_size(84);
     }
   }
 
@@ -57,6 +65,7 @@
   .accentFont();
   text-transform: uppercase;
   letter-spacing: 1px;
+  font-weight: 400;
 
   &__sm {
     .font_size(12);

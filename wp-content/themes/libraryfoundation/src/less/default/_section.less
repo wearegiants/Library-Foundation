@@ -1,0 +1,52 @@
+.section {
+	&--xs {
+		@media @min {
+			padding: @spaced 0;
+		}
+		@media @tablet {
+			padding: @spaced*.5 0;
+		}
+		@media @desktop {
+			padding: @spaced*.5 0;
+		}
+	}
+	&--sm {
+		@media @min {
+			padding: @spaced 0;
+		}
+		@media @tablet {
+			padding: @spaced*.5 0;
+		}
+		@media @desktop {
+			padding: @spaced 0;
+		}
+	}
+	&--md {
+		@media @min {
+			padding: @spaced 0;
+		}
+		@media @tablet {
+			padding: @spaced*1.5 0;
+		}
+		@media @desktop {
+			padding: @spaced*2 0;
+		}
+	}
+	&--lg {
+		@media @min {
+			padding: @spaced 0;
+		}
+		@media @tablet {
+			padding: @spaced*2.5 0;
+		}
+		@media @desktop {
+			padding: @spaced*3.5 0;
+		}
+	}
+	&--bottom {
+		padding-bottom: 0;
+	}
+	&--top {
+		padding-top: 0;
+	}
+}

@@ -1,0 +1,89 @@
+@hero__sm : 350px;
+@hero     : 455px;
+@hero__md : 700px;
+@hero__lg : 815px;
+@hero__xl : 900px;
+
+.hero {
+
+	@media @min {
+		height: @hero - 100;
+	}
+  @media @mobile {
+    height: @hero - 135;
+  }
+	@media @tablet {
+		height: @hero - 100;
+	}
+	@media @desktop {
+		height: @hero
+	}
+
+  &--sm {
+  	@media @min {
+  		height: @hero__sm - 80;
+  	}
+  	@media @tablet {
+  		height: @hero__sm - 40;
+  	}
+  	@media @desktop {
+  		height: @hero__sm
+  	}
+  }
+
+  &--md {
+    @media @min {
+      height: @hero__md - 200;
+    }
+    @media @tablet {
+      height: @hero__md - 100;
+    }
+    @media @desktop {
+      height: @hero__md
+    }
+  }
+  
+  &--lg {
+  	@media @min {
+  		height: @hero__lg - 215;
+  	}
+  	@media @tablet {
+  		height: @hero__lg - 100;
+  	}
+  	@media @desktop {
+  		height: @hero__lg
+  	}
+  }
+
+  &--xl {
+    @media @min {
+      height: @hero__xl - 215;
+    }
+    @media @tablet {
+      height: @hero__xl + 28;
+    }
+    @media @desktop {
+      height: @hero__xl
+    }
+  }
+
+  &__bg {
+  	&--covered {
+  		background-size: cover;
+  		background-position: center center;
+  	}
+  }
+  
+  &__content{}
+  
+  &__title{
+    
+    &--sm{}
+    
+    &--md{}
+    
+    &--lg{}
+    
+  }
+
+}

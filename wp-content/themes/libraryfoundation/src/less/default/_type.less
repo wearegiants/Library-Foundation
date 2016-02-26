@@ -1,0 +1,49 @@
+.title {
+
+  .titleFont();
+
+	&--bold {
+		font-weight: bold;
+	}
+  
+  &--sm {}
+  &--md {}
+  &--lg {
+  	line-height: 1.2;
+  	@media @tablet {
+  		.font_size(48)
+  	}
+  }
+  &--xl {
+  	line-height: 1.2;
+    @media @min {
+      .font_size(40)
+    }
+  	@media @tablet {
+  		.font_size(72)
+  	}
+  }
+
+}
+
+.accent {
+
+	.accentFont();
+  font-weight: normal;
+
+  &--sm {
+    .font_size(13);
+  }
+  &--md {
+    .font_size(20)
+  }
+  &--lg {
+    @media @min {
+      .font_size(24)
+    }
+    @media @tablet {
+      .font_size(40)
+    }
+  }
+  
+}

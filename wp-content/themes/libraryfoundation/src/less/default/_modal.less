@@ -1,0 +1,45 @@
+.modal {
+
+	margin: auto;
+	border-radius: 2px;
+	overflow: hidden;
+	box-shadow: 0 0 @spaced*3 @black25;
+	position: relative;
+
+	@media @min {
+		max-width: 90%;
+	}
+	@media @tablet {
+		max-width: 85%;
+	}
+	@media @desktop {
+		max-width: 650px;
+	}
+
+	&--lg {
+
+	}
+
+	&__title {
+		margin: 0;
+		margin-bottom: @spaced;
+		line-height: 1;
+	}
+
+	&__close {
+		text-decoration: none;
+		position: absolute;
+		top: 0;
+		right: 0;
+		height: @spaced*2;
+		width: @spaced*2;
+		line-height: @spaced*2;
+		text-align: center;
+		&:before {
+			.font_size(20);
+			position: relative;
+			top: .175em;
+		}
+	}
+
+}

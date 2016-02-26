@@ -1198,6 +1198,125 @@
 .fs-carousel-enabled.fs-carousel-rtl .fs-carousel-item {
   float: right;
 }
+/**
+	 * @class
+	 * @name .fs-background-element
+	 * @type element
+	 * @description Target elmement
+	 */
+/**
+	 * @class
+	 * @name .fs-background
+	 * @type element
+	 * @description Base widget class
+	 */
+.fs-background {
+  overflow: hidden;
+  position: relative;
+  /**
+		 * @class
+		 * @name .fs-background-container
+		 * @type element
+		 * @description Container element
+		 */
+  /**
+		 * @class
+		 * @name .fs-background-media
+		 * @type element
+		 * @description Media element
+		 */
+  /**
+		 * @class
+		 * @name .fs-background-media.fs-background-animated
+		 * @type modifier
+		 * @description Indicates animated state
+		 */
+  /**
+		 * @class
+		 * @name .fs-background-media.fs-background-navtive
+		 * @type modifier
+		 * @description Indicates native support
+		 */
+  /**
+		 * @class
+		 * @name .fs-background-media.fs-background-fixed
+		 * @type modifier
+		 * @description Indicates fixed positioning
+		 */
+  /**
+		 * @class
+		 * @name .fs-background-embed
+		 * @type element
+		 * @description Embed/iFrame element
+		 */
+  /**
+		 * @class
+		 * @name .fs-background-embed.fs-background-embed-ready
+		 * @type modifier
+		 * @description Indicates ready state
+		 */
+}
+.fs-background,
+.fs-background-container,
+.fs-background-media {
+  transition: none;
+}
+.fs-background-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.fs-background-media {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  opacity: 0;
+}
+.fs-background-media.fs-background-animated {
+  transition: opacity 0.5s linear;
+}
+.fs-background-media img,
+.fs-background-media video,
+.fs-background-media iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  -webkit-user-drag: none;
+}
+.fs-background-media.fs-background-native,
+.fs-background-media.fs-background-fixed {
+  width: 100%;
+  height: 100%;
+}
+.fs-background-media.fs-background-native img,
+.fs-background-media.fs-background-fixed img {
+  display: none;
+}
+.fs-background-media.fs-background-native {
+  background-position: center;
+  background-size: cover;
+}
+.fs-background-media.fs-background-fixed {
+  background-position: center;
+  background-attachment: fixed;
+}
+.fs-background-embed.fs-background-ready:after {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  content: '';
+}
+.fs-background-embed.fs-background-ready iframe {
+  z-index: 0;
+}
 /*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
 /**
  * 1. Set default font family to sans-serif.
@@ -3507,6 +3626,34 @@ img.rounded {
 .color__flickr {
   color: #EA2582;
 }
+.bg--black {
+  background: #333;
+}
+.bg--white {
+  background: #fff;
+}
+.bg--gray,
+.bg--grey {
+  background: #999999;
+}
+.bg--bgGray {
+  background: #F8F8F8;
+}
+.bg--blue {
+  background: #1CA4DE;
+}
+.color--black {
+  color: #333;
+}
+.color--white {
+  color: #fff;
+}
+.color--gray {
+  color: #666666;
+}
+.color--lightgray {
+  color: #999999;
+}
 .alert {
   font-size: 15px;
   font-size: 0.9375rem;
@@ -4146,89 +4293,170 @@ input[type=button] {
   display: block;
 }
 @media screen and (min-width: 300px) {
-  .banner {
-    height: 450px;
+  .hero {
+    height: 355px;
+  }
+}
+@media screen and (min-width: 500px) {
+  .hero {
+    height: 320px;
   }
 }
 @media screen and (min-width: 740px) {
-  .banner {
-    height: 550px;
+  .hero {
+    height: 355px;
   }
 }
 @media screen and (min-width: 980px) {
-  .banner {
-    height: 550px;
-  }
-}
-@media screen and (min-width: 1220px) {
-  .banner {
-    height: 650px;
+  .hero {
+    height: 455px;
   }
 }
 @media screen and (min-width: 300px) {
-  .banner__sm {
-    height: 275px;
+  .hero--sm {
+    height: 270px;
   }
 }
 @media screen and (min-width: 740px) {
-  .banner__sm {
-    height: 275px;
+  .hero--sm {
+    height: 310px;
   }
 }
 @media screen and (min-width: 980px) {
-  .banner__sm {
-    height: 325px;
+  .hero--sm {
+    height: 350px;
   }
 }
 @media screen and (min-width: 300px) {
-  .banner__md {
-    height: 385px;
+  .hero--md {
+    height: 500px;
   }
 }
 @media screen and (min-width: 740px) {
-  .banner__md {
-    height: 385px;
+  .hero--md {
+    height: 600px;
   }
 }
 @media screen and (min-width: 980px) {
-  .banner__md {
-    height: 456px;
+  .hero--md {
+    height: 700px;
   }
 }
 @media screen and (min-width: 300px) {
-  .banner__md-half {
-    height: 193px;
+  .hero--lg {
+    height: 600px;
   }
 }
 @media screen and (min-width: 740px) {
-  .banner__md-half {
-    height: 193px;
+  .hero--lg {
+    height: 715px;
   }
 }
 @media screen and (min-width: 980px) {
-  .banner__md-half {
-    height: 228px;
+  .hero--lg {
+    height: 815px;
   }
 }
-.banner__padded {
-  height: auto;
-  padding: 100px 0;
+@media screen and (min-width: 300px) {
+  .hero--xl {
+    height: 685px;
+  }
+}
+@media screen and (min-width: 740px) {
+  .hero--xl {
+    height: 928px;
+  }
+}
+@media screen and (min-width: 980px) {
+  .hero--xl {
+    height: 900px;
+  }
+}
+.hero__bg--covered {
+  background-size: cover;
+  background-position: center center;
 }
 .pinned {
-  position: absolute;
   width: 100%;
-  z-index: 2;
+  position: absolute;
+  z-index: 25;
 }
-.pinned__bottom {
-  bottom: 0;
-  left: 0;
+.pinned--fixed {
+  position: fixed;
+  width: 100%;
+  z-index: 25;
 }
 .pinned__top {
   top: 0;
-  left: 0;
 }
-.pinned__fixed {
-  position: fixed;
+.pinned__bottom {
+  bottom: 0;
+}
+@media screen and (min-width: 300px) {
+  .section--xs {
+    padding: 25px 0;
+  }
+}
+@media screen and (min-width: 740px) {
+  .section--xs {
+    padding: 12.5px 0;
+  }
+}
+@media screen and (min-width: 980px) {
+  .section--xs {
+    padding: 12.5px 0;
+  }
+}
+@media screen and (min-width: 300px) {
+  .section--sm {
+    padding: 25px 0;
+  }
+}
+@media screen and (min-width: 740px) {
+  .section--sm {
+    padding: 12.5px 0;
+  }
+}
+@media screen and (min-width: 980px) {
+  .section--sm {
+    padding: 25px 0;
+  }
+}
+@media screen and (min-width: 300px) {
+  .section--md {
+    padding: 25px 0;
+  }
+}
+@media screen and (min-width: 740px) {
+  .section--md {
+    padding: 37.5px 0;
+  }
+}
+@media screen and (min-width: 980px) {
+  .section--md {
+    padding: 50px 0;
+  }
+}
+@media screen and (min-width: 300px) {
+  .section--lg {
+    padding: 25px 0;
+  }
+}
+@media screen and (min-width: 740px) {
+  .section--lg {
+    padding: 62.5px 0;
+  }
+}
+@media screen and (min-width: 980px) {
+  .section--lg {
+    padding: 87.5px 0;
+  }
+}
+.section--bottom {
+  padding-bottom: 0;
+}
+.section--top {
+  padding-top: 0;
 }
 body {
   max-width: 1480px;
@@ -4354,6 +4582,7 @@ html {
 .title {
   font-family: 'Sentinel', serif;
   font-weight: 100;
+  font-weight: 300;
 }
 .title__xs {
   font-size: 17px;
@@ -4377,9 +4606,23 @@ html {
     font-size: 1.625rem;
   }
 }
-.title__md {
-  font-size: 48px;
-  font-size: 3rem;
+@media screen and (min-width: 300px) {
+  .title__md {
+    font-size: 38px;
+    font-size: 2.375rem;
+  }
+}
+@media screen and (min-width: 740px) {
+  .title__md {
+    font-size: 52px;
+    font-size: 3.25rem;
+  }
+}
+@media screen and (min-width: 980px) {
+  .title__md {
+    font-size: 66px;
+    font-size: 4.125rem;
+  }
 }
 @media screen and (min-width: 300px) {
   .title__lg {
@@ -4395,8 +4638,8 @@ html {
 }
 @media screen and (min-width: 980px) {
   .title__lg {
-    font-size: 66px;
-    font-size: 4.125rem;
+    font-size: 84px;
+    font-size: 5.25rem;
   }
 }
 @media screen and (min-width: 300px) {
@@ -4425,9 +4668,9 @@ html {
 }
 .accent {
   font-family: 'Gotham', sans-serif;
-  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 1px;
+  font-weight: 400;
 }
 .accent__sm {
   font-size: 12px;
@@ -4521,6 +4764,25 @@ html {
   left: 0;
   border-radius: 50%;
   transform: translateY(-50%);
+}
+.special__title {
+  margin-bottom: 12.5px;
+  line-height: 1;
+}
+.special__title-wrapper {
+  bottom: 45px;
+}
+.special__slide-footer {
+  background: rgba(0, 0, 0, 0.25);
+  height: 45px;
+  line-height: 43px;
+  overflow: hidden;
+}
+.special__slide-footer__wrapper {
+  width: 9999px;
+}
+.special__slide-footer a {
+  text-decoration: none;
 }
 .spotlight__item {
   background: #333;

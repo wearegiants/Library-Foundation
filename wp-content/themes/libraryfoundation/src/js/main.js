@@ -19,6 +19,7 @@ function openSub(){
 
 function fs_defaults(){
 	$('.fs__carousel').carousel();
+	$('.wallpaper').background();
 }
 
 $(document).ready(function(){

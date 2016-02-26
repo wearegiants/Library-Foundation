@@ -1,145 +1,93 @@
-<?php Themewrangler::setup_page();get_header(/***Template Name: Special Projects */); ?>
-<div class="header-slider rsMinW">
-<?php 
+<?php Themewrangler::setup_page('new_default|not default','new_vendor | new_scripts');get_header('v2'/***Template Name: Special Projects 2 */); ?>
 
-	$currentProjects = get_field('current_projects');
+<div class="fs-grid">
+	<header class="hero bg--black relative">
+		
+<?php $current = get_field('current_projects'); ?>
+<?php if($current): ?>
+		<div class="fs__carousel special__slide-carousel carousel_fade">
+<?php foreach($current as $slide): ?>
 
-	foreach ($currentProjects as $currentProject) {
-    $ids[] = $currentProject['image'];
-	}
-
-	$cache = get_posts(array('post_type' => 'attachment', 'numberposts' => -1, 'post__in' => $ids));
-
-	foreach ($currentProjects as $currentProject):
-
-	$image_id = $currentProject['image'];
-	$image = wp_get_attachment_image_src($image_id, 'whatwefund-twothirds'); 
-	$currentTitle = $currentProject['title'];
-
-
-?>
-
-<div class="page-header slider" style="background-image:url(<?php echo $image[0]; ?>);">
-
-	<div class="row">
-		<div class="desktop-12 tablet-6 mobile-3">
-			<h1 class="page-header-title"><?php the_title(); ?></h1>
-		</div>
-	</div>
-
-	<hr class="divider no-margin thin bg-color-white_25">
-
-	<div class="row">
-		<div class="desktop-12 tablet-6 mobile-3">
-			<h3 class="section-headline no-margin"><a class="color-white" href="#"><?php echo strtoupper($currentTitle); ?> — VIEW PROJECT</a></h3>
-		</div>
-	</div>
-
-</div>
+			<div class="hero bg--black relative wallpaper special__slide" data-background-options='{"source":"<?php echo $slide['image']['sizes']['whatwefund-twothirds']; ?>"}'>
+				<div class="special__slide-footer pinned pinned__bottom">
+					<div class="special__slide--footer__wrapper">
+						<div class="fs-row">
+							<div class="fs-cell fs-all-full">
+								<a class="color--white accent accent__sm" href="<?php echo $slide['url']; ?>"><?php echo $slide['title']; ?></a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 
 <?php endforeach; ?>
-</div>
-
-<hr class="invisible">
-
-<div id="page-description">
-	<div class="row">
-		<div class="desktop-8 tablet-6 mobile-3">
-			<h3 class="section-headline">WHAT ARE SPECIAL PROJECTS?</h3>
-			<?php the_post(); the_content(); ?>
 		</div>
-	</div>
-</div>
+<?php endif; ?>
 
-<hr class="invisible">
-
-<div class="section bg-color-lightgray">
-	<div class="row">	
-		<header class="all-full">
-			<h3 class="section-headline">CURRENT PROJECTS</h3>
-		</header>
-
-<?php 
-
-	$currentProjects = get_field('current_projects');
-
-	foreach ($currentProjects as $currentProject) {
-    $ids[] = $currentProject['image'];
-	}
-
-	$cache = get_posts(array('post_type' => 'attachment', 'numberposts' => -1, 'post__in' => $ids));
-
-	$counter = 1;
-
-	foreach ($currentProjects as $currentProject):
-
-	$image_id = $currentProject['image'];
-	$image = wp_get_attachment_image_src($image_id, 'whatwefund-twothirds'); 
-	$currentTitle = $currentProject['title'];
-	$url = $currentProject['url'];
-
-	if ($counter == 1) {
-		$currentWidth = 'desktop-6 tablet-3 mobile-3';	
-	} else {
-		$currentWidth = 'desktop-6 tablet-3 mobile-3';
-	}	
-
-?>
-
-		<div class="special-project special-project_current module min-height <?php echo $currentWidth; ?>">
-			<div class="wrapper">
-				<a href="<?php echo $url; ?>">
-					<h3 class="special-project_title module-headline_serif color-white margin-none"><?php echo $currentTitle; ?></h3>
-					<span class="special-project_link module-sublink color-white">VIEW MORE</span>
-				</a>
-			</div>
-			<div class="covered overlayed bg" style="background-image:url(<?php echo $image[0]; ?>);"></div>
-		</div>
-
-<?php $counter++; endforeach; ?>
-
-	</div>
-</div>
-
-<div class="section bg-color_white">
-	<div class="row">	
-		<header class="all-full">
-			<h3 class="section-headline">PAST PROJECTS</h3>
-		</header>
-
-<?php 
-
-	$pastProjects = get_field('past_projects');
-
-	foreach ($pastProjects as $pastProject) {
-    $ids[] = $pastProject['image'];
-	}
-
-	$cache = get_posts(array('post_type' => 'attachment', 'numberposts' => -1, 'post__in' => $ids));
-
-	foreach ($pastProjects as $pastProject):
-
-	$image_id = $pastProject['image'];
-	$image = wp_get_attachment_image_src($image_id, 'archive-small'); 
-	$currentTitle = $pastProject['title'];
-
-?>
-
-
-		<div class="special-project special-project_past module desktop-3 tablet-3 mobile-3">
-			<div class="text-center">
-				<a href="<?php the_sub_field('title'); ?>">
-					<img src="<?php echo $image[0]; ?>" class="img-responsive margin-bottom" />
-					<h3 class="special-project_title module-headline_serif module-headline_small margin-none"><?php echo $currentTitle; ?></h3>
-					<span class="special-project_link module-sublink color-blue">VIEW MORE</span>
-				</a>
+		<div class="special__title-wrapper pinned pinned__bottom">
+			<div class="fs-row">
+				<div class="fs-cell fs-all-full">
+					<h1 class="special__title title title__xl color--white"><?php the_title(); ?></h1>
+				</div>
 			</div>
 		</div>
-			
+	</header>
 
+	<div class="section section--md bg--white"></div>
+
+	<div class="section section--md bg--bgGray">
+		<div class="fs-row">
+			<div class="fs-cell fs-all-full">
+				<div class="accent accent--md text-center">Current Projects</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="section bg--bgGray">
+		<div class="fs-row">
+<?php if($current): ?>
+<?php foreach($current as $slide): ?>
+			<div class="fs-cell fs-lg-half fs-md-half fs-sm-3">
+				<div class="hero hero--sm bg--gray wallpaper relative" data-background-options='{"source":"<?php echo $slide['image']['sizes']['whatwefund-twothirds']; ?>"}'>
+					<div class="covered">
+						<div class="wrapper">
+							<?php echo $program['title']; ?>
+						</div>
+					</div>
+				</div>
+			</div>
 <?php endforeach; ?>
-
+<?php endif; ?>
+		</div>
 	</div>
+
+	<div class="section section--md bg--bgGray">
+		<div class="fs-row">
+			<div class="fs-cell fs-all-full">
+				<div class="accent accent--md text-center">Past Projects</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="section section--lg section--top bg--bgGray">
+		<div class="fs-row">
+<?php $past = get_field('past_projects'); ?>		
+<?php if($past): ?>
+<?php foreach($past as $slide): ?>
+			<div class="fs-cell fs-lg-third fs-md-half fs-sm-3">
+				<div class="hero hero--sm bg--gray wallpaper relative" data-background-options='{"source":"<?php echo $slide['image']['sizes']['whatwefund-twothirds']; ?>"}'>
+					<div class="covered">
+						<div class="wrapper">
+							<?php echo $program['title']; ?>
+						</div>
+					</div>
+				</div>
+			</div>
+<?php endforeach; ?>
+<?php endif; ?>
+		</div>
+	</div>
+
 </div>
 
-<?php get_footer('naked'); ?>
+<?php get_footer('v2'); ?>
