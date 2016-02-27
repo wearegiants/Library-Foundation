@@ -1,3 +1,4 @@
+@hero__xs : 275px;
 @hero__sm : 350px;
 @hero     : 455px;
 @hero__md : 700px;
@@ -18,6 +19,18 @@
 	@media @desktop {
 		height: @hero
 	}
+
+  &--xs {
+    @media @min {
+      height: @hero__xs - 80;
+    }
+    @media @tablet {
+      height: @hero__xs - 40;
+    }
+    @media @desktop {
+      height: @hero__xs
+    }
+  }
 
   &--sm {
   	@media @min {
@@ -73,6 +86,24 @@
   		background-position: center center;
   	}
   }
+
+  &--overlay {
+    position: relative;
+    &:before, &:after {
+      content: '';
+      display: block;
+      .cover();
+      z-index: 9;
+    }
+    &:before {
+      background: @black25;
+    }
+    &:after {
+      background: url('/assets/img/header-bg.png');
+      background-size: cover;
+      opacity: .5;
+    }
+  }
   
   &__content{}
   
@@ -84,6 +115,10 @@
     
     &--lg{}
     
+  }
+
+  .covered {
+    z-index: 25;
   }
 
 }

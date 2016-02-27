@@ -28,7 +28,7 @@
 
 <body <?php body_class(); ?>>
 
-<header class="header pinned pinned__top fs-grid fs-grid-fluid">
+<header class="header header--main pinned pinned__top fs-grid fs-grid-fluid">
   <div class="fs-row">
     <div class="fs-cell fs-lg-12 fs-md-hide fs-sm-hide">
       <a class="btn btn__nav btn__logo-wrapper" href="/"><span class="btn__logo">LFLA</span></a>

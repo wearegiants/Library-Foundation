@@ -122,13 +122,22 @@ img.rounded {
 .wrapper {
   padding: @spaced/1.5;
   &__extra {
-    padding: @spaced*1.5
+    @media @min {
+      padding: @spaced/1.5
+    }
+    @media @tablet {
+      padding: @spaced*1.5  
+    }
+    
   }
 }
 
 .covered{
   .cover();
   z-index: 50;
+  &__link {
+    z-index: 99;
+  }
 }
 
 // Color Modifiers
@@ -285,4 +294,8 @@ img.rounded {
   &__left {
     float: left;
   }
+}
+
+.nomargin {
+  margin: 0;
 }

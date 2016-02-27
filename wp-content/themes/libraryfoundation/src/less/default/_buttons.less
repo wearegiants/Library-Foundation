@@ -1,4 +1,4 @@
-@height_default: 40px;
+@height_default: 30px;
 @height_nav:     70px;
 
 .buttons() {
@@ -11,7 +11,7 @@
   margin: 0 0 10px 0;
   text-align: center;
   font-weight: 300;
-  padding: 0 15px;
+  padding: 0 10px;
   border-radius: 0;
   height: @height_default;
   line-height: @height_default;
@@ -49,7 +49,7 @@ input[type=button] {
   &__rounded {
     line-height: @height_default + 2;
     border-radius: 20px;
-    padding: 0 20px;
+    padding: 0 10px;
   }
 
   &__outlined {
@@ -85,7 +85,8 @@ input[type=button] {
   }
 
   &__logo {
-    background-color: @blue;
+    background: @blue url('/assets/img/lflalogo.png');
+    background-size: cover;
     display: block;
     text-indent: -9999px;
 

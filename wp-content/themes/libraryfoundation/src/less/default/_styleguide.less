@@ -3,6 +3,17 @@
   .headerFont();
   font-weight: 300;
 
+  @media @min {
+    .font_size(28)
+  }
+  @media @tablet {
+    .font_size(36)
+  }
+  @media @desktop {
+    .font_size(36);
+    line-height: 1.2;
+  }
+
   &__xs {
     .font_size(17);
   }
@@ -69,6 +80,10 @@
 
   &__sm {
     .font_size(12);
+  }
+
+  &--md, &__md {
+    .font_size(16);
   }
 
   &__lg {

@@ -1100,9 +1100,9 @@
   visibility: hidden;
   width: 40px;
   height: 40px;
-  background: #fff;
+  background: transparent;
   border-radius: 100%;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
+  box-shadow: none;
   margin: auto;
   opacity: 0;
   overflow: hidden;
@@ -1137,7 +1137,7 @@
 .fs-carousel-enabled.fs-carousel-rtl .fs-carousel-control_next:before {
   border-top: 7px solid transparent;
   border-bottom: 7px solid transparent;
-  border-right: 10.5px solid #333;
+  border-right: 10.5px solid #fff;
   border-left: none;
   margin-left: 13.7px;
   margin-right: auto;
@@ -1151,7 +1151,7 @@
 .fs-carousel-enabled.fs-carousel-rtl .fs-carousel-control_previous:before {
   border-top: 7px solid transparent;
   border-bottom: 7px solid transparent;
-  border-left: 10.5px solid #333;
+  border-left: 10.5px solid #fff;
   border-right: none;
   margin-right: 13.7px;
   margin-left: auto;
@@ -1197,6 +1197,22 @@
 }
 .fs-carousel-enabled.fs-carousel-rtl .fs-carousel-item {
   float: right;
+}
+.carousel_fade .fs-carousel-item {
+  opacity: 0;
+  visibility: hidden;
+  -webkit-transition: opacity 0s linear, visibility 0s linear;
+  transition: opacity 0s linear, visibility 0s linear;
+  -webkit-transition-delay: 0.25s;
+  transition-delay: 0.25s;
+}
+.carousel_fade .fs-carousel-item.fs-carousel-visible {
+  opacity: 1;
+  visibility: visible;
+  -webkit-transition-duration: 0.25s;
+  transition-duration: 0.25s;
+  -webkit-transition-delay: 0s;
+  transition-delay: 0s;
 }
 /**
 	 * @class
@@ -3561,8 +3577,15 @@ img.rounded {
 .wrapper {
   padding: 16.66666667px;
 }
-.wrapper__extra {
-  padding: 37.5px;
+@media screen and (min-width: 300px) {
+  .wrapper__extra {
+    padding: 16.66666667px;
+  }
+}
+@media screen and (min-width: 740px) {
+  .wrapper__extra {
+    padding: 37.5px;
+  }
 }
 .covered {
   height: 100%;
@@ -3571,6 +3594,9 @@ img.rounded {
   top: 0;
   width: 100%;
   z-index: 50;
+}
+.covered__link {
+  z-index: 99;
 }
 .bg__color-black {
   background: #333;
@@ -3701,6 +3727,9 @@ img.rounded {
 }
 .fl__left {
   float: left;
+}
+.nomargin {
+  margin: 0;
 }
 *:link,
 *:visited,
@@ -3912,10 +3941,10 @@ select {
   margin: 0 0 10px 0;
   text-align: center;
   font-weight: 300;
-  padding: 0 15px;
+  padding: 0 10px;
   border-radius: 0;
-  height: 40px;
-  line-height: 40px;
+  height: 30px;
+  line-height: 30px;
   border: 0;
   -webkit-font-smoothing: antialiased;
   border-radius: 2px;
@@ -3974,10 +4003,10 @@ input[type=button] {
   margin: 0 0 10px 0;
   text-align: center;
   font-weight: 300;
-  padding: 0 15px;
+  padding: 0 10px;
   border-radius: 0;
-  height: 40px;
-  line-height: 40px;
+  height: 30px;
+  line-height: 30px;
   border: 0;
   -webkit-font-smoothing: antialiased;
   transition: background-color 300ms ease;
@@ -3997,10 +4026,10 @@ input[type=button] {
   margin: 0 0 10px 0;
   text-align: center;
   font-weight: 300;
-  padding: 0 15px;
+  padding: 0 10px;
   border-radius: 0;
-  height: 40px;
-  line-height: 40px;
+  height: 30px;
+  line-height: 30px;
   border: 0;
   -webkit-font-smoothing: antialiased;
   transition: background-color 300ms ease;
@@ -4023,9 +4052,9 @@ input[type=button] {
 }
 .btn__rounded,
 .button__rounded {
-  line-height: 42px;
+  line-height: 32px;
   border-radius: 20px;
-  padding: 0 20px;
+  padding: 0 10px;
 }
 .btn__outlined,
 .button__outlined {
@@ -4073,7 +4102,8 @@ input[type=button] {
 }
 .btn__logo,
 .button__logo {
-  background-color: #1CA4DE;
+  background: #1CA4DE url('/assets/img/lflalogo.png');
+  background-size: cover;
   display: block;
   text-indent: -9999px;
 }
@@ -4313,6 +4343,21 @@ input[type=button] {
   }
 }
 @media screen and (min-width: 300px) {
+  .hero--xs {
+    height: 195px;
+  }
+}
+@media screen and (min-width: 740px) {
+  .hero--xs {
+    height: 235px;
+  }
+}
+@media screen and (min-width: 980px) {
+  .hero--xs {
+    height: 275px;
+  }
+}
+@media screen and (min-width: 300px) {
   .hero--sm {
     height: 270px;
   }
@@ -4375,6 +4420,31 @@ input[type=button] {
 .hero__bg--covered {
   background-size: cover;
   background-position: center center;
+}
+.hero--overlay {
+  position: relative;
+}
+.hero--overlay:before,
+.hero--overlay:after {
+  content: '';
+  display: block;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 9;
+}
+.hero--overlay:before {
+  background: rgba(0, 0, 0, 0.25);
+}
+.hero--overlay:after {
+  background: url('/assets/img/header-bg.png');
+  background-size: cover;
+  opacity: .5;
+}
+.hero .covered {
+  z-index: 25;
 }
 .pinned {
   width: 100%;
@@ -4470,7 +4540,9 @@ html {
 }
 .header {
   z-index: 99;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+.header--main {
+  top: 12.5px;
 }
 @media screen and (min-width: 300px) {
   .header {
@@ -4584,6 +4656,25 @@ html {
   font-weight: 100;
   font-weight: 300;
 }
+@media screen and (min-width: 300px) {
+  .title {
+    font-size: 28px;
+    font-size: 1.75rem;
+  }
+}
+@media screen and (min-width: 740px) {
+  .title {
+    font-size: 36px;
+    font-size: 2.25rem;
+  }
+}
+@media screen and (min-width: 980px) {
+  .title {
+    font-size: 36px;
+    font-size: 2.25rem;
+    line-height: 1.2;
+  }
+}
 .title__xs {
   font-size: 17px;
   font-size: 1.0625rem;
@@ -4675,6 +4766,11 @@ html {
 .accent__sm {
   font-size: 12px;
   font-size: 0.75rem;
+}
+.accent--md,
+.accent__md {
+  font-size: 16px;
+  font-size: 1rem;
 }
 @media screen and (min-width: 300px) {
   .accent__lg {

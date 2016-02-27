@@ -10,14 +10,14 @@
 
 	// Controls
 
-	@fs-carousel-control-background:			#fff;
+	@fs-carousel-control-background:			transparent;
 	@fs-carousel-control-height:				40px;
 	@fs-carousel-control-width:					40px;
 
 	@fs-carousel-control-transition-duration:	0.15s;
 	@fs-carousel-control-transition-timing:		ease;
 
-	@fs-carousel-control-box-shadow: 			0 0 5px fade(#000, 25);
+	@fs-carousel-control-box-shadow: 			none;
 	@fs-carousel-control-border-radius:			100%;
 
 	@fs-carousel-control-left:					20px;
@@ -27,7 +27,7 @@
 
 	// Control Carets
 
-	@fs-carousel-control-caret-color:			#333;
+	@fs-carousel-control-caret-color:			#fff;
 	@fs-carousel-control-caret-size:			7px;
 
 	@fs-carousel-control-caret-width:   		(@fs-carousel-control-caret-size * 1.5);
@@ -467,4 +467,24 @@
 			float: right;
 		}
 
+	}
+
+	.carousel_fade .fs-carousel-item {
+		opacity: 0;
+		visibility: hidden;
+
+		-webkit-transition: opacity 0s linear, visibility 0s linear;
+				transition: opacity 0s linear, visibility 0s linear;
+		-webkit-transition-delay: 0.25s;
+				transition-delay: 0.25s;
+	}
+
+	.carousel_fade .fs-carousel-item.fs-carousel-visible {
+		opacity: 1;
+		visibility: visible;
+
+		-webkit-transition-duration: 0.25s;
+				transition-duration: 0.25s;
+		-webkit-transition-delay: 0s;
+				transition-delay: 0s;
 	}
