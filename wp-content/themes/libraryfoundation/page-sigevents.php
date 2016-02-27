@@ -48,7 +48,7 @@
 	<div class="section section--md section--bottom bg--bgGray">
 		<div class="fs-row">
 			<div class="fs-cell fs-all-full">
-				<h3 class="accent accent--md color--black">Current Projects</h3>
+				<h3 class="accent accent--md color--black">Signature Events</h3>
 			</div>
 		</div>
 	</div>
