@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2009-2015 John Blackbourn
+Copyright 2009-2016 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ class QM_Output_Html_Assets extends QM_Output_Html {
 			) as $position => $position_label ) {
 
 				if ( isset( $data[ $position ][ $type ] ) ) {
-					$this->dependency_rows( $data[ $position ][ $type ], $data['raw'][ $type ], sprintf( $position_label, $type_label ) );
+					$this->dependency_rows( $data[ $position ][ $type ], $data['raw'][ $type ], sprintf( $position_label, $type_label ), $type );
 				}
 
 			}
@@ -77,7 +77,7 @@ class QM_Output_Html_Assets extends QM_Output_Html {
 
 	}
 
-	protected function dependency_rows( array $handles, WP_Dependencies $dependencies, $label ) {
+	protected function dependency_rows( array $handles, WP_Dependencies $dependencies, $label, $type ) {
 
 		$first = true;
 
@@ -92,9 +92,9 @@ class QM_Output_Html_Assets extends QM_Output_Html {
 		foreach ( $handles as $handle ) {
 
 			if ( in_array( $handle, $dependencies->done ) ) {
-				echo '<tr data-qm-subject="' . esc_attr( $handle ) . '">';
+				echo '<tr data-qm-subject="' . esc_attr( $type . '-' . $handle ) . '">';
 			} else {
-				echo '<tr data-qm-subject="' . esc_attr( $handle ) . '" class="qm-warn">';
+				echo '<tr data-qm-subject="' . esc_attr( $type . '-' . $handle ) . '" class="qm-warn">';
 			}
 
 			if ( $first ) {
@@ -102,7 +102,7 @@ class QM_Output_Html_Assets extends QM_Output_Html {
 				echo '<th rowspan="' . esc_attr( $rowspan ) . '" class="qm-nowrap">' . esc_html( $label ) . '</th>';
 			}
 
-			$this->dependency_row( $dependencies->query( $handle ), $dependencies );
+			$this->dependency_row( $dependencies->query( $handle ), $dependencies, $type );
 
 			echo '</tr>';
 			$first = false;
@@ -110,22 +110,35 @@ class QM_Output_Html_Assets extends QM_Output_Html {
 
 	}
 
-	protected function dependency_row( _WP_Dependency $script, WP_Dependencies $dependencies ) {
+	protected function dependency_row( _WP_Dependency $dependency, WP_Dependencies $dependencies, $type ) {
 
-		if ( empty( $script->ver ) ) {
+		if ( empty( $dependency->ver ) ) {
 			$ver = '';
 		} else {
-			$ver = $script->ver;
+			$ver = $dependency->ver;
 		}
 
-		if ( empty( $script->src ) ) {
+		/**
+		 * Filter the script loader source.
+		 *
+		 * @param string $src    Script loader source path.
+		 * @param string $handle Script handle.
+		 */
+		$source = apply_filters( 'script_loader_src', $dependency->src, $dependency->handle );
+
+		if ( is_wp_error( $source ) ) {
+			$src = $source->get_error_message();
+			if ( ( $error_data = $source->get_error_data() ) && isset( $error_data['src'] ) ) {
+				$src .= ' (' . $error_data['src'] . ')';
+			}
+		} elseif ( empty( $source ) ) {
 			$src = '';
 		} else {
-			$src = $script->src;
+			$src = $source;
 		}
 
-		$dependents = self::get_dependents( $script, $dependencies );
-		$deps = $script->deps;
+		$dependents = self::get_dependents( $dependency, $dependencies, $type );
+		$deps = $dependency->deps;
 		sort( $deps );
 
 		foreach ( $deps as & $dep ) {
@@ -134,14 +147,31 @@ class QM_Output_Html_Assets extends QM_Output_Html {
 			}
 		}
 
-		echo '<td class="qm-wrap">' . esc_html( $script->handle ) . '<br><span class="qm-info">&nbsp;' . esc_html( $src ) . '</span></td>';
-		echo '<td class="qm-nowrap qm-highlighter" data-qm-highlight="' . esc_attr( implode( ' ', $deps ) ) . '">' . implode( '<br>', array_map( 'esc_html', $deps ) ) . '</td>';
-		echo '<td class="qm-nowrap qm-highlighter" data-qm-highlight="' . esc_attr( implode( ' ', $dependents ) ) . '">' . implode( '<br>', array_map( 'esc_html', $dependents ) ) . '</td>';
+		$this->type = $type;
+
+		$highlight_deps       = array_map( array( $this, '_prefix_type' ), $deps );
+		$highlight_dependents = array_map( array( $this, '_prefix_type' ), $dependents );
+
+		echo '<td class="qm-wrap">' . esc_html( $dependency->handle ) . '<br><span class="qm-info">&nbsp;';
+		if ( is_wp_error( $source ) ) {
+			printf( '<span class="qm-warn">%s</span>',
+				esc_html( $src )
+			);
+		} else {
+			echo esc_html( $src );
+		}
+		echo '</span></td>';
+		echo '<td class="qm-nowrap qm-highlighter" data-qm-highlight="' . esc_attr( implode( ' ', $highlight_deps ) ) . '">' . implode( '<br>', array_map( 'esc_html', $deps ) ) . '</td>';
+		echo '<td class="qm-nowrap qm-highlighter" data-qm-highlight="' . esc_attr( implode( ' ', $highlight_dependents ) ) . '">' . implode( '<br>', array_map( 'esc_html', $dependents ) ) . '</td>';
 		echo '<td>' . esc_html( $ver ) . '</td>';
 
 	}
 
-	protected static function get_dependents( _WP_Dependency $script, WP_Dependencies $dependencies ) {
+	public function _prefix_type( $val ) {
+		return $this->type . '-' . $val;
+	}
+
+	protected static function get_dependents( _WP_Dependency $dependency, WP_Dependencies $dependencies, $type ) {
 
 		// @TODO move this into the collector
 		$dependents = array();
@@ -149,7 +179,7 @@ class QM_Output_Html_Assets extends QM_Output_Html {
 
 		foreach ( $handles as $handle ) {
 			if ( $item = $dependencies->query( $handle ) ) {
-				if ( in_array( $script->handle, $item->deps ) ) {
+				if ( in_array( $dependency->handle, $item->deps ) ) {
 					$dependents[] = $handle;
 				}
 			}

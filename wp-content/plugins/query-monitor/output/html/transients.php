@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2009-2015 John Blackbourn
+Copyright 2009-2016 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -87,9 +87,9 @@ class QM_Output_Html_Transients extends QM_Output_Html {
 					$stack[] = self::output_filename( $item['display'], $item['calling_file'], $item['calling_line'] );
 				}
 
-				printf(
+				printf( // WPCS: XSS ok.
 					'<td class="qm-nowrap qm-ltr">%s</td>',
-					implode( '<br>', $stack ) // WPCS: XSS ok.
+					implode( '<br>', $stack )
 				);
 				printf(
 					'<td class="qm-nowrap">%s</td>',

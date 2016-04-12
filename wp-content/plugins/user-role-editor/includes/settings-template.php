@@ -14,7 +14,7 @@
     <a href="http://role-editor.com">
         <div id="ure-icon" class="icon32"><br></div>        
     </a>    
-    <h2><?php esc_html_e('User Role Editor - Options', 'user-role-editor'); ?></h2>            
+    <h1><?php esc_html_e('User Role Editor - Options', 'user-role-editor'); ?></h1>
 
     <div id="ure_tabs" style="clear: left;">
         <ul>
@@ -67,6 +67,14 @@ if (!$license_key_only) {
                         <input type="checkbox" name="show_deprecated_caps" id="show_deprecated_caps" value="1" 
                                <?php echo ($show_deprecated_caps == 1) ? 'checked="checked"' : ''; ?> /> 
                         <label for="show_deprecated_caps"><?php esc_html_e('Show deprecated capabilities', 'user-role-editor'); ?></label></td>
+                    <td>                        
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox" name="confirm_role_update" id="confirm_role_update" value="1" 
+                               <?php echo ($confirm_role_update == 1) ? 'checked="checked"' : ''; ?> /> 
+                        <label for="confirm_role_update"><?php esc_html_e('Confirm role update', 'user-role-editor'); ?></label></td>
                     <td>                        
                     </td>
                 </tr>
