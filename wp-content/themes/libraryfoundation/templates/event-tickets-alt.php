@@ -118,8 +118,8 @@ $(document).ready(function(){
   <p class="message"><a href="/membership">Click here if you're not already a member.</a></p>
   <form action="" method="post" class="row">
     <div>
-    <input type="password" id="loginpassword_<?php echo $ticket_name; ?>" placeholder="Password" class="desktop-9 tablet-5 mobile-3" />
-    <input type="button" id="login_<?php echo $ticket_name; ?>" value="Unlock" class="desktop-3 tablet-1 mobile-3 login-btn" />
+    <input type="password" id="loginpassword_<?php echo $ticket_name; ?>" placeholder="Password" class="desktop-9 tablet-5 mobile-2" />
+    <input type="button" id="login_<?php echo $ticket_name; ?>" value="Unlock" class="desktop-3 tablet-1 mobile-1 login-btn" />
     </div>
   </form>
 </div>
