@@ -3763,7 +3763,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: 'Sentinel', serif;
+  font-family: 'Sentinel Web Font', serif;
   font-weight: 100;
   color: #404040;
   line-height: inherit;
@@ -3930,7 +3930,7 @@ form textarea:focus {
 select {
   appearance: none;
   -webkit-appearance: none;
-  font-family: 'Gotham', sans-serif;
+  font-family: 'Gotham Web Font', sans-serif;
   font-weight: 400;
   font-size: 14px;
   font-size: 0.875rem;
@@ -3982,9 +3982,16 @@ table tr th {
   text-align: center;
 }
 @font-face {
-  font-family: "Gotham";
+  font-family: "Gotham Web Font";
   src: url('/assets/fonts/GothamMedium.eot');
   src: url('/assets/fonts/GothamMedium.eot?#iefix') format('embedded-opentype'), url('/assets/fonts/GothamMedium.woff') format('woff'), url('/assets/fonts/GothamMedium.ttf') format('truetype'), url('/assets/fonts/GothamMedium.svg') format('svg');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Sentinel Web Font";
+  src: url('/assets/fonts/SentinelBook.eot');
+  src: url('/assets/fonts/SentinelBook.eot?#iefix') format('embedded-opentype'), url('/assets/fonts/SentinelBook.woff') format('woff'), url('/assets/fonts/SentinelBook.ttf') format('truetype'), url('/assets/fonts/SentinelBook.svg') format('svg');
   font-weight: 300;
   font-style: normal;
 }
@@ -3992,7 +3999,7 @@ button,
 input[type=submit],
 input[type=search],
 input[type=button] {
-  font-family: 'Gotham', sans-serif;
+  font-family: 'Gotham Web Font', sans-serif;
   font-weight: 400;
   font-size: 14px;
   font-size: 0.875rem;
@@ -4015,7 +4022,7 @@ input[type=button] {
 }
 .btn,
 .button {
-  font-family: 'Gotham', sans-serif;
+  font-family: 'Gotham Web Font', sans-serif;
   font-weight: 400;
   font-size: 14px;
   font-size: 0.875rem;
@@ -4652,9 +4659,9 @@ html {
   padding-left: 0;
 }
 .title {
-  font-family: 'Sentinel', serif;
+  font-family: 'Sentinel Web Font', serif;
   font-weight: 100;
-  font-weight: 300;
+  font-weight: 400;
 }
 @media screen and (min-width: 300px) {
   .title {
@@ -4758,7 +4765,7 @@ html {
   }
 }
 .accent {
-  font-family: 'Gotham', sans-serif;
+  font-family: 'Gotham Web Font', sans-serif;
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 400;
@@ -4895,7 +4902,7 @@ html {
   line-height: 1.2;
   margin: 0;
   margin-bottom: 25px;
-  font-family: 'Gotham', sans-serif;
+  font-family: 'Gotham Web Font', sans-serif;
   font-weight: 400;
   font-weight: 300;
 }
