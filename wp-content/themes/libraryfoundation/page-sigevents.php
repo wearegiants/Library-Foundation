@@ -62,7 +62,7 @@
 <?php else: ?>
 			<div class="fs-cell fs-lg-half fs-md-full fs-sm-3">		
 <?php endif; ?>					
-				<div class="hero hero--overlay bg--gray wallpaper relative" data-background-options='{"source":"<?php echo $slide['image']['sizes']['whatwefund-twothirds']; ?>"}'>
+				<div class="hero hero--sm hero--overlay bg--gray wallpaper relative" data-background-options='{"source":"<?php echo $slide['image']['sizes']['whatwefund-twothirds']; ?>"}'>
 					<div class="covered">
 						<div class="wrapper wrapper__extra">
 							<span class="title color--white"><?php echo $slide['title']; ?></span><br>
