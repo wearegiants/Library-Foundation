@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2009-2015 John Blackbourn
+Copyright 2009-2016 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -131,17 +131,8 @@ abstract class QM_Output_Html extends QM_Output {
 		$sql = esc_html( $sql );
 		$sql = trim( $sql );
 
-		foreach( array(
-			'ALTER', 'AND', 'COMMIT', 'CREATE', 'DESCRIBE', 'DELETE', 'DROP', 'ELSE', 'END', 'FROM', 'GROUP',
-			'HAVING', 'INNER', 'INSERT', 'LEFT', 'LIMIT', 'ON', 'OR', 'ORDER', 'OUTER', 'REPLACE', 'RIGHT', 'ROLLBACK', 'SELECT', 'SET',
-			'SHOW', 'START', 'THEN', 'TRUNCATE', 'UPDATE', 'VALUES', 'WHEN', 'WHERE'
-		) as $cmd ) {
-			// Why does this trim() every time?
-			$sql = trim( str_replace( " $cmd ", "<br>$cmd ", $sql ) );
-		}
-
-		# @TODO profile this as an alternative:
-		# $sql = preg_replace( '# (ALTER|AND|COMMIT|CREATE|DESCRIBE) #', '<br>$1 ', $sql );
+		$regex = 'ADD|AFTER|ALTER|AND|BEGIN|COMMIT|CREATE|DESCRIBE|DELETE|DROP|ELSE|END|EXCEPT|FROM|GROUP|HAVING|INNER|INSERT|INTERSECT|LEFT|LIMIT|ON|OR|ORDER|OUTER|REPLACE|RIGHT|ROLLBACK|SELECT|SET|SHOW|START|THEN|TRUNCATE|UNION|UPDATE|USING|VALUES|WHEN|WHERE|XOR';
+		$sql = preg_replace( '# (' . $regex . ') #', '<br>$1 ', $sql );
 
 		return $sql;
 
@@ -154,7 +145,7 @@ abstract class QM_Output_Html extends QM_Output {
 	 * @return string      The URL formatted with markup.
 	 */
 	public static function format_url( $url ) {
-		return str_replace( '&amp;', '<br>&amp;', esc_html( $url ) );
+		return str_replace( array( '?', '&amp;' ), array( '<br>?', '<br>&amp;' ), esc_html( $url ) );
 	}
 
 	/**
@@ -167,13 +158,17 @@ abstract class QM_Output_Html extends QM_Output {
 	 * Otherwise, the display text and file details such as this is returned:
 	 *
 	 *     {text}<br>{file}:{line}
-	 * 
+	 *
 	 * @param  string $text The display text, such as a function name or file name.
 	 * @param  string $file The full file path and name.
 	 * @param  int    $line Optional. A line number, if appropriate.
 	 * @return string The fully formatted file link or file name, safe for output.
 	 */
 	public static function output_filename( $text, $file, $line = 0 ) {
+
+		if ( empty( $file ) ) {
+			return esc_html( $text );
+		}
 
 		# Further reading:
 		# http://simonwheatley.co.uk/2012/07/clickable-stack-traces/
@@ -197,7 +192,7 @@ abstract class QM_Output_Html extends QM_Output {
 				$fallback .= ':' . $line;
 			}
 			$return = esc_html( $text );
-			if ( $fallback != $text ) {
+			if ( $fallback !== $text ) {
 				$return .= '<br><span class="qm-info">&nbsp;' . esc_html( $fallback ) . '</span>';
 			}
 			return $return;

@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2009-2015 John Blackbourn
+Copyright 2009-2016 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ class QM_Output_Html_DB_Components extends QM_Output_Html {
 		echo '<th colspan="' . esc_attr( $span ) . '">' . esc_html( $this->collector->name() ) . '</th>';
 		echo '</tr>';
 		echo '<tr>';
-		echo '<th>' . esc_html_x( 'Component', 'Query component', 'query-monitor' ) . '</th>';
+		echo '<th>' . esc_html__( 'Component', 'query-monitor' ) . '</th>';
 
 		foreach ( $data['types'] as $type_name => $type_count ) {
 			echo '<th class="qm-num">';
@@ -65,7 +65,7 @@ class QM_Output_Html_DB_Components extends QM_Output_Html {
 				$total_calls += $row['calls'];
 
 				echo '<tr>';
-				echo '<td>' . esc_html( $row['component'] ) . '</td>';
+				echo '<td><a href="#" class="qm-filter-trigger" data-qm-target="db_queries-wpdb" data-qm-filter="component" data-qm-value="' . esc_attr( $row['component'] ) . '">' . esc_html( $row['component'] ) . '</a></td>';
 
 				foreach ( $data['types'] as $type_name => $type_count ) {
 					if ( isset( $row['types'][$type_name] ) ) {

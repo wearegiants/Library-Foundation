@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2009-2015 John Blackbourn
+Copyright 2009-2016 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -44,10 +44,10 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 		echo '<tbody>';
 
 		$types = array(
-			'warning'    => __( 'Warning', 'query-monitor' ),
-			'notice'     => __( 'Notice', 'query-monitor' ),
-			'strict'     => __( 'Strict', 'query-monitor' ),
-			'deprecated' => __( 'Deprecated', 'query-monitor' ),
+			'warning'    => _x( 'Warning', 'PHP error level', 'query-monitor' ),
+			'notice'     => _x( 'Notice', 'PHP error level', 'query-monitor' ),
+			'strict'     => _x( 'Strict', 'PHP error level', 'query-monitor' ),
+			'deprecated' => _x( 'Deprecated', 'PHP error level', 'query-monitor' ),
 		);
 
 		foreach ( $types as $type => $title ) {
@@ -72,10 +72,27 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 					echo '<td>';
 					echo self::output_filename( $error->filename . ':' . $error->line, $error->file, $error->line ); // WPCS: XSS ok.
 					echo '</td>';
-					printf(
-						'<td class="qm-nowrap qm-ltr">%s</td>',
-						implode( '<br>', array_map( 'esc_html', $error->trace->get_stack() ) )
-					);
+
+					$stack          = array();
+					$filtered_trace = $error->trace->get_filtered_trace();
+
+					// debug_backtrace() (used within QM_Backtrace) doesn't like being used within an error handler so
+					// we need to handle its somewhat unreliable stack trace items.
+					// https://bugs.php.net/bug.php?id=39070
+					// https://bugs.php.net/bug.php?id=64987
+					foreach ( $filtered_trace as $i => $item ) {
+						if ( isset( $item['file'] ) && isset( $item['line'] ) ) {
+							$stack[] = self::output_filename( $item['display'], $item['file'], $item['line'] );
+						} else if ( 0 === $i ) {
+							$stack[] = self::output_filename( $item['display'], $error->file, $error->line );
+						} else {
+							$stack[] = $item['display'] . '<br>&nbsp;<span class="qm-info"><em>' . __( 'Unknown location', 'query-monitor' ) . '</em></span>';
+						}
+					}
+
+					echo '<td class="qm-row-caller qm-row-stack qm-nowrap qm-ltr">';
+					echo implode( '<br>', $stack ); // WPCS: XSS ok.
+					echo '</td>';
 
 					if ( $component ) {
 						echo '<td class="qm-nowrap">' . esc_html( $component->name ) . '</td>';
@@ -125,6 +142,7 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 			$menu[] = $this->menu( array(
 				'id'    => 'query-monitor-warnings',
 				'title' => esc_html( sprintf(
+					/* translators: %s: Number of PHP warnings */
 					__( 'PHP Warnings (%s)', 'query-monitor' ),
 					number_format_i18n( count( $data['errors']['warning'] ) )
 				) )
@@ -134,6 +152,7 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 			$menu[] = $this->menu( array(
 				'id'    => 'query-monitor-notices',
 				'title' => esc_html( sprintf(
+					/* translators: %s: Number of PHP notices */
 					__( 'PHP Notices (%s)', 'query-monitor' ),
 					number_format_i18n( count( $data['errors']['notice'] ) )
 				) )
@@ -143,6 +162,7 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 			$menu[] = $this->menu( array(
 				'id'    => 'query-monitor-stricts',
 				'title' => esc_html( sprintf(
+					/* translators: %s: Number of strict PHP errors */
 					__( 'PHP Stricts (%s)', 'query-monitor' ),
 					number_format_i18n( count( $data['errors']['strict'] ) )
 				) )
@@ -152,6 +172,7 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 			$menu[] = $this->menu( array(
 				'id'    => 'query-monitor-deprecated',
 				'title' => esc_html( sprintf(
+					/* translators: %s: Number of deprecated PHP errors */
 					__( 'PHP Deprecated (%s)', 'query-monitor' ),
 					number_format_i18n( count( $data['errors']['deprecated'] ) )
 				) )

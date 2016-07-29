@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2009-2015 John Blackbourn
+Copyright 2009-2016 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ class QM_Output_Html_DB_Callers extends QM_Output_Html {
 		echo '<th colspan="' . absint( $span ) . '">' . esc_html( $this->collector->name() ) . '</th>';
 		echo '</tr>';
 		echo '<tr>';
-		echo '<th>' . esc_html_x( 'Caller', 'Query caller', 'query-monitor' ) . '</th>';
+		echo '<th>' . esc_html__( 'Caller', 'query-monitor' ) . '</th>';
 
 		foreach ( $data['types'] as $type_name => $type_count ) {
 			echo '<th class="qm-num">';
@@ -64,7 +64,7 @@ class QM_Output_Html_DB_Callers extends QM_Output_Html {
 				$stime = number_format_i18n( $row['ltime'], 4 );
 
 				echo '<tr>';
-				echo '<td class="qm-ltr">' . esc_html( $row['caller'] ) . '</td>';
+				echo '<td class="qm-ltr"><a href="#" class="qm-filter-trigger" data-qm-target="db_queries-wpdb" data-qm-filter="caller" data-qm-value="' . esc_attr( $row['caller'] ) . '">' . esc_html( $row['caller'] ) . '</a></td>';
 
 				foreach ( $data['types'] as $type_name => $type_count ) {
 					if ( isset( $row['types'][$type_name] ) ) {
