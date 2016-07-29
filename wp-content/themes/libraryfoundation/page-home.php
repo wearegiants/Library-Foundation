@@ -142,7 +142,7 @@
       <div class="row">
         <header class="desktop-8 tablet-4 mobile-3">
           <p>
-            From Member events to ALOUD programs, Library Store On Wheels stops and much much more, stay up on the Library Foundation’s activities.
+            From Member events to ALOUD programs, and much much more, stay up on the Library Foundation’s activities.
           </p>
         </header>
         <div id="carousel-date-select" class="desktop-3 tablet-2 mobile-3 text-right right">
