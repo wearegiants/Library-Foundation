@@ -12,7 +12,3 @@ RewriteRule . /index.php [L]
 
 # END WordPress
 
-AuthType Basic
-AuthName "restricted area"
-AuthUserFile /root/.htpasswd
-require valid-user

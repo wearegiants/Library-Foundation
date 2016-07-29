@@ -7,7 +7,7 @@
 
 <?php
 $args = array(
-  'showposts'          => 9,
+  'showposts'          => -1,
   'post_type'          => 'tribe_events',
   'tax_query' => array(
     array(
