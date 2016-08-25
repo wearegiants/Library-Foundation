@@ -7,7 +7,7 @@
           <form action="/" method="get">
             <fieldset>
               <label for="search">Search:</label>
-              <input type="text" name="s" placeholder="Jeff Koons, ALOUD, etc." id="search" value="<?php the_search_query(); ?>" />
+              <input type="text" name="s" placeholder="Sandra Cisneros, ALOUD, etc." id="search" value="<?php the_search_query(); ?>" />
             </fieldset>
           </form>
         </div>
