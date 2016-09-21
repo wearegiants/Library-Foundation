@@ -112,7 +112,7 @@ class PMXI_CsvParser
 
         $wp_uploads = wp_upload_dir();
         
-        $this->targetDir = (empty($options['targetDir'])) ? wp_all_import_secure_file($wp_uploads['basedir'] . '/wpallimport/uploads', 'uploads') : $options['targetDir'];
+        $this->targetDir = (empty($options['targetDir'])) ? wp_all_import_secure_file($wp_uploads['basedir'] . DIRECTORY_SEPARATOR . PMXI_Plugin::UPLOADS_DIRECTORY) : $options['targetDir'];
 
         $this->load($options['filename']);
     }
@@ -150,7 +150,7 @@ class PMXI_CsvParser
      */
     public function set_settings($array)
     {
-        $this->settings = array_merge($this->settings, $array);
+        $this->settings = apply_filters('wp_all_import_csv_parser_settings', array_merge($this->settings, $array));
     }
 
     /**
@@ -969,15 +969,28 @@ class PMXI_CsvParser
         $xmlWriter->startElement('data');
         
         $create_new_headers = false;
-                
+        $headers = array();    
         while ($keys = fgetcsv($res, $l, $d, $e)) {
+            
+            $empty_columns = 0;
+            foreach ($keys as $key) {
+                if ($key == '') $empty_columns++;
+            }
+            // skip empty lines
+            if ($empty_columns == count($keys)) continue;
 
             if ($c == 0) {
                 $buf_keys = $keys;
                 foreach ($keys as $key => $value) {    
                     if (!$create_new_headers and (preg_match('%\W(http:|https:|ftp:)$%i', $value) or is_numeric($value))) $create_new_headers = true;                                                                    
-                    $value = trim(strtolower(preg_replace('/^[0-9]{1}/','el_', preg_replace('/[^a-z0-9_]/i', '', $value))));                    
-                    $keys[$key] = (!empty($value) and strlen($value) <= 30) ? $value : 'undefined' . $key;
+                    $value = trim(strtolower(preg_replace('/^[0-9]{1}/','el_', preg_replace('/[^a-z0-9_]/i', '', $value))));
+                    $value = (!empty($value)) ? $value : 'undefined' . $key;
+                    if (empty($headers[$value])) 
+                        $headers[$value] = 1;
+                    else
+                        $headers[$value]++;
+
+                    $keys[$key] = ($headers[$value] === 1) ? $value : $value . '_' . $headers[$value];
                 }            
                 $this->headers = $keys;                                
                 if ($create_new_headers){ 
@@ -1000,9 +1013,10 @@ class PMXI_CsvParser
                         foreach ($chunk as $header => $value) 
                         {
                             $xmlWriter->startElement($header);
+                                $value = preg_replace('/\]\]>/s', '', preg_replace('/<!\[CDATA\[/s', '', $value ));
                                 if ($fixBrokenSymbols){
                                     // Remove non ASCII symbols and write CDATA
-                                    $xmlWriter->writeCData(preg_replace('/[^\x{0009}\x{000a}\x{000d}\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}]+/u', ' ', $value));                                
+                                    $xmlWriter->writeCData(preg_replace('/[^\x{0009}\x{000a}\x{000d}\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}]+/u', ' ', $value));                                                                                              
                                 }
                                 else{
                                     $xmlWriter->writeCData($value);                                
@@ -1011,11 +1025,18 @@ class PMXI_CsvParser
                         }                            
                         $xmlWriter->endElement();                        
                     }                                        
-                }
+                }                
             }
 
             $c ++;
         }
+
+        if($c === 1)
+        {
+            $xmlWriter->startElement('node');
+            $xmlWriter->endElement();    
+        }
+        
         fclose($res);
         
         $xmlWriter->endElement();

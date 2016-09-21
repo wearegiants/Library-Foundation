@@ -62,7 +62,7 @@
 										</div>
 									</div>						
 
-									<?php if ($post_type != 'page'):?>														
+									<?php if ( post_type_supports( $post_type, 'excerpt' ) ):?>														
 									<div class="template_input">
 										<input type="text" name="post_excerpt" style="width:100%; line-height: 25px;" value="<?php echo esc_attr($post['post_excerpt']) ?>" placeholder="<?php echo ($post_type == 'product' and class_exists('PMWI_Plugin')) ? __('WooCommerce Short Description', 'wp_all_import_plugin') : __('Excerpt', 'wp_all_import_plugin'); ?>"/>
 									</div>
@@ -87,7 +87,7 @@
 													<input type="hidden" name="is_leave_html" value="0" />
 													<input type="checkbox" id="is_leave_html" name="is_leave_html" class="fix_checkbox" value="1" <?php echo $post['is_leave_html'] ? 'checked="checked"' : '' ?> style="position:relative;"/>
 													<label for="is_leave_html"><?php _e('Decode HTML entities with <b>html_entity_decode</b>', 'wp_all_import_plugin') ?></label>
-													<a class="wpallimport-help" href="#help" style="position:relative; top:1px;" original-title="If HTML code is showing up in your posts, use this option. You can also use <br /><br /><i>[html_entity_decode({my/xpath})]</i><br /><br /> or <br /><br /><i>[htmlentities({my/xpath})]</i><br /><br /> to decode or encode HTML in your file.">?</a>								
+													<a class="wpallimport-help" href="#help" style="position:relative; top:1px;" original-title="If HTML code is showing up in your posts, use this option. You can also use <br /><br /><i>[html_entity_decode({my/xpath})]</i><br /><br /> or <br /><br /><i>[htmlentities({my/xpath})]</i><br /><br /> or <br /><br /><i>[htmlspecialchars_decode({my/xpath})]</i><br /><br /> to decode or encode HTML in your file.">?</a>								
 												</div>	
 											</div>				
 										</div>
@@ -104,26 +104,30 @@
 					
 				<?php									
 
-					if ( in_array('main', $visible_sections) ) do_action('pmxi_extend_options_main', $post_type);
+					if ( in_array('main', $visible_sections) ) do_action('pmxi_extend_options_main', $post_type, $post);
 
 					if ( in_array('featured', $visible_sections) ) {
-						include( 'template/_featured_template.php' );
-						do_action('pmxi_extend_options_featured', $post_type);						
+						$is_images_section_enabled = apply_filters('wp_all_import_is_images_section_enabled', true, $post_type);						
+						if ( $is_images_section_enabled ) {
+							PMXI_API::add_additional_images_section(__('Images', 'wp_all_import_plugin'), '', $post, $post_type, true, true);
+						}
+							
+						do_action('pmxi_extend_options_featured', $post_type, $post);
 					}
 
 					if ( in_array('cf', $visible_sections) ){ 
 						include( 'template/_custom_fields_template.php' );
-						do_action('pmxi_extend_options_custom_fields', $post_type);																								
+						do_action('pmxi_extend_options_custom_fields', $post_type, $post);																								
 					}
 
 					if ( in_array('taxonomies', $visible_sections) ) {
 						include( 'template/_taxonomies_template.php' );					
-						do_action('pmxi_extend_options_taxonomies', $post_type);												
+						do_action('pmxi_extend_options_taxonomies', $post_type, $post);												
 					}									
 
 					if ( in_array('other', $visible_sections) ){ 
 						include( 'template/_other_template.php' );
-						do_action('pmxi_extend_options_other', $post_type);
+						do_action('pmxi_extend_options_other', $post_type, $post);
 					}
 
 					/*if ( in_array('nested', $visible_sections) ){ 
@@ -131,17 +135,53 @@
 						do_action('pmxi_extend_options_nested', $post_type);
 					}*/
 
-				?>																
+					$uploads = wp_upload_dir();
+					$functions = $uploads['basedir'] . DIRECTORY_SEPARATOR . WP_ALL_IMPORT_UPLOADS_BASE_DIRECTORY . DIRECTORY_SEPARATOR . 'functions.php';
+					$functions_content = file_get_contents($functions);
+
+					?>
+					<div class="wpallimport-collapsed closed wpallimport-section">
+						<div class="wpallimport-content-section">
+							<div class="wpallimport-collapsed-header">
+								<h3><?php _e('Function Editor', 'wp_all_import_plugin'); ?></h3>	
+							</div>
+							<div class="wpallimport-collapsed-content" style="padding: 0;">
+								<div class="wpallimport-collapsed-content-inner">									
+
+									<textarea id="wp_all_import_code" name="wp_all_import_code"><?php echo (empty($functions_content)) ? "<?php\n\n?>": esc_textarea($functions_content);?></textarea>						
+
+									<div class="input" style="margin-top: 10px;">
+
+										<div class="input" style="display:inline-block; margin-right: 20px;">
+											<input type="button" class="button-primary wp_all_import_save_functions" value="<?php _e("Save Functions", 'wp_all_import_plugin'); ?>"/>							
+											<a href="#help" class="wpallimport-help" title="<?php printf(__("Add functions here for use during your import. You can access this file at %s", "wp_all_import_plugin"), preg_replace("%.*wp-content%", "wp-content", $functions));?>" style="top: 0;">?</a>
+											<div class="wp_all_import_functions_preloader"></div>
+										</div>						
+										<div class="input wp_all_import_saving_status" style="display:inline-block;">
+
+										</div>
+
+									</div>
+
+								</div>
+							</div>
+						</div>
+					</div>
 				
 				<hr>
 				
 				<div class="input wpallimport-section" style="padding-bottom: 8px; padding-left: 8px;">
+
+					<?php 
+						wp_all_import_template_notifications( $post, 'notice' );							
+					?>					
 										
 					<p style="margin: 11px; float: left;">
+						<input type="hidden" name="save_template_as" value="0" />
 						<input type="checkbox" id="save_template_as" name="save_template_as" class="switcher-horizontal fix_checkbox" value="1" <?php echo ( ! empty($post['save_template_as'])) ? 'checked="checked"' : '' ?> /> 
 						<label for="save_template_as"><?php _e('Save settings as a template','wp_all_import_plugin');?></label>
 					</p>
-					<div class="switcher-target-save_template_as" style="float: left;">
+					<div class="switcher-target-save_template_as" style="float: left; overflow: hidden;">
 						<input type="text" name="name" placeholder="<?php _e('Template name...', 'wp_all_import_plugin') ?>" style="vertical-align:middle; line-height: 26px;" value="<?php echo esc_attr($post['name']) ?>" />		
 					</div>				
 					<?php $templates = new PMXI_Template_List(); ?>
@@ -162,7 +202,9 @@
 					
 					<div style="text-align:center; width:100%;">
 						<?php wp_nonce_field('template', '_wpnonce_template'); ?>
+
 						<input type="hidden" name="is_submitted" value="1" />									
+						<input type="hidden" name="security" value="<?php echo wp_create_nonce( "wp_all_import_preview" ); ?>" />									
 
 						<?php if ($this->isWizard):?>
 							<a href="<?php echo add_query_arg('action', 'element', $this->baseUrl) ?>" class="back rad3" style="float:none;"><?php _e('Back to Step 2', 'wp_all_import_plugin') ?></a>

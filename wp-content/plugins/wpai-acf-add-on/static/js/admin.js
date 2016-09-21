@@ -99,7 +99,8 @@
 	var pmai_get_acf_group = function(ths){
 
 		var request = {
-			action:'get_acf',			
+			action:'get_acf',		
+			security: wp_all_import_security,		
 			acf: ths.attr('rel')
 	    };
 

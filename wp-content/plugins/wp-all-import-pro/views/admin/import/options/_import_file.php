@@ -8,7 +8,7 @@ $l10n = array(
 	'default_error' => 'An error occurred in the upload. Please try again later.',
 	'missing_upload_url' => 'There was a configuration error. Please contact the server administrator.',
 	'upload_limit_exceeded' => 'You may only upload 1 file.',
-	'http_error' => 'HTTP error.',
+	'http_error' => 'HTTP Error: Click here for our <a href="http://www.wpallimport.com/documentation/advanced/troubleshooting/" target="_blank">troubleshooting guide</a>, or ask your web host to look in your error_log file for an error that takes place at the same time you are trying to upload a file.',
 	'upload_failed' => 'Upload failed.',
 	'io_error' => 'IO error.',
 	'security_error' => 'Security error.',
@@ -29,6 +29,34 @@ $l10n = array(
 </script>
 
 <div class="change_file">
+
+	<div class="rad4 first-step-errors error-upload-rejected">
+		<div class="wpallimport-notify-wrapper">
+			<div class="error-headers exclamation">
+				<h3><?php _e('File upload rejected by server', 'wp_all_import_plugin');?></h3>
+				<h4><?php _e("Contact your host and have them check your server's error log.", "wp_all_import_plugin"); ?></h4>
+			</div>		
+		</div>		
+		<a class="button button-primary button-hero wpallimport-large-button wpallimport-notify-read-more" href="http://www.wpallimport.com/documentation/troubleshooting/problems-with-import-files/" target="_blank"><?php _e('Read More', 'wp_all_import_plugin');?></a>		
+	</div>
+
+	<div class="rad4 first-step-errors error-file-validation" <?php if ( ! empty($upload_validation) ): ?> style="display:block;" <?php endif; ?>>
+		<div class="wpallimport-notify-wrapper">
+			<div class="error-headers exclamation">
+				<h3><?php _e('There\'s a problem with your import file', 'wp_all_import_plugin');?></h3>
+				<h4>
+					<?php 
+					if ( ! empty($upload_validation) ): 										
+						$file_type = strtoupper(pmxi_getExtension($post['file']));
+						printf(__('This %s file has errors and is not valid.', 'wp_all_import_plugin'), $file_type); 
+					endif;
+					?>
+				</h4>
+			</div>		
+		</div>		
+		<a class="button button-primary button-hero wpallimport-large-button wpallimport-notify-read-more" href="http://www.wpallimport.com/documentation/troubleshooting/problems-with-import-files/#invalid" target="_blank"><?php _e('Read More', 'wp_all_import_plugin');?></a>		
+	</div>		
+
 	<div class="wpallimport-content-section">
 		<div class="wpallimport-collapsed-header" style="padding-left:30px;">
 			<h3><?php _e('Import File','wp_all_import_plugin');?></h3>	
@@ -84,23 +112,27 @@ $l10n = array(
 							<div class="wpallimport-file-type-options">								
 								
 								<?php
+									$files_directory = DIRECTORY_SEPARATOR . PMXI_Plugin::FILES_DIRECTORY . DIRECTORY_SEPARATOR;
+
 									$local_files = array_merge(
-										PMXI_Helper::safe_glob($upload_dir['basedir'] . '/wpallimport/files/*.xml', PMXI_Helper::GLOB_RECURSE),
-										PMXI_Helper::safe_glob($upload_dir['basedir'] . '/wpallimport/files/*.gz', PMXI_Helper::GLOB_RECURSE),
-										PMXI_Helper::safe_glob($upload_dir['basedir'] . '/wpallimport/files/*.zip', PMXI_Helper::GLOB_RECURSE),
-										PMXI_Helper::safe_glob($upload_dir['basedir'] . '/wpallimport/files/*.gzip', PMXI_Helper::GLOB_RECURSE),
-										PMXI_Helper::safe_glob($upload_dir['basedir'] . '/wpallimport/files/*.csv', PMXI_Helper::GLOB_RECURSE),
-										PMXI_Helper::safe_glob($upload_dir['basedir'] . '/wpallimport/files/*.dat', PMXI_Helper::GLOB_RECURSE),
-										PMXI_Helper::safe_glob($upload_dir['basedir'] . '/wpallimport/files/*.psv', PMXI_Helper::GLOB_RECURSE),
-										PMXI_Helper::safe_glob($upload_dir['basedir'] . '/wpallimport/files/*.json', PMXI_Helper::GLOB_RECURSE),
-										PMXI_Helper::safe_glob($upload_dir['basedir'] . '/wpallimport/files/*.txt', PMXI_Helper::GLOB_RECURSE),
-										PMXI_Helper::safe_glob($upload_dir['basedir'] . '/wpallimport/files/*.sql', PMXI_Helper::GLOB_RECURSE)
+										PMXI_Helper::safe_glob($upload_dir['basedir'] . $files_directory . '*.xml', PMXI_Helper::GLOB_NODIR),
+										PMXI_Helper::safe_glob($upload_dir['basedir'] . $files_directory . '*.gz', PMXI_Helper::GLOB_NODIR),
+										PMXI_Helper::safe_glob($upload_dir['basedir'] . $files_directory . '*.zip', PMXI_Helper::GLOB_NODIR),
+										PMXI_Helper::safe_glob($upload_dir['basedir'] . $files_directory . '*.gzip', PMXI_Helper::GLOB_NODIR),
+										PMXI_Helper::safe_glob($upload_dir['basedir'] . $files_directory . '*.csv', PMXI_Helper::GLOB_NODIR),
+										PMXI_Helper::safe_glob($upload_dir['basedir'] . $files_directory . '*.dat', PMXI_Helper::GLOB_NODIR),
+										PMXI_Helper::safe_glob($upload_dir['basedir'] . $files_directory . '*.psv', PMXI_Helper::GLOB_NODIR),
+										PMXI_Helper::safe_glob($upload_dir['basedir'] . $files_directory . '*.json', PMXI_Helper::GLOB_NODIR),
+										PMXI_Helper::safe_glob($upload_dir['basedir'] . $files_directory . '*.txt', PMXI_Helper::GLOB_NODIR),
+										PMXI_Helper::safe_glob($upload_dir['basedir'] . $files_directory . '*.sql', PMXI_Helper::GLOB_NODIR),
+										PMXI_Helper::safe_glob($upload_dir['basedir'] . $files_directory . '*.xls', PMXI_Helper::GLOB_NODIR),
+										PMXI_Helper::safe_glob($upload_dir['basedir'] . $files_directory . '*.xlsx', PMXI_Helper::GLOB_NODIR)
 									);
 									sort($local_files);
 									$sizes = array();
 									if ( ! empty($local_files)){
 										foreach ($local_files as $file) {
-											$sizes[] = filesize($upload_dir['basedir'] . '/wpallimport/files/' . $file);
+											$sizes[] = filesize($upload_dir['basedir'] . $files_directory . $file);
 										}
 									}
 								?>
@@ -121,7 +153,7 @@ $l10n = array(
 									var existing_file_sizes = <?php echo json_encode($sizes) ?>;
 								</script>
 								<div class="wpallimport-note" style="width:60%; margin: 0 auto; ">
-									<?php printf(__('Upload files to <strong>%s</strong> and they will appear in this list', 'wp_all_import_plugin'), $upload_dir['basedir'] . '/wpallimport/files') ?>
+									<?php printf(__('Upload files to <strong>%s</strong> and they will appear in this list', 'wp_all_import_plugin'), $upload_dir['basedir'] . $files_directory) ?>
 								</div>
 							</div>
 						</div>						

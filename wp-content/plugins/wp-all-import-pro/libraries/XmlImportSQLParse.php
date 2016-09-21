@@ -14,7 +14,7 @@ class PMXI_SQLParser{
 		
 		$wp_uploads = wp_upload_dir();		
 
-		$this->targetDir = (!$targetDir) ? wp_all_import_secure_file($wp_uploads['basedir'] . '/wpallimport/uploads', 'uploads') : $targetDir;
+		$this->targetDir = ( ! $targetDir ) ? wp_all_import_secure_file($wp_uploads['basedir'] . DIRECTORY_SEPARATOR . PMXI_Plugin::UPLOADS_DIRECTORY ) : $targetDir;
 	}
 
 	public function parse(){		
@@ -66,8 +66,8 @@ class PMXI_SQLParser{
 
 					if ( $headers ){
 			 			
-			 			foreach ($headers_matches[0] as $key => $founded_headers) { 				
-			 				$hdrs = explode(',', rtrim(ltrim(trim(rtrim(trim($founded_headers), 'VALUES')),'('),')'));  				
+			 			foreach ($headers_matches[0] as $key => $found_headers) { 				
+			 				$hdrs = explode(',', rtrim(ltrim(trim(rtrim(trim($found_headers), 'VALUES')),'('),')'));  				
 			 				if ( ! empty($hdrs) ){
 			 					foreach ($hdrs as $header) {
 			 						$rawData[ sanitize_key(trim(trim($header), '`')) ] = '';

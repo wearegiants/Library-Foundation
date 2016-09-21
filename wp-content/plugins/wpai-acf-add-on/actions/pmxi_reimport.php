@@ -48,8 +48,7 @@ function pmai_pmxi_reimport($entry, $post){
 				}
 			}
 		}
-	}
-
+	}	
 	?>
 	<div class="input">
 		<input type="hidden" name="acf_list" value="0" />			

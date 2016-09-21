@@ -6,6 +6,14 @@
 */
 function pmxi_wp_ajax_parse_nested_file(){
 
+	if ( ! check_ajax_referer( 'wp_all_import_secure', 'security', false )){
+		exit( json_encode(array('result' => array(), 'msg' => __('Security check', 'wp_all_import_plugin'))) );
+	}
+
+	if ( ! current_user_can( PMXI_Plugin::$capabilities ) ){
+		exit( json_encode(array('result' => array(), 'msg' => __('Security check', 'wp_all_import_plugin'))) );
+	}
+
 	extract($_POST);
 
 	$result = array();
@@ -148,7 +156,7 @@ function pmxi_wp_ajax_parse_nested_file(){
 			'root_element' => $root_element,
 			'xml_tree' => $xml_tree,
 			'xpath' => $customXpath,
-			'count' => (($count) ? sprintf("<p class='green pmxi_counter'>" . __('Elements founded', 'pmxi_pligun') . " <strong>%s</strong></p>", $count) : "<p class='red pmxi_counter'>" . __('Elements not found', 'pmxi_pligun') . "</p>")
+			'count' => (($count) ? sprintf("<p class='green pmxi_counter'>" . __('Elements found', 'pmxi_pligun') . " <strong>%s</strong></p>", $count) : "<p class='red pmxi_counter'>" . __('Elements not found', 'pmxi_pligun') . "</p>")
 		))); die;
 	}
 

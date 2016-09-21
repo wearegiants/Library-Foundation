@@ -17,7 +17,7 @@ function pmai_admin_notices() {
 		
 	}
 
-	if ( class_exists( 'PMXI_Plugin' ) and ( version_compare(PMXI_VERSION, '4.0.0-beta1') < 0 and PMXI_EDITION == 'paid' or version_compare(PMXI_VERSION, '3.1.5') <= 0 and PMXI_EDITION == 'free') ) {
+	if ( class_exists( 'PMXI_Plugin' ) and ( version_compare(PMXI_VERSION, '4.1.1') < 0 and PMXI_EDITION == 'paid' or version_compare(PMXI_VERSION, '3.2.3') <= 0 and PMXI_EDITION == 'free') ) {
 		?>
 		<div class="error"><p>
 			<?php printf(
@@ -43,24 +43,6 @@ function pmai_admin_notices() {
 		deactivate_plugins( PMAI_ROOT_DIR . '/wpai-acf-add-on.php');
 		
 	}
-	/*else{
-		
-		global $acf;
-
-		if ($acf and version_compare($acf->settings['version'], '5.0.0') >= 0){
-			?>
-			<div class="error"><p>
-				<?php printf(
-						__('<b>%s Plugin</b>: <a target="_blank" href="http://wordpress.org/plugins/advanced-custom-fields/">Advanced Custom Fields</a> must be lower than 5.0.0', 'pmai_plugin'),
-						PMAI_Plugin::getInstance()->getName()
-				) ?>
-			</p></div>
-			<?php
-			
-			deactivate_plugins( PMAI_ROOT_DIR . '/plugin.php');
-		}
-
-	}*/
 
 	$input = new PMAI_Input();
 	$messages = $input->get('pmai_nt', array());

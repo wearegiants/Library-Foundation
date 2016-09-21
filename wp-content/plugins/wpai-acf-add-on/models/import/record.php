@@ -32,7 +32,7 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 	 */
 	public function parse($parsing_data = array()) { //$import, $count, $xml, $logger = NULL, $chunk = false, $xpath_prefix = ""
 
-		$this->parsing_data = $parsing_data;
+		$this->parsing_data = $parsing_data;		
 
 		add_filter('user_has_cap', array($this, '_filter_has_cap_unfiltered_html')); kses_init(); // do not perform special filtering for imported content			
 
@@ -190,8 +190,12 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 			
 			foreach (explode(":", $fieldKeys) as $n => $key) {
 				$CurrentFieldXpath      = (!$n) ? $this->parsing_data['import']->options['fields'][$key] : $CurrentFieldXpath[$key];
-				$currentIsMultipleField = (!$n) ? $this->parsing_data['import']->options['is_multiple_field_value'][$key] : $currentIsMultipleField[$key];
-				$currentMultipleValue   = (!$n) ? $this->parsing_data['import']->options['multiple_value'][$key] : $currentMultipleValue[$key];
+				
+				$is_multiple_field_value = $this->parsing_data['import']->options['is_multiple_field_value'];
+				$currentIsMultipleField = (!$n && isset($is_multiple_field_value[$key])) ? $is_multiple_field_value[$key] : $currentIsMultipleField[$key];
+
+				$is_multiple_value = $this->parsing_data['import']->options['multiple_value'];
+				$currentMultipleValue   = (!$n && isset($is_multiple_value[$key])) ? $is_multiple_value[$key] : $currentMultipleValue[$key];
 			}
 
 			$CurrentFieldXpath 		= (!empty($CurrentFieldXpath[ $field['key'] ])) ? $CurrentFieldXpath[ $field['key'] ] : false;
@@ -224,10 +228,7 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 			case 'password':
 			case 'wysiwyg':																							
 			case 'color_picker':
-			case 'message':														
-			case 'image':
-			case 'file':																						
-			case 'gallery':		
+			case 'message':																																								
 			case 'user':			
 			case 'limiter':
 			case 'wp_wysiwyg':			
@@ -243,6 +244,48 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 						$values = XmlImportParser::factory($xml, $cxpath, $CurrentFieldXpath, $file)->parse(); $tmp_files[] = $file;									
 					}
 				break;			
+			case 'image':
+			case 'file':
+					if ( is_array($CurrentFieldXpath) )
+					{
+						if ( ! empty($CurrentFieldXpath['url']) )
+						{												
+							$values = XmlImportParser::factory($xml, $cxpath, $CurrentFieldXpath['url'], $file)->parse(); $tmp_files[] = $file;	
+						}
+					}
+					else
+					{
+						if ( "" != $CurrentFieldXpath )
+						{
+							$values = XmlImportParser::factory($xml, $cxpath, $CurrentFieldXpath, $file)->parse(); $tmp_files[] = $file;									
+						}
+					}
+				break;
+			case 'gallery':
+					if ( is_array($CurrentFieldXpath) ){
+						if ( ! empty($CurrentFieldXpath['gallery']) )
+						{												
+							$values = XmlImportParser::factory($xml, $cxpath, $CurrentFieldXpath['gallery'], $file)->parse(); $tmp_files[] = $file;									
+							foreach ($values as $i => $value) {
+								$imgs = array();
+								$line_imgs = explode("\n", $value);
+								if ( ! empty($line_imgs) ){
+									foreach ($line_imgs as $line_img){
+										$imgs = array_merge($imgs, ( ! empty($CurrentFieldXpath['delim']) ) ? str_getcsv($line_img, $CurrentFieldXpath['delim']) : array($line_img) );								
+									}
+								}
+								$values[$i] = $imgs;
+							}
+							
+						}
+					}
+					else
+					{
+						if ( "" != $CurrentFieldXpath ){
+							$values = XmlImportParser::factory($xml, $cxpath, $CurrentFieldXpath, $file)->parse(); $tmp_files[] = $file;	
+						}
+					}
+				break;
 			case 'date_picker':
 					if ( "" != $CurrentFieldXpath )
 					{
@@ -269,7 +312,7 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 							if ($d == 'now') $d = current_time('mysql'); // Replace 'now' with the WordPress local time to account for timezone offsets (WordPress references its local time during publishing rather than the server’s time so it should use that)
 							$time = strtotime($d);
 							if (FALSE === $time) {									
-								$time = time();
+								$time = $d;//time();
 							}
 							$values[$i] = $time;
 						}
@@ -281,25 +324,85 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 					{
 						$addresses = XmlImportParser::factory($xml, $cxpath, $CurrentFieldXpath['address'], $file)->parse(); $tmp_files[] = $file;
 					}
-					else{
+					else
+					{
 						$addresses = array_fill(0, $count_records, "");	
 					}
-					if ( "" != $CurrentFieldXpath['lat'] ){
+					if ( "" != $CurrentFieldXpath['lat'] )
+					{
 						$lat = XmlImportParser::factory($xml, $cxpath, $CurrentFieldXpath['lat'], $file)->parse(); $tmp_files[] = $file;
 					}
-					else{
+					else
+					{
 						$lat = array_fill(0, $count_records, "");	
 					}
-					if ( "" != $CurrentFieldXpath['lng'] ){
+					if ( "" != $CurrentFieldXpath['lng'] )
+					{
 						$lng = XmlImportParser::factory($xml, $cxpath, $CurrentFieldXpath['lng'], $file)->parse(); $tmp_files[] = $file;
 					}
-					else{
+					else
+					{
 						$lng = array_fill(0, $count_records, "");	
+					}
+					
+					switch ($CurrentFieldXpath['address_geocode']) 
+					{
+						case 'address_no_key':
+							
+							$api = array_fill(0, $count_records, "");
+							$client_id = array_fill(0, $count_records, "");
+							$signature = array_fill(0, $count_records, "");
+
+							break;
+
+						case 'address_google_developers':
+
+							if ( "" != $CurrentFieldXpath['address_google_developers_api_key'] )
+							{
+								$api = 	XmlImportParser::factory($xml, $cxpath, $CurrentFieldXpath['address_google_developers_api_key'], $file)->parse(); $tmp_files[] = $file;
+							}
+							else
+							{
+								$api = array_fill(0, $count_records, "");
+							}
+							
+
+							break;
+
+						case 'address_google_for_work':
+
+							if ( "" != $CurrentFieldXpath['address_google_for_work_client_id'] )
+							{
+								$client_id = 	XmlImportParser::factory($xml, $cxpath, $CurrentFieldXpath['address_google_for_work_client_id'], $file)->parse(); $tmp_files[] = $file;
+							}
+							else
+							{
+								$client_id = array_fill(0, $count_records, "");
+							}
+
+							if ( "" != $CurrentFieldXpath['address_google_for_work_digital_signature'] )
+							{
+								$signature = 	XmlImportParser::factory($xml, $cxpath, $CurrentFieldXpath['address_google_for_work_digital_signature'], $file)->parse(); $tmp_files[] = $file;
+							}
+							else
+							{
+								$signature = array_fill(0, $count_records, "");
+							}
+
+							break;						
+
+						default:
+							# code...
+							break;
 					}
 					$values = array(
 						'address' => $addresses,
 						'lat' => $lat,
-						'lng' => $lng
+						'lng' => $lng,
+						'api_key' => $api,
+						'client_id' => $client_id,
+						'signature' => $signature,
+						'address_geocode' => $CurrentFieldXpath['address_geocode']
 					);
 				break;
 			case 'paypal_item':
@@ -384,7 +487,7 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 								$values = XmlImportParser::factory($xml, $cxpath, $CurrentFieldXpath, $file)->parse(); $tmp_files[] = $file;
 
 								foreach ($values as $key => $value) {
-									$values[$key] = explode(",", $value);
+									$values[$key] = array_map('trim', explode(",", $value));
 								}
 								
 								$is_multiple = true;
@@ -434,41 +537,23 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 										if (!empty($taxonomy->parent_id)) {																			
 											foreach ($taxonomies_hierarchy as $key => $value){
 												if ($value->item_id == $taxonomy->parent_id and !empty($value->txn_names[$i])){													
-													foreach ($value->txn_names[$i] as $parent) {	
-														//if (!$j or !$taxonomy->auto_nested){																																																																
-															$values[$tx_name][$i][] = array(
-																'name' => trim($cc),
-																'parent' => $parent,
-																'assign' => 1 //$taxonomy->assign
-															);
-														/*}
-														elseif ($taxonomy->auto_nested){
-															$values[$tx_name][$i][] = array(
-																'name' => trim($cc),
-																'parent' => (!empty($delimeted_taxonomies[$j - 1])) ? trim($delimeted_taxonomies[$j - 1]) : false,
-																'assign' => $taxonomy->assign
-															);
-														}*/																	
+													foreach ($value->txn_names[$i] as $parent) {																																																																												
+														$values[$tx_name][$i][] = array(
+															'name' => trim($cc),
+															'parent' => $parent,
+															'assign' => 1 //$taxonomy->assign
+														);														
 													}											
 												}
 											}
 											
 										}
-										else {	
-											//if (!$j or !$taxonomy->auto_nested){
-												$values[$tx_name][$i][] = array(
-													'name' => trim($cc),
-													'parent' => false,
-													'assign' => 1 //$taxonomy->assign
-												);
-											/*}
-											elseif ($taxonomy->auto_nested) {
-												$values[$tx_name][$i][] = array(
-													'name' => trim($cc),
-													'parent' => (!empty($delimeted_taxonomies[$j - 1])) ? trim($delimeted_taxonomies[$j - 1]) : false,
-													'assign' => $taxonomy->assign
-												);
-											}*/
+										else {												
+											$values[$tx_name][$i][] = array(
+												'name' => trim($cc),
+												'parent' => false,
+												'assign' => 1 //$taxonomy->assign
+											);											
 										}								
 									}
 									if ($count_cats < count($values[$tx_name][$i])) $taxonomies_hierarchy[$k]->txn_names[$i][] = $values[$tx_name][$i][count($values[$tx_name][$i]) - 1];
@@ -502,16 +587,44 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 
 									if ($acf and version_compare($acf->settings['version'], '5.0.0') >= 0){
 
-										$sub_fields = get_posts(array('posts_per_page' => -1, 'post_type' => 'acf-field', 'post_parent' => $field['ID'], 'post_status' => 'publish'));
+										$sub_fields = array();
+
+										if (is_numeric($field['ID']))
+										{	
+											$sub_fields = get_posts(array('posts_per_page' => -1, 'post_type' => 'acf-field', 'post_parent' => $field['ID'], 'post_status' => 'publish'));
+											
+										}
+										else
+										{
+											$fields = acf_local()->fields;
+					
+											if (!empty($fields)){
+												foreach ($fields as $sub_field) {
+													if ($sub_field['parent'] == $field['key']){								
+														$sub_fieldData = $sub_field;																	
+														$sub_fieldData['ID'] = $sub_fieldData['id']    = uniqid();																																
+														$sub_fields[] = $sub_fieldData;
+													}
+												}
+											}
+											
+										}
 
 										if (!empty($sub_fields)):
 											foreach ($sub_fields as $n => $sub_field)
 											{							
-												$sub_fieldData = (!empty($sub_field->post_content)) ? unserialize($sub_field->post_content) : array();			
-												$sub_fieldData['ID'] = $sub_field->ID;
-												$sub_fieldData['label'] = $sub_field->post_title;
-												$sub_fieldData['key'] = $sub_field->post_name;
-												$sub_fieldData['name'] = $sub_field->post_excerpt;									
+												if (is_object($sub_field))
+												{
+													$sub_fieldData = (!empty($sub_field->post_content)) ? unserialize($sub_field->post_content) : array();			
+													$sub_fieldData['ID'] = $sub_field->ID;
+													$sub_fieldData['label'] = $sub_field->post_title;
+													$sub_fieldData['key'] = $sub_field->post_name;
+													$sub_fieldData['name'] = $sub_field->post_excerpt;									
+												}																						
+												else
+												{
+													$sub_fieldData = $sub_field;													
+												}		
 												
 												$row_array[$sub_fieldData['key']] = $this->parse_field(
 														$sub_fieldData, 
@@ -523,7 +636,8 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 													); 
 
 											}
-										endif;																																
+										endif;	
+																																									
 									}
 									else{
 
@@ -585,16 +699,43 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 
 									if ($acf and version_compare($acf->settings['version'], '5.0.0') >= 0){
 
-										$sub_fields = get_posts(array('posts_per_page' => -1, 'post_type' => 'acf-field', 'post_parent' => $field['ID'], 'post_status' => 'publish'));
+										$sub_fields = array();
+
+										if (is_numeric($field['ID']))
+										{
+											$sub_fields = get_posts(array('posts_per_page' => -1, 'post_type' => 'acf-field', 'post_parent' => $field['ID'], 'post_status' => 'publish'));
+										}
+										else
+										{
+											$fields = acf_local()->fields;
+					
+											if (!empty($fields)){
+												foreach ($fields as $sub_field) {
+													if ($sub_field['parent'] == $field['key']){								
+														$sub_fieldData = $sub_field;																	
+														$sub_fieldData['ID'] = $sub_fieldData['id']    = uniqid();																																
+														$sub_fields[] = $sub_fieldData;
+													}
+												}
+											}
+										}																				
 
 										if (!empty($sub_fields)):
 											foreach ($sub_fields as $n => $sub_field)
 											{			
-												$sub_fieldData = (!empty($sub_field->post_content)) ? unserialize($sub_field->post_content) : array();			
-												$sub_fieldData['ID'] = $sub_field->ID;
-												$sub_fieldData['label'] = $sub_field->post_title;
-												$sub_fieldData['key'] = $sub_field->post_name;				
-												$sub_fieldData['name'] = $sub_field->post_excerpt;				
+												if (is_object($sub_field))
+												{
+													$sub_fieldData = (!empty($sub_field->post_content)) ? unserialize($sub_field->post_content) : array();			
+													$sub_fieldData['ID'] = $sub_field->ID;
+													$sub_fieldData['label'] = $sub_field->post_title;
+													$sub_fieldData['key'] = $sub_field->post_name;				
+													$sub_fieldData['name'] = $sub_field->post_excerpt;					
+												}
+												else
+												{
+													$sub_fieldData = $sub_field;
+												}
+												
 												$row_array[$sub_fieldData['key']] = $this->parse_field($sub_fieldData, $row_fields[$sub_fieldData['key']], $fieldPath . "[" . $field['key'] . "][rows][" . $key . "]"); 
 											}
 										endif;							
@@ -664,7 +805,7 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 		return array(
 			'type'   => $field['type'],
 			'name'   => $field['name'],
-			'multiple' => $field['multiple'],
+			'multiple' => isset($field['multiple']) ? $field['multiple'] : false,
 			'values' => $values,
 			'is_multiple' => $is_multiple,
 			'is_variable' => $is_variable,
@@ -701,7 +842,7 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 		$this->parsing_data['logger'] and call_user_func($this->parsing_data['logger'], sprintf(__('- Importing field `%s`', 'pmxi_plugin'), $fieldContainerName . $field['name']));	
 
 		// If update is not allowed
-		if ( ! pmai_is_acf_update_allowed( $fieldContainerName . $field['name'], $this->parsing_data['import']->options ) ){ 
+		if ( ! empty($this->articleData['ID']) and ! pmai_is_acf_update_allowed( $fieldContainerName . $field['name'], $this->parsing_data['import']->options, $this->parsing_data['import']->id ) ){ 
 			$this->parsing_data['logger'] and call_user_func($this->parsing_data['logger'], sprintf(__('- Field `%s` is skipped attempted to import options', 'pmxi_plugin'), $fieldContainerName . $field['name']));
 			return false;
 		}
@@ -726,7 +867,66 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 					$this->update_post_meta($pid, $fieldContainerName . $field['name'], $field['values'][$i]);			
 					//$this->parsing_data['logger'] and call_user_func($this->parsing_data['logger'], sprintf(__('- Field `%s` updated with value `%s`', 'pmxi_plugin'), $fieldContainerName . $field['name'], $field['values'][$i]));		
 				break;		
-			case 'google_map':										
+			case 'google_map':			
+
+					// build serach query
+					$search = '';
+					if (empty($field['values']['address'][$i]) and !empty($field['values']['lat'][$i]) and !empty($field['values']['lng'][$i]))
+					{
+						$search = 'latlng=' . rawurlencode( $field['values']['lat'][$i] . ',' . $field['values']['lng'][$i] );
+					}
+					if (!empty($field['values']['address'][$i]) and empty($field['values']['lat'][$i]) and empty($field['values']['lng'][$i]))
+					{
+						$search = 'address=' . rawurlencode( $field['values']['address'][$i] );
+					}
+					// build api key
+					if ( $field['values']['address_geocode'][$i] == 'address_google_developers' && !empty( $field['values']['address_google_developers_api_key'][$i] ) ) {
+        
+				        $api_key = '&key=' . $field['values']['address_google_developers_api_key'][$i];
+				    
+				    } elseif ( $field['values']['address_geocode'][$i] == 'address_google_for_work' && !empty( $field['values']['address_google_for_work_client_id'][$i] ) && !empty( $field['values']['address_google_for_work_signature'][$i] ) ) {
+				        
+				        $api_key = '&client=' . $field['values']['address_google_for_work_client_id'][$i] . '&signature=' . $field['values']['address_google_for_work_signature'][$i];
+
+				    }
+
+				    if (!empty($search))
+				    {
+				    	// build $request_url for api call
+				        $request_url = 'https://maps.googleapis.com/maps/api/geocode/json?' . $search . $api_key;
+				        $curl        = curl_init();
+
+				        curl_setopt( $curl, CURLOPT_URL, $request_url );
+				        curl_setopt( $curl, CURLOPT_RETURNTRANSFER, 1 );				        
+
+				        $json = curl_exec( $curl );
+				        curl_close( $curl );
+				        
+				        // parse api response
+				        if ( !empty( $json ) ) {
+
+				            $details = json_decode( $json, true );
+
+				            $address_data = array();
+
+							foreach ( $details['results'][0]['address_components'] as $type ) {
+
+								// parse Google Maps output into an array we can use
+								$address_data[ $type['types'][0] ] = $type['long_name'];
+
+							}
+
+				            $lat  = $details['results'][0]['geometry']['location']['lat'];
+
+				            $lng = $details['results'][0]['geometry']['location']['lng'];
+
+				        	$address = $address_data['street_number'] . ' ' . $address_data['route'];
+
+				        	if (empty($field['values']['address'][$i])) $field['values']['address'][$i] = $address;
+				        	if (empty($field['values']['lat'][$i])) $field['values']['lat'][$i] = $lat;
+				        	if (empty($field['values']['lng'][$i])) $field['values']['lng'][$i] = $lng;
+				        }
+				    }
 					$this->update_post_meta($pid, $fieldContainerName . $field['name'], array(
 						'address' => $field['values']['address'][$i],
 						'lat' => $field['values']['lat'][$i],
@@ -744,10 +944,14 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 					$this->update_post_meta($pid, $fieldContainerName . $field['name'], $field['values']['address'][$i] . "|" . $field['values']['lat'][$i] . "," . $field['values']['lng'][$i]);	
 				break;
 			case 'gallery':
-					$imgs = explode(",", $field['values'][$i]);
+					//$imgs = explode(",", $field['values'][$i]);
 					$gallery_ids = array();
-					foreach ((array) $imgs as $url) {
-						if ("" != $url and $attid = $this->import_image($url, $pid, $this->parsing_data['logger'])) $gallery_ids[] = $attid;
+					if ( ! empty($field['values'][$i]) )
+					{
+						$search_in_gallery = ( ! empty($field['xpath']['search_in_media'])) ? 1 : 0;
+						foreach ($field['values'][$i] as $url) {							
+							if ("" != $url and $attid = $this->import_image(trim($url), $pid, $this->parsing_data['logger'], $search_in_gallery)) $gallery_ids[] = $attid;
+						}
 					}
 					$this->update_post_meta($pid, $fieldContainerName . $field['name'], $gallery_ids);
 				break;		
@@ -769,11 +973,13 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 					}
 				break;
 			case 'image':
-					if ("" != $field['values'][$i] and $attid = $this->import_image($field['values'][$i], $pid, $this->parsing_data['logger'])) 
+					$search_in_gallery = ( ! empty($field['xpath']['search_in_media'])) ? 1 : 0;
+					if ("" != $field['values'][$i] and $attid = $this->import_image($field['values'][$i], $pid, $this->parsing_data['logger'], $search_in_gallery)) 
 						$this->update_post_meta($pid, $fieldContainerName . $field['name'], $attid);																
 				break;
 			case 'file':
-					if ("" != $field['values'][$i] and $attid = $this->import_file($field['values'][$i], $pid, $this->parsing_data['logger'], $this->parsing_data['import']->options['is_fast_mode'])) 
+					$search_in_gallery = ( ! empty($field['xpath']['search_in_media'])) ? 1 : 0;
+					if ("" != $field['values'][$i] and $attid = $this->import_file($field['values'][$i], $pid, $this->parsing_data['logger'], $this->parsing_data['import']->options['is_fast_mode'], $search_in_gallery)) 
 						$this->update_post_meta($pid, $fieldContainerName . $field['name'], $attid);					
 				break;			
 			case 'checkbox':				
@@ -800,7 +1006,8 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 
 							foreach ($field['values'] as $tx_name => $txes) {														
 								
-								$assign_taxes = array();									
+								$assign_taxes = array();		
+								$assign_terms = array();									
 
 								// create term if not exists
 								if (!empty($txes[$i])):
@@ -809,7 +1016,7 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 
 											$parent_id = (!empty($single_tax['parent'])) ? pmxi_recursion_taxes($single_tax['parent'], $tx_name, $txes[$i], $key) : '';
 											
-											$term = is_exists_term($tx_name, $single_tax['name'], (int)$parent_id);		
+											$term = $parent_id ? is_exists_term($single_tax['name'], $tx_name, (int)$parent_id) : is_exists_term($single_tax['name'], $tx_name);		
 											
 											if ( empty($term) and !is_wp_error($term) ){
 												$term_attr = array('parent'=> (!empty($parent_id)) ? $parent_id : 0);
@@ -826,15 +1033,19 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 											elseif (!empty($term)) {
 												$cat_id = $term['term_id'];
 												if ($cat_id and $single_tax['assign']) 
-												{																									
-													if (!in_array($cat_id, $assign_taxes)) $assign_taxes[] = $cat_id;		
+												{					
+													if ( !in_array($cat_id, $assign_taxes)) $assign_taxes[] = $cat_id;		
+													$term = get_term_by('id', $cat_id, $tx_name);																				
+													if ( ! is_wp_error($term) and !in_array($term->term_taxonomy_id, $assign_terms)) $assign_terms[] = $term->term_taxonomy_id;		
 												}									
 											}									
 										}
 									}				
 								endif;			
 
-								if ( ! empty($assign_taxes) ) $this->update_post_meta($pid, $fieldContainerName . $field['name'], $assign_taxes);																	
+								if ( ! empty($assign_taxes) ) $this->update_post_meta($pid, $fieldContainerName . $field['name'], $assign_taxes);	
+
+								$this->associate_terms($pid, ( empty($assign_terms) ? false : $assign_terms ), $tx_name, $this->parsing_data['logger']);
 									
 							}							
 						}
@@ -860,7 +1071,8 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 							foreach ($entries as $ev) {															
 								$args = array(
 								  'name' => $ev,
-								  'post_type' => 'page',								  
+								  'post_type' => 'any',								  
+								  'post_status' => 'any',
 								  'numberposts' => 1
 								);
 								//$the_query = new WP_Query( $args );
@@ -900,7 +1112,8 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 							foreach ($entries as $ev) {
 								$args = array(
 								  'name' => $ev,
-								  'post_type' => 'post',								  
+								  'post_type' => 'any',	
+								  'post_status' => 'any',							  
 								  'numberposts' => 1
 								);
 								$my_posts = get_posts($args);
@@ -930,24 +1143,28 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 					}					
 
 				break;
-			case 'relationship':
+			case 'relationship':			
 					if ( "" != $field['values'][$i] ){
 						$post_ids = array();						
-						$entries = explode(",", $field['values'][$i]);
+						$entries = explode(",", $field['values'][$i]);						
 						if (!empty($entries) and is_array($entries)){
 							foreach ($entries as $ev) {
-								$args = array(
-								  'name' => $ev,
-								  'post_type' => 'any',
-								  'numberposts' => 1
-								);
-								$my_posts = get_posts($args);
-								if ( $my_posts ) {
-								  	$post_ids[] = $my_posts[0]->ID;
-								}
-								elseif (ctype_digit($ev)){
+								if (ctype_digit($ev)){
 									$post_ids[] = $ev;
-								}								
+								}
+								else{
+									$args = array(
+									  'name' => $ev,
+									  'post_type' => 'any',
+									  'post_status' => 'any',
+									  'numberposts' => 1
+									);
+									$my_posts = get_posts($args);								
+									if ( $my_posts ) {
+									  	$post_ids[] = $my_posts[0]->ID;
+									}									
+									wp_reset_postdata();							
+								}
 							}
 						}
 						if (!empty($post_ids)){
@@ -993,23 +1210,22 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 							$countRows = 0;
 
 							foreach ($field['values'] as $row_number => $row)
-							{
+							{								
 								if ( ! empty($row)){
 									$countRows++;
 
 									$is_row_import_allowed = true;
 
-									if ( $field['is_ignore_empties'] and $field['is_variable'] === false){
-										$is_row_import_allowed = false;
-										foreach ($row as $sub_field_key_check => $sub_field_check){
-											
+									if ( $field['is_ignore_empties'] and $field['is_variable'] === false or $field['is_variable']){
+										$is_row_import_allowed = false;										
+										foreach ($row as $sub_field_key_check => $sub_field_check){											
 											if ( ! empty($sub_field_check['xpath']) and ! empty( $sub_field_check['values'][$i] ) and ! in_array($sub_field_check['type'], array('repeater')) )
 											{										
 												$is_row_import_allowed = true;
 												break;
 											}
 										}											
-									}
+									}									
 
 									if ($is_row_import_allowed) {
 
@@ -1022,9 +1238,15 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 											}	
 
 											for ( $k=0; $k < $countCSVrows; $k++) { 
-												foreach ($row as $sub_field_key => $sub_field){
-													$entries = explode($field['is_variable'], $sub_field['values'][$i]);
-													$sub_field['values'][$i] = (empty($entries[$k])) ? '' : $entries[$k];
+												foreach ($row as $sub_field_key => $sub_field){													
+													$is_array = is_array($sub_field['values'][$i]);
+													if ($is_array)
+													{
+														$sub_field['values'][$i] = array(implode(",", $sub_field['values'][$i]));
+													}
+													$sub_field['values'][$i] = $is_array ? array_shift($sub_field['values'][$i]) : $sub_field['values'][$i];
+													$entries = explode($field['is_variable'], $sub_field['values'][$i]);													
+													$sub_field['values'][$i] = (empty($entries[$k])) ? '' : ( $is_array ? explode(",", $entries[$k]) : $entries[$k]);
 													$this->import_field($pid, $i, $sub_field_key, $sub_field, $fieldContainerName . $field['name'] . "_" . $k . "_");		
 												}
 											}
@@ -1036,7 +1258,7 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 
 											foreach ($row as $sub_field_key => $sub_field){																													
 																					
-												$this->import_field($pid, $i, $sub_field_key, $sub_field, $fieldContainerName . $field['name'] . "_" . $row_number . "_");																				
+												$this->import_field($pid, $i, $sub_field_key, $sub_field, $fieldContainerName . $field['name'] . "_" . ($countRows - 1) . "_");																				
 											}
 										}	
 
@@ -1076,7 +1298,7 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 				break;
 		}	
 
-		$v = get_post_meta($pid, $fieldContainerName . $field['name'], true);
+		$v = esc_attr(get_post_meta($pid, $fieldContainerName . $field['name'], true));
 					
 		$this->parsing_data['logger'] and call_user_func($this->parsing_data['logger'], sprintf(__('- Field `%s` updated with value `%s`', 'pmxi_plugin'), $fieldContainerName . $field['name'], maybe_serialize($v)));
 
@@ -1089,8 +1311,17 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 			update_post_meta($pid, $name, $value);
 	}
 
-	public function import_image($img_url, $pid, $logger){
+	public function import_image( $img_url, $pid, $logger, $search_in_gallery = false ){
 		
+		// search image attachment by ID
+		if ($search_in_gallery and is_numeric($img_url))
+		{			
+			if (wp_get_attachment_url( $img_url ))
+			{
+				return $img_url;
+			}
+		}
+
 		$uploads = wp_upload_dir();
 
 		// you must first include the image.php file
@@ -1098,7 +1329,7 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 		require_once(ABSPATH . 'wp-admin/includes/image.php');
 
 		$url = str_replace(" ", "%20", trim($img_url));
-		$bn = preg_replace('/[\\?|&].*/', '', basename($url));
+		$bn = preg_replace('/[\\?|&].*/', '', basename($url));			
 		
 		$img_ext = pmxi_getExtensionFromStr($url);									
 		$default_extension = pmxi_getExtension($bn);																									
@@ -1107,8 +1338,8 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 			$img_ext = pmxi_get_remote_image_ext($url);																				
 
 		// generate local file name
-		$image_name = urldecode(sanitize_file_name((($img_ext) ? str_replace("." . $default_extension, "", $bn) : $bn))) . (("" != $img_ext) ? '.' . $img_ext : '');																	
-		
+		$image_name = apply_filters("wp_all_import_image_filename", urldecode(sanitize_file_name((($img_ext) ? str_replace("." . $default_extension, "", $bn) : $bn))) . (("" != $img_ext) ? '.' . $img_ext : ''));
+
 		// if wizard store image data to custom field									
 		$create_image = false;
 		$download_image = true;
@@ -1118,20 +1349,25 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 		
 		global $wpdb;
 
-		// searching for existing attachment
-		$attachment_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE (post_title = %s OR post_title = %s) AND post_type = %s", $image_name, preg_replace('/\\.[^.\\s]{3,4}$/', '', $image_name), "attachment" ) );
+		if ($search_in_gallery){
+
+			// searching for existing attachment
+			$attachment_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE (post_title = %s OR post_title = %s OR post_name = %s) AND post_type = %s AND post_mime_type LIKE %s", $image_name, preg_replace('/\\.[^.\\s]{3,4}$/', '', $image_name), sanitize_title(preg_replace('/\\.[^.\\s]{3,4}$/', '', $image_name)), "attachment", "image%" ) );
+			
+			if ($attachment_id and ! is_wp_error($attachment_id))
+				return $attachment_id;
+
 		
-		if ($attachment_id)	
-			return $attachment_id;
-		
-		if ( @file_exists($image_filepath) ){
-			$download_image = false;																				
-			if( ! ($image_info = @getimagesize($image_filepath)) or ! in_array($image_info[2], array(IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG))) {
-				$logger and call_user_func($logger, sprintf(__('- <b>WARNING</b>: File %s is not a valid image and cannot be set as ACF image', 'pmxi_plugin'), $image_filepath));
-				@unlink($image_filepath);
-			} else {
-				$create_image = true;											
+			if ( @file_exists($image_filepath) ){
+				$download_image = false;																				
+				if( ! ($image_info = @getimagesize($image_filepath)) or ! in_array($image_info[2], array(IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG))) {
+					$logger and call_user_func($logger, sprintf(__('- <b>WARNING</b>: File %s is not a valid image and cannot be set as ACF image', 'pmxi_plugin'), $image_filepath));
+					@unlink($image_filepath);
+				} else {
+					$create_image = true;											
+				}
 			}
+
 		}						
 
 		if ($download_image){
@@ -1181,7 +1417,7 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 					$attachment['post_content'] = $image_meta['caption'];
 			}
 
-			$attid = ($this->parsing_data['import']->options['is_fast_mode']) ? pmxi_insert_attachment($attachment, $image_filepath, $pid) : wp_insert_attachment($attachment, $image_filepath, $pid);										
+			$attid = wp_insert_attachment($attachment, $image_filepath, $pid);										
 
 			if (is_wp_error($attid)) {
 				$logger and call_user_func($logger, __('- <b>WARNING</b>', 'pmxi_plugin') . ': ' . $attid->get_error_message());				
@@ -1199,30 +1435,50 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 
 	}
 
-	public function import_file($atch_url, $pid, $logger, $fast = false){
+	public function import_file($atch_url, $pid, $logger, $fast = false, $search_in_gallery = false){
+		
+		// search file attachment by ID
+		if ($search_in_gallery and is_numeric($atch_url))
+		{			
+			if (wp_get_attachment_url( $atch_url ))
+			{
+				return $atch_url;
+			}
+		}
+
+		global $wpdb;
 		
 		$uploads = wp_upload_dir();
-		$file_name = sanitize_file_name(basename(parse_url(trim($atch_url), PHP_URL_PATH)));
-		$file_path = $uploads['path'] . '/' . $file_name;
+		$file_name = sanitize_file_name(basename(parse_url(trim($atch_url), PHP_URL_PATH)));		
+		$wpai_uploads = PMXI_Plugin::FILES_DIRECTORY . DIRECTORY_SEPARATOR;
+		
+		if ( ! preg_match('%^https?://%i', $atch_url)) {
+			$file_path = $wpai_uploads . $atch_url;
+		}
+		else{
+			$file_path = $uploads['path'] . '/' . $file_name;
+		}
 		$attachment_filename = wp_unique_filename($uploads['path'], $file_name);												
 		$attachment_filepath = $uploads['path'] . '/' . sanitize_file_name($attachment_filename);
 		$download_file = true;
-
-		global $wpdb;
-
-		// searching for existing attachment
-		$attachment_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE (post_title = %s OR post_title = %s) AND post_type = %s", $file_name, preg_replace('/\\.[^.\\s]{3,4}$/', '', $file_name), "attachment" ) );
-		
-		if ($attachment_id)	
-			return $attachment_id;
-		
-		if ( @file_exists($file_path) ){
-			if( ! $wp_filetype = wp_check_filetype(basename($file_name), null )) {
-				$logger and call_user_func($logger, sprintf(__('- <b>WARNING</b>: File %s is not a valid image and cannot be set as ACF image', 'pmxi_plugin'), $file_path));				
-			} else {
-				$download_file = false;											
+		$create_file = false;
+	
+		if ($search_in_gallery){
+			// searching for existing attachment
+			$attachment_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE (post_title = %s OR post_title = %s OR post_name = %s) AND post_type = %s;", $file_name, preg_replace('/\\.[^.\\s]{3,4}$/', '', $file_name), sanitize_title(preg_replace('/\\.[^.\\s]{3,4}$/', '', $file_name)), "attachment" ) );		
+			if ($attachment_id and ! is_wp_error($attachment_id))
+				return $attachment_id;
+			
+			if ( @file_exists($file_path) ){
+				if( ! $wp_filetype = wp_check_filetype(basename($file_name), null )) {
+					$logger and call_user_func($logger, sprintf(__('- <b>WARNING</b>: File %s is not a valid image and cannot be set as ACF image', 'pmxi_plugin'), $file_path));				
+				} else {
+					$download_file = false;			
+					$create_file = true;										
+				}
 			}
-		}	
+		}
+			
 		if ($download_file){
 			if ( ! get_file_curl(trim($atch_url), $attachment_filepath) and ! @file_put_contents($attachment_filepath, @file_get_contents(trim($atch_url)))) {												
 				$logger and call_user_func($logger, sprintf(__('- <b>WARNING</b>: Attachment file %s cannot be saved locally as %s', 'pmxi_plugin'), trim($atch_url), $attachment_filepath));			
@@ -1238,7 +1494,7 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 				    'post_content' => '',
 				    'post_status' => 'inherit'
 				);
-				$attach_id = ($fast) ? pmxi_insert_attachment( $attachment_data, $attachment_filepath, $pid ) : wp_insert_attachment( $attachment_data, $attachment_filepath, $pid );												
+				$attach_id = wp_insert_attachment( $attachment_data, $attachment_filepath, $pid );												
 
 				if (is_wp_error($attach_id)) {
 					$logger and call_user_func($logger, __('- <b>WARNING</b>', 'pmxi_plugin') . ': ' . $pid->get_error_message());				
@@ -1253,7 +1509,71 @@ class PMAI_Import_Record extends PMAI_Model_Record {
 				}										
 			}
 		}	
+
+		if ($create_file){
+			$attachment_data = array(
+			    'guid' => $uploads['baseurl'] . '/' . _wp_relative_upload_path( $attachment_filepath ), 
+			    'post_mime_type' => $wp_filetype['type'],
+			    'post_title' => preg_replace('/\.[^.]+$/', '', basename($attachment_filepath)),
+			    'post_content' => '',
+			    'post_status' => 'inherit'
+			);
+			
+			$attach_id = wp_insert_attachment( $attachment_data, $attachment_filepath, $pid );												
+
+			if (is_wp_error($attach_id)) {
+				$logger and call_user_func($logger, __('- <b>WARNING</b>', 'pmxi_plugin') . ': ' . $pid->get_error_message());				
+			} else {
+				// you must first include the image.php file
+				// for the function wp_generate_attachment_metadata() to work
+				require_once(ABSPATH . 'wp-admin/includes/image.php');
+				
+				do_action( 'pmxi_attachment_uploaded', $pid, $attach_id, $attachment_filepath); 
+				wp_update_attachment_metadata($attach_id, wp_generate_attachment_metadata($attach_id, $attachment_filepath));											
+				return $attach_id;
+			}	
+		}
 		return false;
+	}
+
+	protected function associate_terms($pid, $assign_taxes, $tx_name, $logger = false){
+		
+		$terms = wp_get_object_terms( $pid, $tx_name );
+		$term_ids = array();     
+
+		$assign_taxes = (is_array($assign_taxes)) ? array_filter($assign_taxes) : false;   
+
+		if ( ! empty($terms) ){
+			if ( ! is_wp_error( $terms ) ) {				
+				foreach ($terms as $term_info) {
+					$term_ids[] = $term_info->term_taxonomy_id;
+					$this->wpdb->query(  $this->wpdb->prepare("UPDATE {$this->wpdb->term_taxonomy} SET count = count - 1 WHERE term_taxonomy_id = %d", $term_info->term_taxonomy_id) );
+				}				
+				$in_tt_ids = "'" . implode( "', '", $term_ids ) . "'";
+				$this->wpdb->query( $this->wpdb->prepare( "DELETE FROM {$this->wpdb->term_relationships} WHERE object_id = %d AND term_taxonomy_id IN ($in_tt_ids)", $pid ) );
+			}
+		}
+
+		if (empty($assign_taxes)) return;
+
+		foreach ($assign_taxes as $tt) {
+			$this->wpdb->insert( $this->wpdb->term_relationships, array( 'object_id' => $pid, 'term_taxonomy_id' => $tt ) );
+			$this->wpdb->query( "UPDATE {$this->wpdb->term_taxonomy} SET count = count + 1 WHERE term_taxonomy_id = $tt" );
+		}
+
+		$values = array();
+        $term_order = 0;
+		foreach ( $assign_taxes as $tt )			                        	
+    		$values[] = $this->wpdb->prepare( "(%d, %d, %d)", $pid, $tt, ++$term_order);
+		                					
+
+		if ( $values ){
+			if ( false === $this->wpdb->query( "INSERT INTO {$this->wpdb->term_relationships} (object_id, term_taxonomy_id, term_order) VALUES " . join( ',', $values ) . " ON DUPLICATE KEY UPDATE term_order = VALUES(term_order)" ) ){
+				$logger and call_user_func($logger, __('<b>ERROR</b> Could not insert term relationship into the database', 'wp_all_import_plugin') . ': '. $this->wpdb->last_error);				
+			}
+		}                        			
+
+		wp_cache_delete( $pid, $tx_name . '_relationships' ); 
 	}
 
 	public function _filter_has_cap_unfiltered_html($caps)

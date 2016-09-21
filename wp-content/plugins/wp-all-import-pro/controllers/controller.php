@@ -62,21 +62,27 @@ abstract class PMXI_Controller {
 	 * @param string[optional] $viewPath Template path to render
 	 */
 	protected function render($viewPath = null) {
-		// assume template file name depending on calling function
-		if (is_null($viewPath)) {
-			$trace = debug_backtrace();
-			$viewPath = str_replace('_', '/', preg_replace('%^' . preg_quote(PMXI_Plugin::PREFIX, '%') . '%', '', strtolower($trace[1]['class']))) . '/' . $trace[1]['function'];
-		}
-		// append file extension if not specified
-		if ( ! preg_match('%\.php$%', $viewPath)) {
-			$viewPath .= '.php';
-		}
-		$filePath = PMXI_Plugin::ROOT_DIR . '/views/' . $viewPath;
-		if (is_file($filePath)) {
-			extract($this->data);
-			include $filePath;
+
+		if ( ! get_current_user_id() or ! current_user_can( PMXI_Plugin::$capabilities )) {
+		    // This nonce is not valid.
+		    die( 'Security check' ); 
 		} else {
-			throw new Exception("Requested template file $filePath is not found.");
+			// assume template file name depending on calling function
+			if (is_null($viewPath)) {
+				$trace = debug_backtrace();
+				$viewPath = str_replace('_', '/', preg_replace('%^' . preg_quote(PMXI_Plugin::PREFIX, '%') . '%', '', strtolower($trace[1]['class']))) . '/' . $trace[1]['function'];
+			}
+			// append file extension if not specified
+			if ( ! preg_match('%\.php$%', $viewPath)) {
+				$viewPath .= '.php';
+			}
+			$filePath = PMXI_Plugin::ROOT_DIR . '/views/' . $viewPath;
+			if (is_file($filePath)) {
+				extract($this->data);
+				include $filePath;
+			} else {
+				throw new Exception("Requested template file $filePath is not found.");
+			}
 		}
 	}
 	
@@ -90,6 +96,8 @@ abstract class PMXI_Controller {
 			$msgs = $this->errors;
 		}
 		if (is_wp_error($msgs)) {
+			unset($msgs->errors['root-element-validation']);
+			unset($msgs->errors['upload-validation']);
 			$msgs = $msgs->get_error_messages();
 		}
 		if ( ! is_array($msgs)) {
@@ -114,7 +122,8 @@ abstract class PMXI_Controller {
 		if (is_null($msgs)) {
 			$msgs = $this->warnings;
 		}
-		if (is_wp_error($msgs)) {
+		if (is_wp_error($msgs)) {			
+			unset($msgs->errors['root-element-validation']);
 			$msgs = $msgs->get_error_messages();
 		}
 		if ( ! is_array($msgs)) {

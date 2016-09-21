@@ -2,6 +2,14 @@
 
 function pmai_wp_ajax_get_acf(){
 
+	if ( ! check_ajax_referer( 'wp_all_import_secure', 'security', false )){
+		exit( json_encode(array('html' => __('Security check', 'wp_all_import_plugin'))) );
+	}
+
+	if ( ! current_user_can('manage_options') ){
+		exit( json_encode(array('html' => __('Security check', 'wp_all_import_plugin'))) );
+	}
+
 	global $acf;
 
 	$version = ($acf) ? $acf->settings['version'] : false;	
@@ -26,14 +34,24 @@ function pmai_wp_ajax_get_acf(){
 	if ( ! empty($_GET['id']) )
 		$import->getById($_GET['id']);
 
+	$is_loaded_template = (!empty(PMXI_Plugin::$session->is_loaded_template)) ? PMXI_Plugin::$session->is_loaded_template : false;
+
+	if ($is_loaded_template){
+		$default = PMAI_Plugin::get_default_import_options();
+		$template = new PMXI_Template_Record();
+		if ( ! $template->getById($is_loaded_template)->isEmpty()) {	
+			$options = (!empty($template->options) ? $template->options : array()) + $default;														
+		}
+
+	}
+	else
 	if ( ! $import->isEmpty() ) {
 		$options = $import->options;
 	}
 	else
 	{
 		$options = PMXI_Plugin::$session->options;
-	}
-
+	}	
 	?>
 	<div class="postbox  acf_postbox default acf_signle_group rad4" rel="<?php echo $acf_obj['ID']; ?>">
 		<h3 class="hndle" style="margin-top:0;"><span><?php echo $acf_obj['title']; ?></span></h3>
@@ -69,7 +87,7 @@ function pmai_wp_ajax_get_acf(){
 							if ($field['parent'] == $acf_obj['key']){								
 								$fieldData = $field;
 							
-								$fieldData['id']    = uniqid();
+								$fieldData['ID'] = $fieldData['id']    = uniqid();
 								$fieldData['label'] = $field['label'];
 								$fieldData['key']   = $field['key'];					
 
