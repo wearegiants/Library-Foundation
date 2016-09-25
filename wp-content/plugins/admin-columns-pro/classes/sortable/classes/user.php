@@ -7,25 +7,17 @@
  */
 class CAC_Sortable_Model_User extends CAC_Sortable_Model {
 
-	/**
-	 * Constructor
-	 *
-	 * @since 1.0
-	 */
-	function __construct( $storage_model ) {
-		parent::__construct( $storage_model );
-
-		// default sortby
-		$this->default_orderby = '';
-
-		// handle sorting request
-		add_action( 'pre_user_query', array( $this, 'handle_sorting_request' ), 1 );
-
-		// register sortable headings
-		add_filter( "manage_users_sortable_columns", array( $this, 'add_sortable_headings' ) );
-
-		// add reset button
+	public function init_hooks() {
+		add_action( 'pre_user_query', array( $this, 'handle_sorting_request' ), 2 ); // prio after filtering
+		add_filter( "manage_" . $this->storage_model->get_screen_id() . "_sortable_columns", array( $this, 'add_sortable_headings' ) );
 		add_action( 'restrict_manage_users', array( $this, 'add_reset_button' ) );
+	}
+
+	/**
+	 * @since 3.7
+	 */
+	public function get_items( $args ) {
+		return $this->get_user_ids_by_query( $args );
 	}
 
 	/**
@@ -46,6 +38,7 @@ class CAC_Sortable_Model_User extends CAC_Sortable_Model {
 			'column-last_name',
 			'column-meta',
 			'column-nickname',
+			'column-roles',
 			'column-user_commentcount',
 			'column-user_description',
 			'column-user_id',
@@ -55,21 +48,42 @@ class CAC_Sortable_Model_User extends CAC_Sortable_Model {
 
 			// ACF Fields
 			'column-acf_field',
+
+			// WooCommerce
+			'column-wc-user-orders',
+			'column-wc-user-order_count'
 		);
 
-		return $column_names;
+		return array_merge( $column_names, (array) $this->get_default_sortables() );
 	}
 
 	/**
-	 * Get Users
+	 * Columns that are sortable by WordPress core
 	 *
-	 * Do not use get_users() method.
-	 *
-	 * @since 1.0
+	 * @since 3.8
 	 */
-	private function get_user_ids() {
-		global $wpdb;
-		return $wpdb->get_col( "SELECT ID FROM $wpdb->users" );
+	public function get_default_sortables() {
+		$columns = array(
+			'username',
+			'name',
+			'email'
+		);
+
+		return $columns;
+	}
+
+	/**
+	 * @param $user_query
+	 *
+	 * @return array User IDS
+	 */
+	private function get_user_ids_by_query( $user_query ) {
+		$_user_query = clone $user_query;
+		$_user_query->set( 'fields', 'ids' ); // Less resources
+		$_user_query->query_limit = null; // ALL users
+		$_user_query->query();
+
+		return (array) $_user_query->get_results();
 	}
 
 	/**
@@ -80,51 +94,61 @@ class CAC_Sortable_Model_User extends CAC_Sortable_Model {
 	 * @since 1.0
 	 *
 	 * @param array $vars
+	 *
 	 * @return array Vars
 	 */
 	public function handle_sorting_request( $user_query ) {
 		global $wpdb;
 
-		$vars = $user_query->query_vars;
-
-		// prevent looping because this filter is trigered by get_users();
-		/*if ( 'ID' === $vars['fields'] ) {
-			return;
-		}*/
-
-		// sorting event?
-		if ( empty( $vars['orderby'] ) ) {
+		if ( empty( $user_query->query_vars['orderby'] ) ) {
 			return;
 		}
 
-		$vars = $this->apply_sorting_preference( $vars );
+		// skip if it's already sorted
+		if ( isset( $user_query->query_vars['skip_sorting'] ) ) {
+			return;
+		}
+
+		$vars = $this->apply_sorting_preference( $user_query->query_vars );
 
 		$column = $this->get_column_by_orderby( $vars['orderby'] );
 		if ( empty( $column ) ) {
 			return;
 		}
 
-		// unsorted Users
+		$show_all_results = $this->get_show_all_results();
+
 		$_users = array();
 
 		switch ( $column->properties->type ) :
 
 			// WP Default Columns
 			case 'role' :
+			case 'column-roles' :
+				global $wp_roles, $wpdb;
 				$sort_flag = SORT_REGULAR;
-				foreach ( $this->get_user_ids() as $id ) {
-					$u = get_userdata( $id );
-					$role = ! empty( $u->roles[0] ) ? $u->roles[0] : '';
-					if ( $role ) {
-						$_users[ $id ] = $this->prepare_sort_string_value( $role );
+				$prefix = $wpdb->get_blog_prefix();
+				foreach ( $this->get_user_ids_by_query( $user_query ) as $id ) {
+					if ( $caps = get_user_meta( $id, $prefix . 'capabilities', true ) ) {
+
+						// Filter out caps that are not role names and assign to $this->roles
+						if ( $roles = array_filter( array_keys( $caps ), array( $wp_roles, 'is_role' ) ) ) {
+							$role = $roles[0];
+							if ( isset( $wp_roles->roles[ $role ] ) ) {
+								$_users[ $id ] = $this->prepare_sort_string_value( translate_user_role( $wp_roles->roles[ $role ]['name'] ) );
+							}
+						}
 					}
 				}
 				break;
 
 			case 'posts' :
 				$sort_flag = SORT_NUMERIC;
-				foreach ( $this->get_user_ids() as $id ) {
-					$_users[ $id ] = $column->get_user_postcount( $id, 'post' );
+				foreach ( $this->get_user_ids_by_query( $user_query ) as $id ) {
+					$value = $column->get_user_postcount( $id, 'post' );
+					if ( $value || $show_all_results ) {
+						$_users[ $id ] = $value;
+					}
 				}
 				break;
 
@@ -178,50 +202,67 @@ class CAC_Sortable_Model_User extends CAC_Sortable_Model {
 				$user_query->query_from .= $sub_query;
 				$user_query->query_orderby = "ORDER BY comment_count " . $vars['order'];
 
-				if ( ! $this->show_all_results ) {
+				if ( ! $show_all_results ) {
 					$user_query->query_where .= " AND comment_count IS NOT NULL";
 				}
 
 				break;
 			case 'column-user_postcount' :
 				$sort_flag = SORT_NUMERIC;
-				foreach ( $this->get_user_ids() as $id ) {
-					$_users[ $id ] = $column->get_count( $id );
+				foreach ( $this->get_user_ids_by_query( $user_query ) as $id ) {
+					$value = $column->get_count( $id );
+					if ( $value || $show_all_results ) {
+						$_users[ $id ] = $value;
+					}
 				}
 				break;
 
 			case 'column-meta' :
-				$sort_flag = SORT_REGULAR;
-
-				if ( 'numeric' == $column->options->field_type ) {
-					$sort_flag = SORT_NUMERIC;
+				if ( $result = $this->get_meta_items_for_sorting( $column, $user_query ) ) {
+					$_users = $result['items'];
+					$sort_flag = $result['sort_flag'];
 				}
-
-				if ( 'checkmark' == $column->options->field_type ) {
-					foreach ( $this->get_user_ids() as $id ) {
-						$value = $column->get_value( $id );
-						$_users[ $id ] = $this->prepare_sort_string_value( $value ? '1' : '0' );
-					}
-				}
-				if ( in_array( $column->options->field_type, array( 'image', 'library_id' ) ) ) {
-					$sort_flag = SORT_NUMERIC;
-					foreach ( $this->get_user_ids() as $id ) {
-						$thumbs = $column->get_thumbnails( $column->get_meta_by_id( $id ) );
-						$_users[ $id ] = $thumbs ? count( $thumbs ) : 0;
-					}
+				else {
+					$is_numeric = in_array( $column->get_option( 'field_type' ), array(
+						'numeric',
+						'library_id',
+						'count'
+					) );
+					$sort_flag = $is_numeric ? SORT_NUMERIC : SORT_REGULAR;
 				}
 				break;
 
 			case 'column-acf_field' :
 				if ( method_exists( $column, 'get_field' ) ) {
-					$field = $column->get_field();
-					$sort_flag = in_array( $field['type'], array( 'date_picker', 'number' ) ) ? SORT_NUMERIC : SORT_REGULAR;
+					$is_sortable = $this->set_acf_sorting_vars( $column, $vars );
+					if ( ! $is_sortable ) {
+						$sort_flag = SORT_REGULAR;
+						$_users = $this->get_acf_sorting_data( $column, $this->get_user_ids_by_query( $user_query ) );
+					}
+				}
+				break;
 
-					foreach ( $this->get_user_ids() as $id ) {
-						$value = $column->get_sorting_value( $id );
-						if ( $value || $this->show_all_results ) {
-							$_users[ $id ] = $this->prepare_sort_string_value( $value );
-						}
+			// WooCommerce
+			case 'column-wc-user-orders':
+				$sort_flag = SORT_NUMERIC;
+				foreach ( $this->get_user_ids_by_query( $user_query ) as $id ) {
+					$value = $column->get_raw_value( $id );
+					if ( $value || $show_all_results ) {
+						$_users[ $id ] = count( $value );
+					}
+				}
+				break;
+
+			case 'column-wc-user-order_count':
+				$sort_flag = SORT_NUMERIC;
+				break;
+
+			case 'column-wc-user-total-sales':
+				$sort_flag = SORT_NUMERIC;
+				foreach ( $this->get_user_ids_by_query( $user_query ) as $id ) {
+					$value = $column->get_sorting_value( $id );
+					if ( $value || $show_all_results ) {
+						$_users[ $id ] = $value;
 					}
 				}
 				break;
@@ -229,42 +270,49 @@ class CAC_Sortable_Model_User extends CAC_Sortable_Model {
 			// Try to sort by raw value.
 			default :
 				$sort_flag = SORT_REGULAR;
-				foreach ( $this->get_user_ids() as $id ) {
-					$_users[ $id ] = $column->get_raw_value( $id );
+				foreach ( $this->get_user_ids_by_query( $user_query ) as $id ) {
+					$value = $column->get_raw_value( $id );
+					if ( $value || $show_all_results ) {
+						$_users[ $id ] = $value;
+					}
 				}
 
 		endswitch;
 
 		if ( isset( $sort_flag ) ) {
 
-			// set sorting value
 			if ( empty( $_users ) ) {
-				foreach ( $this->get_user_ids() as $id ) {
-					$_users[ $id ] = $this->prepare_sort_string_value( $column->get_raw_value( $id ) );
+
+				// Use original user_query to retrieve user IDs. In case the user query has been filtered we'll
+				// be sorting a lot less users
+				foreach ( $this->get_user_ids_by_query( $user_query ) as $id ) {
+					$value = method_exists( $column, 'get_raw_value' ) ? $column->get_raw_value( $id ) : $column->get_value( $id );
+					if ( $value || $show_all_results ) {
+						$_users[ $id ] = $this->prepare_sort_string_value( $value );
+					}
 				}
 			}
 
 			// sorting
 			if ( 'ASC' == $vars['order'] ) {
 				asort( $_users, $sort_flag );
-			} else {
+			}
+			else {
 				arsort( $_users, $sort_flag );
 			}
 
-			// alter orderby SQL
 			if ( ! empty( $_users ) ) {
-				global $wpdb;
 
 				// for MU site compatibility
 				$prefix = $wpdb->base_prefix;
 
 				$column_names = implode( ',', array_keys( $_users ) );
-				$user_query->query_where 	.= " AND {$prefix}users.ID IN ({$column_names})";
-				$user_query->query_orderby 	= "ORDER BY FIELD({$prefix}users.ID,{$column_names})";
+				$user_query->query_where .= " AND {$prefix}users.ID IN ({$column_names})";
+				$user_query->query_orderby = "ORDER BY FIELD({$prefix}users.ID,{$column_names})";
 			}
 
-			// cleanup the vars we dont need
-			$vars['order']	 = '';
+			// cleanup
+			$vars['order'] = '';
 			$vars['orderby'] = '';
 		}
 

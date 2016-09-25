@@ -26,6 +26,7 @@ function cpac_register_taxonomy_columns( $columns ) {
 
 	$columns['CPAC_Column_Term_ID'] = CAC_PRO_DIR . 'classes/taxonomy/column/ID.php';
 	$columns['CPAC_Column_Term_Excerpt'] = CAC_PRO_DIR . 'classes/taxonomy/column/excerpt.php';
+	$columns['CPAC_Column_Term_Parent'] = CAC_PRO_DIR . 'classes/taxonomy/column/parent.php';
 
 	return $columns;
 }

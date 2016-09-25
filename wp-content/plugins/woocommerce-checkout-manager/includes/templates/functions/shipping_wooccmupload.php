@@ -6,7 +6,7 @@
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
-function upload_shipping_scripts_enhanced() {
+function wooccm_upload_shipping_scripts() {
 
 	global $woocommerce;
 
@@ -15,6 +15,7 @@ function upload_shipping_scripts_enhanced() {
 	if( WC()->cart->needs_shipping_address() !== true )
 		return;
 
+	// Check if we have any buttons
 	if( empty($options['shipping_buttons']) )
 		return;
 
@@ -25,6 +26,7 @@ function upload_shipping_scripts_enhanced() {
 		if( $btn['type'] <> 'wooccmupload' )
 			continue;
 ?>
+<!-- Shipping section: File upload -->
 <script type="text/javascript">
 jQuery(document).ready(function($){
 
@@ -146,7 +148,7 @@ jQuery(document).ready(function($){
 						filetype = theFile.type;
 						return function(e){
 						showUploadedItem( e.target.result, fileName, filetype );
-						};
+					};
 					})(file); 
 					reader.readAsDataURL(file);
 				}
@@ -163,11 +165,14 @@ jQuery(document).ready(function($){
 					contentType: false,
 					success: function (res) {
 						var result = $.parseJSON(res), new_val;
-
+						document.getElementById("shipping_<?php echo $btn['cow']; ?>").value = result;
+						/* @mod - Test formatting change */
+/*
 						new_val = document.getElementById("shipping_<?php echo $btn['cow']; ?>").value.split("||");
 						new_val[0] = result[0];
 						new_val[1] += result[1] + ",";
 						document.getElementById("shipping_<?php echo $btn['cow']; ?>").value = new_val[0] + "||" + new_val[1];
+*/
 
 						$("#shipping_<?php echo $btn['cow']; ?>_field").unblock();
 					}

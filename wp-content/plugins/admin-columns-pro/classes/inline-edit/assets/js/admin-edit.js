@@ -19,23 +19,23 @@ function cacie_options_format_editable( options ) {
 
 		if ( typeof options[ i ].options !== 'undefined' ) {
 			parent = {
-				text: options[ i ].label,
-				children: []
+				text : options[ i ].label,
+				children : []
 			};
 
 			for ( var j in options[ i ].options ) {
 				parent.children.push( {
-					value: options[ i ].options[ j ].value,
-					id: options[ i ].options[ j ].value,
-					text: options[ i ].options[ j ].label
+					value : options[ i ].options[ j ].value,
+					id : options[ i ].options[ j ].value,
+					text : options[ i ].options[ j ].label
 				} );
 			}
 		}
 		else {
 			parent = {
-				value: options[ i ].value,
-				id: options[ i ].value,
-				text: options[ i ].label
+				value : options[ i ].value,
+				id : options[ i ].value,
+				text : options[ i ].label
 			};
 		}
 
@@ -43,14 +43,6 @@ function cacie_options_format_editable( options ) {
 	}
 
 	return foptions;
-}
-
-function cacie_get_jquery_boostrap_date_format( format ) {
-	format = format.replace( 'yy', 'R' );
-	format = format.replace( 'y', 'yy' );
-	format = format.replace( 'R', 'yyyy' );
-
-	return format;
 }
 
 jQuery.fn.cacie_show_message = function( message, type ) {
@@ -125,6 +117,7 @@ jQuery.fn.cacie_add_ajax_loading = function( column, item ) {
 	switch ( column.type ) {
 		case 'title':
 		case 'name':
+		case 'username':
 			if ( editable_el.siblings( '.post-state' ).length ) {
 				editable_el = editable_el.siblings( '.post-state' ).eq( 0 );
 			}
@@ -202,8 +195,23 @@ jQuery.fn.cacie_edit_text = function( column, item ) {
 	var el = jQuery( this );
 
 	el.cacie_xeditable( {
-		type: 'text',
-		value: el.cacie_get_value( column, item )
+		type : 'text',
+		value : el.cacie_get_value( column, item )
+	}, column, item );
+};
+
+/**
+ * Edit type: URL
+ *
+ * @since 3.6
+ */
+jQuery.fn.cacie_edit_url = function( column, item ) {
+
+	var el = jQuery( this );
+
+	el.cacie_xeditable( {
+		type : 'url',
+		value : el.cacie_get_value( column, item )
 	}, column, item );
 };
 
@@ -217,10 +225,10 @@ jQuery.fn.cacie_edit_float = function( column, item ) {
 	var el = jQuery( this );
 
 	el.cacie_xeditable( {
-		type: 'text',
-		value: el.cacie_get_value( column, item ),
-		validate: function( value ) {
-			if ( ! cacie_is_float( value ) ) {
+		type : 'text',
+		value : el.cacie_get_value( column, item ),
+		validate : function( value ) {
+			if ( value && !cacie_is_float( value ) ) {
 				return qie_i18n.errors.invalid_float;
 			}
 		}
@@ -237,8 +245,8 @@ jQuery.fn.cacie_edit_wc_price = function( column, item ) {
 	var el = jQuery( this );
 
 	el.cacie_xeditable( {
-		type: 'wc_price',
-		value: el.cacie_get_value( column, item )
+		type : 'wc_price',
+		value : el.cacie_get_value( column, item )
 	}, column, item );
 };
 
@@ -252,8 +260,8 @@ jQuery.fn.cacie_edit_wc_usage = function( column, item ) {
 	var el = jQuery( this );
 
 	el.cacie_xeditable( {
-		type: 'wc_usage',
-		value: el.cacie_get_value( column, item )
+		type : 'wc_usage',
+		value : el.cacie_get_value( column, item )
 	}, column, item );
 };
 
@@ -267,8 +275,8 @@ jQuery.fn.cacie_edit_wc_stock = function( column, item ) {
 	var el = jQuery( this );
 
 	el.cacie_xeditable( {
-		type: 'wc_stock',
-		value: el.cacie_get_value( column, item )
+		type : 'wc_stock',
+		value : el.cacie_get_value( column, item )
 	}, column, item );
 };
 
@@ -299,10 +307,10 @@ jQuery.fn.cacie_edit_dimensions = function( column, item ) {
 	var el = jQuery( this );
 
 	el.cacie_xeditable( {
-		type: 'dimensions',
-		value: el.cacie_get_value( column, item ),
-		validate: function( value ) {
-			if ( ! cacie_is_float( value.length ) || ! cacie_is_float( value.width ) || ! cacie_is_float( value.height ) ) {
+		type : 'dimensions',
+		value : el.cacie_get_value( column, item ),
+		validate : function( value ) {
+			if ( !cacie_is_float( value.length ) || !cacie_is_float( value.width ) || !cacie_is_float( value.height ) ) {
 				return qie_i18n.errors.invalid_floats;
 			}
 		}
@@ -319,8 +327,8 @@ jQuery.fn.cacie_edit_number = function( column, item ) {
 	var el = jQuery( this );
 
 	el.cacie_xeditable( {
-		type: 'number',
-		value: el.cacie_get_value( column, item )
+		type : 'number',
+		value : el.cacie_get_value( column, item )
 	}, column, item );
 };
 
@@ -334,8 +342,8 @@ jQuery.fn.cacie_edit_password = function( column, item ) {
 	var el = jQuery( this );
 
 	el.cacie_xeditable( {
-		type: 'password',
-		value: el.cacie_get_value( column, item )
+		type : 'password',
+		value : el.cacie_get_value( column, item )
 	}, column, item );
 };
 
@@ -349,8 +357,8 @@ jQuery.fn.cacie_edit_email = function( column, item ) {
 	var el = jQuery( this );
 
 	el.cacie_xeditable( {
-		type: 'email',
-		value: el.cacie_get_value( column, item )
+		type : 'email',
+		value : el.cacie_get_value( column, item )
 	}, column, item );
 };
 
@@ -364,7 +372,7 @@ jQuery.fn.cacie_edit_checkboxlist = function( column, item ) {
 	var el = jQuery( this );
 
 	el.cacie_xeditable( {
-		type: 'checklist'
+		type : 'checklist'
 	}, column, item );
 };
 
@@ -378,8 +386,8 @@ jQuery.fn.cacie_edit_textarea = function( column, item ) {
 	var el = jQuery( this );
 
 	el.cacie_xeditable( {
-		type: 'textarea',
-		value: el.cacie_get_value( column, item )
+		type : 'textarea',
+		value : el.cacie_get_value( column, item )
 	}, column, item );
 };
 
@@ -395,9 +403,9 @@ jQuery.fn.cacie_edit_select = function( column, item ) {
 	var options = column.addon_cacie.editable.options;
 
 	el.cacie_xeditable( {
-		type: 'select',
-		value: value,
-		source: cacie_options_format_editable( options ),
+		type : 'select',
+		value : value,
+		source : cacie_options_format_editable( options ),
 	}, column, item );
 };
 
@@ -413,11 +421,11 @@ jQuery.fn.cacie_edit_select2_dropdown = function( column, item ) {
 
 	// populate options from object
 	var defaults = {
-		type: 'select2',
-		showbuttons: false,
-		source: cacie_options_format_editable( options ),
-		select2: {
-			width: 200
+		type : 'select2',
+		showbuttons : true,
+		source : cacie_options_format_editable( options ),
+		select2 : {
+			width : '200px'
 		}
 	};
 
@@ -426,47 +434,50 @@ jQuery.fn.cacie_edit_select2_dropdown = function( column, item ) {
 	// populate options by ajax
 	if ( typeof column.addon_cacie.editable.ajax_populate !== 'undefined' && column.addon_cacie.editable.ajax_populate ) {
 		args = {
-			source: '',
-			select2: {
-				width: 200,
-				minimumInputLength: 1,
-				initSelection: function( element, callback ) {
+			source : '',
+			showbuttons : false,
+			select2 : {
+				width : 200,
+				minimumInputLength : 0,
+				initSelection : function( element, callback ) {
 					var data = [];
 
 					if ( typeof column_editable.formattedvalue != 'undefined' ) {
 						for ( var id in column_editable.formattedvalue ) {
 							data.push( {
-								id: id,
-								text: column_editable.formattedvalue[ id ]
+								id : id,
+								text : column_editable.formattedvalue[ id ]
 							} );
 						}
 					}
 
 					if ( data.length == 1 ) {
-						callback( data[0] );
+						callback( data[ 0 ] );
 					}
 					else if ( data.length > 0 ) {
 						callback( data );
 					}
 				},
-				ajax: {
-					url: ajaxurl,
-					dataType: 'json',
-					quietMillis: 100,
-					data: function ( searchterm, page ) {
+				ajax : {
+					url : ajaxurl,
+					dataType : 'json',
+					quietMillis : 100,
+					data : function( searchterm, page ) {
 						return {
-							plugin_id: 'cpac',
-							action: 'cacie_get_options',
-							searchterm: searchterm,
-							column: column.column_name,
-							storage_model: CACIE_Storage_Model,
-							item_id: item.ID
+							plugin_id : 'cpac',
+							action : 'cacie_get_options',
+							searchterm : searchterm,
+							column : column.column_name,
+							storage_model : CACIE.storage_model,
+							layout : CACIE.layout,
+							item_id : item.ID,
+							_ajax_nonce : CACIE.nonce
 						};
 					},
-					results: function ( response, page ) {
+					results : function( response, page ) {
 						if ( response.success ) {
 							return {
-								results: cacie_options_format_editable( response.data )
+								results : cacie_options_format_editable( response.data )
 							};
 						}
 
@@ -476,7 +487,7 @@ jQuery.fn.cacie_edit_select2_dropdown = function( column, item ) {
 						// Output error
 						el.data( 'editable' ).container.$form.editableform( 'error', response.data );
 
-						return { results: [] };
+						return { results : [] };
 					}
 				}
 			}
@@ -487,6 +498,7 @@ jQuery.fn.cacie_edit_select2_dropdown = function( column, item ) {
 
 	if ( typeof column.addon_cacie.editable.multiple !== 'undefined' && column.addon_cacie.editable.multiple ) {
 		defaults.select2.multiple = true;
+		defaults.showbuttons = true;
 	}
 
 	jQuery( this ).cacie_xeditable( defaults, column, item );
@@ -529,11 +541,11 @@ jQuery.fn.cacie_edit_select2_tags = function( column, item ) {
 		value = '';
 
 	el.cacie_xeditable( {
-		type: 'select2',
-		value: value,
-		select2: {
-			width: 200,
-			tags: cacie_options_format_editable( options )
+		type : 'select2',
+		value : value,
+		select2 : {
+			width : 200,
+			tags : cacie_options_format_editable( options )
 		},
 	}, column, item );
 };
@@ -550,7 +562,7 @@ jQuery.fn.cacie_edit_togglable = function( column, item ) {
 
 	// Toggle on click
 	jQuery( this ).on( 'click', function() {
-		if ( ! window.cacie_edit_enabled || ! options ) {
+		if ( !window.cacie_edit_enabled || !options ) {
 			return;
 		}
 
@@ -599,22 +611,22 @@ jQuery.fn.cacie_edit_attachment = function( column, item ) {
 	el.on( 'click', function( e ) {
 		e.preventDefault();
 
-		if ( ! window.cacie_edit_enabled ) {
+		if ( !window.cacie_edit_enabled ) {
 			return;
 		}
 
 		var current_selection = el.cacie_get_value( column, item );
 
-		if ( ! jQuery.isArray( current_selection ) ) {
+		if ( !jQuery.isArray( current_selection ) ) {
 			current_selection = [ current_selection ];
 		}
 
 		var args = {
-			title: 'Change image',
-			button: {
-				text: 'Set as image'
+			title : 'Change image',
+			button : {
+				text : 'Set as image'
 			},
-			multiple: ( typeof column.addon_cacie.editable.multiple != 'undefined' && column.addon_cacie.editable.multiple )
+			multiple : ( typeof column.addon_cacie.editable.multiple != 'undefined' && column.addon_cacie.editable.multiple )
 		};
 
 		if ( typeof column.addon_cacie.editable.attachment != 'undefined' && typeof column.addon_cacie.editable.attachment.library != 'undefined' ) {
@@ -651,7 +663,7 @@ jQuery.fn.cacie_edit_attachment = function( column, item ) {
 		// Store selection
 		uploader.on( 'select', function() {
 			var selection = uploader.state().get( 'selection' ).toJSON();
-			var multiple  = uploader.options.multiple;
+			var multiple = uploader.options.multiple;
 
 			// multiple attachments
 			var attachment_ids = [];
@@ -662,8 +674,8 @@ jQuery.fn.cacie_edit_attachment = function( column, item ) {
 			}
 
 			// Single attachment ( integer )
-			if ( 1 === attachment_ids.length && ! multiple ) {
-				attachment_ids = attachment_ids[0];
+			if ( 1 === attachment_ids.length && !multiple ) {
+				attachment_ids = attachment_ids[ 0 ];
 			}
 
 			// Save column
@@ -676,16 +688,6 @@ jQuery.fn.cacie_edit_attachment = function( column, item ) {
 					setTimeout( function() {
 					}, 1 );
 				} );
-				/*uploader.on( 'open', function() {
-					var selection = uploader.state().get( 'selection' ).toJSON();
-
-					for ( var i in selection ) {
-						console.log(uploader);
-						console.log( wp.media.model.Attachment.get( selection[ i] ) );
-						console.log( jQuery( '.media-frame-content .attachment:eq(' + i + ')' ).length );
-						jQuery( '.media-frame-content .thumbnail[data-id="' + selection[ i ].id + '"]' ).html( 'test' )
-					}
-				} );*/
 			}
 		}
 
@@ -707,74 +709,28 @@ jQuery.fn.cacie_edit_date = function( column, item ) {
 
 	// convert yyyymmdd to yyyy-mm-dd
 	if ( value ) {
-		value = [ value.slice(0, 4), '-', value.slice(4) ].join('');
-		value = [ value.slice(0, 7), '-', value.slice(7) ].join('');
+		value = [ value.slice( 0, 4 ), '-', value.slice( 4 ) ].join( '' );
+		value = [ value.slice( 0, 7 ), '-', value.slice( 7 ) ].join( '' );
 	}
 
 	el.attr( 'data-date', value );
 	el.attr( 'data-date-format', 'yyyy-mm-dd' );
 
-	el.datepicker().on('changeDate', function(ev) {
+	el.bdatepicker().on( 'changeDate', function( ev ) {
 		var new_date = new Date( ev.date );
 		var yyyymmdd = new_date.yyyymmdd();
 
 		el.cacie_savecolumn( column, item, yyyymmdd );
-	});
+	} );
 
 	// Convert date object to yyyyddmm format
 	// http://stackoverflow.com/questions/3066586/get-string-in-yyyymmdd-format-from-js-date-object
 	Date.prototype.yyyymmdd = function() {
 		var yyyy = this.getFullYear().toString();
-		var mm = (this.getMonth()+1).toString(); // getMonth() is zero-based
-		var dd  = this.getDate().toString();
-		return yyyy + (mm[1]?mm:"0"+mm[0]) + (dd[1]?dd:"0"+dd[0]); // padding
+		var mm = (this.getMonth() + 1).toString(); // getMonth() is zero-based
+		var dd = this.getDate().toString();
+		return yyyy + (mm[ 1 ] ? mm : "0" + mm[ 0 ]) + (dd[ 1 ] ? dd : "0" + dd[ 0 ]); // padding
 	};
-};
-
-/**
- * Edit type: combodate
- *
- * http://vitalets.github.io/bootstrap-datepicker/
- * http://vitalets.github.io/combodate/#docs
- *
- * Display formats: http://momentjs.com/docs/#/displaying/format/
- *
- * @since 1.0
- */
-jQuery.fn.cacie_edit_combodate = function( column, item ) {
-
-	var el = jQuery( this );
-
-    // Toggle on click
-	jQuery( this ).on( 'click', null, function() {
-
-        if ( ! window.cacie_edit_enabled )
-            return;
-
-		var currentvalue = el.cacie_get_value( column, item );
-		var save_format = column.date_save_format;
-
-        el.datepicker();
-
-	} );
-
-
-    if ( false ) {
-
-		// combodate
-		el.cacie_xeditable( {
-			value: value,
-			type: 'combodate',
-			format: save_format,
-			//viewformat: '',
-			template: 'DD / MM / YYYY HH:mm', // D / MM / YYYY
-			combodate: {
-			//	value: value,
-				minuteStep: 1,
-				firstItem: 'none',
-			}
-		}, column, item );
-	}
 };
 
 /**
@@ -794,9 +750,9 @@ jQuery.fn.cacie_edit_checklist = function( column, item ) {
 	}
 
 	el.cacie_xeditable( {
-		type: 'checklist',
-		value: value,
-        source: cacie_options_format_editable( options ),
+		type : 'checklist',
+		value : value,
+		source : cacie_options_format_editable( options ),
 	}, column, item );
 };
 
@@ -815,18 +771,20 @@ jQuery.fn.cacie_xeditable = function( args, column, item ) {
 	var el = jQuery( this );
 
 	var defaults = {
-		url: ajaxurl,
-		params: {
-			plugin_id: 'cpac',
-			action: 'cacie_column_save',
-			storage_model: CACIE_Storage_Model,
-			column: column.column_name
+		url : ajaxurl,
+		params : {
+			plugin_id : 'cpac',
+			action : 'cacie_column_save',
+			storage_model : CACIE.storage_model,
+			layout : CACIE.layout,
+			column : column.column_name,
+			_ajax_nonce : CACIE.nonce
 		},
-		pk: item.ID,
-		value: jQuery( this ).cacie_get_value( column, item ),
-		placement: 'bottom',
-		mode: 'popup', // or inline
-		emptytext: '',
+		pk : item.ID,
+		value : jQuery( this ).cacie_get_value( column, item ),
+		placement : 'bottom',
+		mode : 'popup', // or inline
+		emptytext : '',
 	};
 
 	// Merge with edit type-specific arguments
@@ -847,23 +805,23 @@ jQuery.fn.cacie_xeditable = function( args, column, item ) {
 	// Max length
 	if ( typeof column.addon_cacie.editable.maxlength != 'undefined' ) {
 		htmlatts.push( {
-			key: 'maxlength',
-			value: parseInt( column.addon_cacie.editable.maxlength, 10 )
+			key : 'maxlength',
+			value : parseInt( column.addon_cacie.editable.maxlength, 10 )
 		} );
 	}
 
 	// Number range
 	if ( typeof column.addon_cacie.editable.range_min != 'undefined' ) {
 		htmlatts.push( {
-			key: 'min',
-			value: parseFloat( column.addon_cacie.editable.range_min, 10 )
+			key : 'min',
+			value : parseFloat( column.addon_cacie.editable.range_min, 10 )
 		} );
 	}
 
 	if ( typeof column.addon_cacie.editable.range_max != 'undefined' ) {
 		htmlatts.push( {
-			key: 'max',
-			value: parseFloat( column.addon_cacie.editable.range_max, 10 )
+			key : 'max',
+			value : parseFloat( column.addon_cacie.editable.range_max, 10 )
 		} );
 	}
 
@@ -875,8 +833,8 @@ jQuery.fn.cacie_xeditable = function( args, column, item ) {
 		}
 
 		htmlatts.push( {
-			key: 'step',
-			value: step
+			key : 'step',
+			value : step
 		} );
 	}
 
@@ -900,7 +858,6 @@ jQuery.fn.cacie_xeditable = function( args, column, item ) {
 		}
 	}
 
-
 	// Required
 	if ( typeof column.addon_cacie.editable.required != 'undefined' && column.addon_cacie.editable.required ) {
 		args.validate = function( value ) {
@@ -908,18 +865,18 @@ jQuery.fn.cacie_xeditable = function( args, column, item ) {
 
 			switch ( column.addon_cacie.editable.type ) {
 				case 'select':
-					if ( ! value || value == 'null' ) {
+					if ( !value || value == 'null' ) {
 						valid = false;
 					}
 					break;
 				default:
-					if ( ! value.length ) {
+					if ( !value.length ) {
 						valid = false;
 					}
 					break;
 			}
 
-			if ( ! valid ) {
+			if ( !valid ) {
 				return qie_i18n.errors.field_required;
 			}
 		};
@@ -937,19 +894,29 @@ jQuery.fn.cacie_xeditable = function( args, column, item ) {
 		args.display = function() {}; // should be left empty, do not remove
 		args.success = function( response ) { // replace display with ajax value
 			if ( response.success ) {
-				el.html( response.data.value );
+				var $val = jQuery('<div>' ).html( response.data.value ).append( el.find('.row-actions') );
+				el.html( $val.html() );
 			}
 
 			el.cacie_after_save( column, item );
 
 			if ( typeof response.data !== 'undefined' && typeof response.data.rawvalue !== 'undefined' ) {
-				return { newValue: response.data.rawvalue };
+				return { newValue : response.data.rawvalue };
 			}
 		};
+	}
+	else if ( typeof column.addon_cacie.editable.js !== 'undefined' && typeof column.addon_cacie.editable.js.selector !== 'undefined' ) {
+		args.success = function( response ) {
+			el.cacie_after_save( column, item );
+		}
 	}
 	else {
 		args.success = function( response ) {
 			el.cacie_after_save( column, item );
+
+			if ( typeof response.data !== 'undefined' && typeof response.data.rawvalue !== 'undefined' ) {
+				return { newValue : response.data.rawvalue };
+			}
 		};
 	}
 
@@ -1030,12 +997,14 @@ jQuery.fn.cacie_savecolumn = function( column, item, newvalue, storerevision ) {
 	el.cacie_add_ajax_loading( column, item );
 
 	jQuery.post( ajaxurl, {
-		plugin_id: 'cpac',
-		action: 'cacie_column_save',
-		storage_model: CACIE_Storage_Model,
-		column: column.column_name,
-		pk: item.ID,
-		value: newvalue
+		plugin_id : 'cpac',
+		action : 'cacie_column_save',
+		storage_model : CACIE.storage_model,
+		layout : CACIE.layout,
+		column : column.column_name,
+		pk : item.ID,
+		value : newvalue,
+		_ajax_nonce : CACIE.nonce
 	}, function( response ) {
 		if ( response.success ) {
 			// update data even when empty, in case field is cleared
@@ -1049,7 +1018,6 @@ jQuery.fn.cacie_savecolumn = function( column, item, newvalue, storerevision ) {
 		el.cacie_after_save( column, item );
 	}, 'json' );
 };
-
 
 /*
  * Handle cell actions
@@ -1085,15 +1053,13 @@ jQuery.fn.cacie_handle_actions = function( column, item ) {
 	switch ( column.type ) {
 		case 'title':
 		case 'name':
-			el_actions.prepend( el_edit );
-			el.parents( 'td' ).find( column.addon_cacie.editable.js.selector ).after( el_actions );
-			break;
+		case 'username':
 		case 'coupon_code':
 			el_actions.prepend( el_edit );
 			el.parents( 'td' ).find( column.addon_cacie.editable.js.selector ).after( el_actions );
-			el.parents( 'td' ).find( '.row-actions a' ).click( function( e ) {
-				e.stopPropagation();
-			} );
+			//el.parents( 'td' ).find( '.row-actions a' ).click( function( e ) {
+			//e.stopPropagation();
+			//} );
 			break;
 		default:
 			switch ( column.addon_cacie.editable.type ) {
@@ -1192,7 +1158,7 @@ jQuery.fn.cacie_handle_actions = function( column, item ) {
 			el.cacie_savecolumn( column, item, '' );
 			e.stopPropagation();
 		};
-	} ( column, item ) ) );
+	}( column, item ) ) );
 
 	var revisions = CACIE_Items[ item.ID ].columndata[ column.column_name ].revisions;
 	var current_revision = CACIE_Items[ item.ID ].columndata[ column.column_name ].current_revision;
@@ -1220,8 +1186,6 @@ jQuery.fn.cacie_handle_actions = function( column, item ) {
 	}
 };
 
-
-
 /*
  * Init
  */
@@ -1248,7 +1212,7 @@ function cacie_init() {
 		column.column_name = column_name;
 
 		// Make column editable
-		if ( column.edit == 'on' && column.addon_cacie.editable ) {
+		if ( column.addon_cacie.editable ) {
 			if ( typeof column.addon_cacie.editable.type === 'undefined' || column.addon_cacie.editable.type === '' ) {
 				continue;
 			}
@@ -1262,12 +1226,17 @@ function cacie_init() {
 
 			// Loop through items for current column
 			jQuery( '.column-' + column_name, list ).each( function() {
+				if( jQuery(this ).hasClass('cacie-editable-container' ) ){
+					// in case we run init again
+					return true;
+				}
+
 				// Get corresponding item for row
 				var item;
 				var id_attr = jQuery( this ).parents( 'tr' ).attr( 'id' );
 				var id = parseInt( id_attr.substr( id_attr.lastIndexOf( '-' ) + 1 ), 10 );
 
-				if ( ! ( id in items ) ) {
+				if ( !( id in items ) ) {
 					// Skip to the next element (equivalent to "continue" in a for-loop)
 					return true;
 				}
@@ -1278,11 +1247,11 @@ function cacie_init() {
 				var currentvalue;
 
 				if ( column_name in item.columndata ) {
-					currentvalue = item.columndata[ column_name ].revisions[0];
+					currentvalue = item.columndata[ column_name ].revisions[ 0 ];
 				}
 
 				// Value must be defined and must no be a WP Error object
-				if ( ( typeof currentvalue === 'undefined' ) || ( typeof currentvalue.errors !== 'undefined' ) ) {
+				if ( currentvalue == null || ( typeof currentvalue === 'undefined' ) || ( typeof currentvalue.errors !== 'undefined' ) ) {
 					// Skip to the next element (equivalent to "continue" in a for-loop)
 					return true;
 				}
@@ -1319,7 +1288,7 @@ function cacie_init() {
  */
 function cacie_enable() {
 
-	jQuery('#cacie-toggle-edit').addClass('active');
+	jQuery( '#cacie-toggle-edit' ).addClass( 'active' );
 
 	if ( typeof window.xeditables === 'undefined' ) {
 		cacie_init();
@@ -1327,10 +1296,10 @@ function cacie_enable() {
 
 	// enable cacie when init has run once
 	else {
-		jQuery( window.xeditables ).editable('enable');
+		jQuery( window.xeditables ).editable( 'enable' );
 	}
 
-	jQuery(CACIE_List_Selector).addClass('cacie-enabled');
+	jQuery( CACIE_List_Selector ).addClass( 'cacie-enabled' );
 	window.cacie_edit_enabled = 1;
 }
 
@@ -1338,10 +1307,10 @@ function cacie_enable() {
  * Enable inline editing
  */
 function cacie_disable() {
-	jQuery('#cacie-toggle-edit').removeClass('active');
-	jQuery( window.xeditables ).editable('disable');
+	jQuery( '#cacie-toggle-edit' ).removeClass( 'active' );
+	jQuery( window.xeditables ).editable( 'disable' );
 	window.cacie_edit_enabled = 0; // disable click events
-	jQuery(CACIE_List_Selector).removeClass('cacie-enabled');
+	jQuery( CACIE_List_Selector ).removeClass( 'cacie-enabled' );
 }
 
 /*
@@ -1349,8 +1318,15 @@ function cacie_disable() {
  */
 jQuery( document ).ready( function( $ ) {
 
+
+	$( '.wp-list-table tbody').on( 'updated', 'tr', function(){
+
+		//jQuery( window.xeditables ).editable( 'enable' );
+		cacie_init();
+	});
+
 	// Columns and items are available
-	if ( typeof CACIE_Columns === 'undefined' || typeof CACIE_Items === 'undefined' ) {
+	if ( typeof CACIE_Columns === 'undefined' || typeof CACIE_Items === 'undefined' || CACIE_Items == null ) {
 		return;
 	}
 
@@ -1360,10 +1336,10 @@ jQuery( document ).ready( function( $ ) {
 	}
 
 	// Add button
-	jQuery('.tablenav.top .actions:last').append('<a href="javascript:;" id="cacie-toggle-edit" class="add-new-h2">' + qie_i18n.inline_edit + '</a>');
+	jQuery( '.tablenav.top .actions:last' ).append( '<a href="javascript:;" id="cacie-toggle-edit" class="cpac-edit add-new-h2">' + qie_i18n.inline_edit + '</a>' );
 
 	// Toggle Inline Edit
-	$('#cacie-toggle-edit').on( 'click', function( e ) {
+	$( '#cacie-toggle-edit' ).on( 'click', function( e ) {
 
 		// disable
 		if ( window.cacie_edit_enabled ) {
@@ -1377,16 +1353,26 @@ jQuery( document ).ready( function( $ ) {
 
 		// store preference
 		jQuery.post( ajaxurl, {
-			plugin_id: 'cpac',
-			action: 'cacie_editability_state_save',
-			value: window.cacie_edit_enabled,
-			storage_model: CACIE_Storage_Model
-		});
+			plugin_id : 'cpac',
+			action : 'cacie_editability_state_save',
+			value : window.cacie_edit_enabled,
+			storage_model : CACIE.storage_model,
+			_ajax_nonce : CACIE.nonce
+		} );
 
 		e.preventDefault();
-	});
+	} );
 
 	if ( CACIE.inline_edit.active === true ) {
 		cacie_enable();
 	}
-});
+
+	$( '.wp-list-table' ).on( 'click', '.cacie-editable a', function( e ) {
+		e.stopPropagation();
+		var $link = $( this );
+
+		$link.parent().editable( 'destroy' );
+		$link.parents( 'td:first' ).find( '.popover' ).remove();
+		window.location.href = $link.attr( 'href' );
+	} );
+} );

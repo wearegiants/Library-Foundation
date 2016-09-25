@@ -1,10 +1,10 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit when accessed directly
+defined( 'ABSPATH' ) or die();
 
 /**
  * @since 1.0
  */
-class CPAC_WC_Column_Post_SKU extends CPAC_Column_Default {
+class CPAC_WC_Column_Post_SKU extends CPAC_WC_Column_Default {
 
 	/**
 	 * @see CPAC_Column::init()
@@ -15,21 +15,19 @@ class CPAC_WC_Column_Post_SKU extends CPAC_Column_Default {
 		parent::init();
 
 		// Properties
-		$this->properties['type']	= 'sku';
-		$this->properties['label']	= __( 'SKU', 'cpac' );
-		$this->properties['group']	= 'woocommerce-default';
+		$this->properties['type'] = 'sku';
+		$this->properties['label'] = __( 'SKU', 'woocommerce' );
 		$this->properties['handle'] = 'sku';
+		$this->properties['is_cloneable'] = false;
 	}
 
-	/**
-	 * @see CPAC_Column::get_raw_value()
-	 * @since 1.0
-	 */
+	// For sorting onlyw
+	public function get_value( $post_id ) {
+		return $this->get_raw_value( $post_id );
+	}
+
+	// For sorting only
 	public function get_raw_value( $post_id ) {
-
-		$product = get_product( $post_id );
-
-		return $product->get_sku();
+		return get_post_meta( $post_id, '_sku', true );
 	}
-
 }

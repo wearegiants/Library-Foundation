@@ -1,7 +1,5 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+defined( 'ABSPATH' ) or die();
 
 define( 'CAC_FC_URL', plugins_url( '', __FILE__ ) );
 define( 'CAC_FC_DIR', plugin_dir_path( __FILE__ ) );
@@ -13,19 +11,15 @@ define( 'CAC_FC_DIR', plugin_dir_path( __FILE__ ) );
  */
 class CAC_Addon_Filtering {
 
-	private $cpac;
+	private $models;
 
 	function __construct() {
 
 		// init addon
-		add_action( 'cac/loaded', array( $this, 'init_addon_filtering' ) );
-
-		// styling & scripts
-		add_action( "admin_print_styles-settings_page_codepress-admin-columns", array( $this, 'scripts' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'scripts_listings' ) );
+		add_action( 'cac/current_storage_model', array( $this, 'init' ) );
 
 		// Add column properties
-		add_filter( 'cac/column/properties', array( $this, 'set_column_default_properties' ) );
+		add_filter( 'cac/column/default_properties', array( $this, 'set_column_default_properties' ) );
 
 		// Add column options
 		add_filter( 'cac/column/default_options', array( $this, 'set_column_default_options' ) );
@@ -36,39 +30,163 @@ class CAC_Addon_Filtering {
 		// add setting filtering indicator
 		add_action( 'cac/column/settings_meta', array( $this, 'add_label_filter_indicator' ), 9 );
 
-		// clears all column cache for filtering when updating posts, terms or profile.
-		add_action( 'cac/inline-edit/after_ajax_column_save', array( $this, 'clear_cache_by_column' ) );
-		add_action( 'cac/storage_model/columns_stored', array( $this, 'clear_cache' ) );
-		add_action( 'delete_post', array( $this, 'clear_cache' ) );
-		add_action( 'created_term', array( $this, 'clear_cache' ) );
-		add_action( 'edited_term', array( $this, 'clear_cache' ) );
-		add_action( 'delete_term', array( $this, 'clear_cache' ) );
-		add_action( 'profile_update', array( $this, 'clear_cache' ) );
-		add_action( 'edit_post', array( $this, 'clear_cache' ) ); // do not use save_post
+		// clear timeout
+		add_action( 'cac/storage_model/columns_stored', array( $this, 'clear_timeout' ), 10, 2 );
+
+		// hides default dropdown, eg. date and categories
+		add_action( 'admin_head', array( $this, 'maybe_hide_default_dropdowns' ) );
+
+		// Styling & scripts
+		add_action( 'admin_enqueue_scripts', array( $this, 'scripts' ) );
+
+		// update dropdown options cache
+		add_action( "wp_ajax_cac_update_filtering_cache", array( $this, 'ajax_update_dropdown_cache' ) );
+
+		// enable filtering per type
+		add_action( "cac/columns", array( $this, 'enable_filtering' ), 10, 2 );
 	}
 
 	/**
+	 * @since 3.8
+	 */
+	public function maybe_hide_default_dropdowns() {
+		if ( ! $storage_model = cpac()->get_current_storage_model() ) {
+			return;
+		}
+		if ( ! $model = $this->get_model( $storage_model->key ) ) {
+			return;
+		}
+
+		$disabled = array();
+		if ( $element_ids = apply_filters( 'cac/addon/filtering/filter_element_ids', $model->get_dropdown_html_element_ids(), $storage_model->key ) ) {
+			foreach ( $element_ids as $column_name => $id ) {
+				$column = $storage_model->get_column_by_name( $column_name );
+
+				if ( $column && 'on' !== $column->get_option( 'filter') ) {
+					$disabled[] = '#' . $id;
+				}
+			}
+		}
+
+		if ( $disabled ) { ?>
+			<style type="text/css">
+				<?php echo implode( ', ', $disabled ) . '{ display: none; }'; ?>
+			</style>
+			<?php
+		}
+	}
+
+	/**
+	 * @since 3.8.4
+	 */
+	private function get_models() {
+
+		if ( ! $this->models ) {
+
+			include_once CAC_FC_DIR . 'classes/model.php';
+			include_once CAC_FC_DIR . 'classes/post-object.php';
+
+			foreach ( cpac()->get_storage_models() as $storage_model ) {
+				if ( $storage_model->subpage ) {
+					continue;
+				}
+
+				$filtering_model = false;
+
+				switch ( $storage_model->get_type() ) {
+					case 'post' :
+						include_once CAC_FC_DIR . 'classes/post.php';
+						$filtering_model = new CAC_Filtering_Model_Post( $storage_model );
+						break;
+
+					case 'user' :
+
+						// Multisite
+						if ( 'wp-ms_users' == $storage_model->key ) {
+							include_once CAC_FC_DIR . 'classes/ms-user.php';
+							$filtering_model = new CAC_Filtering_Model_MS_User( $storage_model );
+						}
+
+						// User
+						else {
+							include_once CAC_FC_DIR . 'classes/user.php';
+							$filtering_model = new CAC_Filtering_Model_User( $storage_model );
+						}
+						break;
+
+					case 'media' :
+						include_once CAC_FC_DIR . 'classes/media.php';
+						$filtering_model = new CAC_Filtering_Model_Media( $storage_model );
+						break;
+
+					case 'comment' :
+						include_once CAC_FC_DIR . 'classes/comment.php';
+						$filtering_model = new CAC_Filtering_Model_Comment( $storage_model );
+						break;
+				}
+
+				if ( $filtering_model ) {
+					$this->models[ $storage_model->key ] = $filtering_model;
+				}
+			}
+		}
+
+		return $this->models;
+	}
+
+	/**
+	 * Init hooks for columns screen
+	 *
 	 * @since 1.0
 	 */
-	public function scripts() {
-		wp_enqueue_style( 'cac-addon-filtering-css', CAC_FC_URL . '/assets/css/filtering.css', array(), CAC_PRO_VERSION, 'all' );
-	}
+	public function init( $storage_model ) {
 
-	/**
-	 * @since 3.4.4
-	 */
-	public function scripts_listings() {
-		if ( $this->cpac->is_columns_screen() ) {
-			wp_enqueue_style( 'cac-addon-filtering-listings-css', CAC_FC_URL . '/assets/css/listings_screen.css', array(), CAC_PRO_VERSION, 'all' );
+		// Listings page
+		if ( $model = $this->get_model( $storage_model->key ) ) {
+			$model->init_hooks();
 		}
 	}
 
 	/**
 	 * @since 1.0
 	 */
-	public function set_column_default_properties( $properties ) {
+	public function scripts() {
 
+		$minified = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+
+		// Settings screen
+		if ( cpac()->is_settings_screen() ) {
+			wp_enqueue_style( 'cac-addon-filtering-css', CAC_FC_URL . "/assets/css/filtering{$minified}.css", array(), CAC_PRO_VERSION, 'all' );
+		}
+
+		// Listings screen
+		else if ( $storage_model = cpac()->get_current_storage_model() ) {
+
+			wp_register_script( 'cac-addon-filtering-listings-js', CAC_FC_URL . '/assets/js/listings_screen.js', array( 'jquery' ), CAC_PRO_VERSION );
+			wp_localize_script( 'cac-addon-filtering-listings-js', 'CAC_Filtering', array(
+					'storage_model' => $storage_model->key,
+					'layout'        => $storage_model->get_layout(),
+					'nonce'         => wp_create_nonce( 'ac-filtering' )
+				)
+			);
+
+			wp_enqueue_script( 'jquery-ui-datepicker' );
+			wp_enqueue_script( 'cac-addon-filtering-listings-js' );
+
+			wp_enqueue_style( 'cac-addon-filtering-listings-css', CAC_FC_URL . "/assets/css/listings_screen{$minified}.css", array(), CAC_PRO_VERSION, 'all' );
+		}
+	}
+
+	/**
+	 * @since 1.0
+	 * Property user_filter_operator: Determine if operators like > >= < <= can be used
+	 * Property filterable_type: Specify the filter type like ACF date etc
+	 */
+	public function set_column_default_properties( $properties ) {
 		$properties['is_filterable'] = false;
+		$properties['filterable_type'] = null;
+		$properties['use_filter_operator'] = false;
+
 		return $properties;
 	}
 
@@ -76,8 +194,9 @@ class CAC_Addon_Filtering {
 	 * @since 1.0
 	 */
 	public function set_column_default_options( $options ) {
-
 		$options['filter'] = 'off';
+		$options['filter_format'] = '';
+
 		return $options;
 	}
 
@@ -89,26 +208,53 @@ class CAC_Addon_Filtering {
 		if ( ! $column->properties->is_filterable ) {
 			return false;
 		}
-
-		$sort = isset( $column->options->filter ) ? $column->options->filter : '';
-
 		?>
-
 		<tr class="column_filtering">
-			<?php $column->label_view( __( 'Enable filtering?', 'cpac' ), __( 'This will make the column support filtering.', 'cpac' ), 'filter' ); ?>
+			<?php $column->label_view( __( 'Enable filtering?', 'codepress-admin-columns' ), __( 'This will make the column support filtering.', 'codepress-admin-columns' ), 'filter' ); ?>
 			<td class="input" data-toggle-id="<?php $column->attr_id( 'filter' ); ?>">
 				<label for="<?php $column->attr_id( 'filter' ); ?>-on">
-					<input type="radio" value="on" name="<?php $column->attr_name( 'filter' ); ?>" id="<?php $column->attr_id( 'filter' ); ?>-on"<?php checked( $column->options->filter, 'on' ); ?>>
-					<?php _e( 'Yes'); ?>
+					<input type="radio" value="on" name="<?php $column->attr_name( 'filter' ); ?>" id="<?php $column->attr_id( 'filter' ); ?>-on"<?php checked( $column->get_option( 'filter' ), 'on' ); ?>>
+					<?php _e( 'Yes' ); ?>
 				</label>
 				<label for="<?php $column->attr_id( 'filter' ); ?>-off">
-					<input type="radio" value="off" name="<?php $column->attr_name( 'filter' ); ?>" id="<?php $column->attr_id( 'filter' ); ?>-off"<?php checked( $column->options->filter, '' ); ?><?php checked( $column->options->filter, 'off' ); ?>>
-					<?php _e( 'No'); ?>
+					<input type="radio" value="off" name="<?php $column->attr_name( 'filter' ); ?>" id="<?php $column->attr_id( 'filter' ); ?>-off"<?php checked( $column->get_option( 'filter' ), '' ); ?><?php checked( $column->get_option( 'filter' ), 'off' ); ?>>
+					<?php _e( 'No' ); ?>
 				</label>
 			</td>
 		</tr>
 
-	<?php
+		<?php
+
+		$filter_items = array();
+
+		switch ( $column->get_property( 'filterable_type' ) ) {
+			case 'date' :
+			case 'date_format' :
+				$filter_items = array(
+					''            => __( 'Daily' ),
+					'monthly'     => __( 'Monthly' ),
+					'yearly'      => __( 'Yearly' ),
+					'future_past' => __( 'Future / Past', 'codepress-admin-columns' ),
+					'range'       => __( 'Range', 'codepress-admin-columns' )
+				);
+				break;
+			case 'numeric' :
+				$filter_items = array(
+					''      => __( 'Exact match', 'codepress-admin-columns' ),
+					'range' => __( 'Range', 'codepress-admin-columns' ),
+				);
+				break;
+		}
+
+		if ( $filter_items ) {
+			$column->display_field_select(
+				'filter_format',
+				__( 'Filter by:', 'codepress-admin-columns' ),
+				$filter_items,
+				__( "This will allow you to set the filter format.", 'codepress-admin-columns' ),
+				'filter'
+			);
+		}
 	}
 
 	/**
@@ -116,106 +262,81 @@ class CAC_Addon_Filtering {
 	 */
 	public function add_label_filter_indicator( $column ) {
 		if ( $column->properties->is_filterable ) : ?>
-		<span title="<?php esc_attr_e( 'filter', 'cpac' ); ?>" class="filtering <?php echo $column->options->filter; ?>"  data-indicator-id="<?php $column->attr_id( 'filter' ); ?>"></span>
-		<?php
+			<span class="filtering <?php echo esc_attr( $column->get_option( 'filter' ) ); ?>" data-indicator-id="<?php $column->attr_id( 'filter' ); ?>" title="<?php echo esc_attr( __( 'Enable filtering?', 'codepress-admin-columns' ) ); ?>"></span>
+			<?php
 		endif;
 	}
 
 	/**
-	 * Init Addons
-	 *
-	 * @since 1.0
+	 * @since 3.6
 	 */
-	public function init_addon_filtering( $cpac ) {
+	public function get_model( $storage_model_key ) {
+		$models = $this->get_models();
 
-		$this->cpac = $cpac;
+		return isset( $models[ $storage_model_key ] ) ? $models[ $storage_model_key ] : false;
+	}
 
-		// Abstract
-		include_once 'classes/model.php';
-
-		// Childs
-		include_once 'classes/media.php';
-		include_once 'classes/post.php';
-		include_once 'classes/user.php';
-		include_once 'classes/comment.php';
-
-		// Posts
-		foreach ( $cpac->get_post_types() as $post_type ) {
-			if ( $storage_model = $cpac->get_storage_model( $post_type ) ) {
-				new CAC_Filtering_Model_Post( $storage_model );
-			}
-		}
-
-		// User
-		if ( $storage_model = $cpac->get_storage_model( 'wp-users' ) ) {
-			new CAC_Filtering_Model_User( $storage_model );
-		}
-
-		// Media
-		if ( $storage_model = $cpac->get_storage_model( 'wp-media' ) ) {
-			new CAC_Filtering_Model_Media( $storage_model );
-		}
-
-		// Comment
-		if ( $storage_model = $cpac->get_storage_model( 'wp-comments' ) ) {
-			new CAC_Filtering_Model_Comment( $storage_model );
+	/**
+	 * @since 3.7
+	 */
+	public function clear_timeout( $columns, $storage_model ) {
+		if ( $model = $this->get_model( $storage_model->key ) ) {
+			$model->clear_timeout();
 		}
 	}
 
 	/**
-	 * Clear cache when inline-edit is being used.
-	 *
-	 * @param object CPAC_Column
+	 * @since 3.6
 	 */
-	public function clear_cache_by_column( $column ) {
-		if ( isset( $column->options->filter ) && 'on' == $column->options->filter ) {
-			$column->storage_model->delete_cache( 'filtering', $column->properties->name );
-		}
-	}
+	public function ajax_update_dropdown_cache() {
+		check_ajax_referer( 'ac-filtering' );
 
-	/**
-	 * Clears all column cache
-	 *
-	 * @since 1.0
-	 */
-	public function clear_cache() {
+		$storage_model = cpac()->get_storage_model( filter_input( INPUT_POST, 'storage_model' ) );
 
-		// prevents the multiple flusing of cache by inline-edit, it uses it's own callback.
-		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			return;
+		if ( ! $storage_model ) {
+			wp_die();
 		}
 
-		if ( ! $this->is_loaded() ) {
-			return;
+		$storage_model->set_layout( filter_input( INPUT_POST, 'layout' ) );
+
+		$filter_model = $this->get_model( $storage_model->key );
+
+		if ( ! $filter_model ) {
+			wp_die();
 		}
 
-		// by default storage models are only loaded on listings screen, we need to make sure they are set
-		if ( empty( $this->cpac->storage_models ) ) {
-			$this->cpac->set_storage_models();
+		// this prevents too many simultaneous cache updates by multiple loggedin users
+		if ( ( $timer = $filter_model->is_timeout() ) && $filter_model->use_cache() ) {
+			wp_send_json_error( $timer );
 		}
 
-		foreach ( $this->cpac->storage_models as $storage_model ) {
-			if ( $columns = $storage_model->get_stored_columns() ) {
-				foreach ( $columns as $column ) {
-					if ( isset( $column['column-name'] ) && isset( $column['filter'] ) && 'on' == $column['filter'] ) {
-						$storage_model->delete_cache( 'filtering', $column['column-name'] );
-					}
+		$filter_model->set_timeout();
+
+		ob_start();
+		foreach ( (array) $storage_model->get_columns() as $column ) {
+			if ( $filter_model->is_filterable( $column ) ) {
+
+				$options = $filter_model->get_dropdown_options_by_column( $column );
+
+				if ( $options ) {
+					$filter_model->dropdown( $column->get_name(), $options['options'], $options['empty_option'] );
 				}
+
+				$filter_model->set_cache( $column->get_name(), $options );
 			}
 		}
+		$html = ob_get_clean();
+
+		wp_send_json_success( $html );
 	}
 
 	/**
-	 * Check whether the plugin is loaded
-	 * Loading is done when the cpac property is set, which usually occurs on the cac/loaded action
-	 *
-	 * @since 3.0.8.4
-	 *
-	 * @return bool Whether Admin Columns is loaded
+	 * @since 3.8.4
 	 */
-	public function is_loaded() {
-
-		return ( ! empty( $this->cpac ) );
+	public function enable_filtering( $columns, $storage_model ) {
+		if ( $editable_model = $this->get_model( $storage_model->key ) ) {
+			$editable_model->enable_filtering( $columns );
+		}
 	}
 }
 

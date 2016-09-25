@@ -7,31 +7,18 @@
  */
 class CAC_Filtering_Model_User extends CAC_Filtering_Model {
 
-	/**
-	 * Constructor
-	 *
-	 * @since 3.5
-	 */
-	public function __construct( $storage_model ) {
-
-		parent::__construct( $storage_model );
-
-		// handle filtering request
-		add_action( 'pre_get_users', array( $this, 'handle_filter_requests'), 2 );
-
-		// add dropdowns
-		add_action( 'restrict_manage_users', array( $this, 'add_filtering_dropdown' ) );
-		add_action( 'restrict_manage_users', array( $this, 'add_filtering_buttom' ), 11 ); // placement after dropdowns
+	public function init_hooks() {
+		add_action( 'pre_get_users', array( $this, 'handle_filter_requests' ), 1 );
+		add_action( 'pre_get_users', array( $this, 'handle_filter_range_requests' ), 1 );
+		add_action( 'restrict_manage_users', array( $this, 'add_filtering_markup' ) );
+		add_action( 'restrict_manage_users', array( $this, 'add_filtering_button' ), 11 ); // placement after dropdowns
 	}
 
 	/**
-	 * Enable filtering
-	 *
-	 * @since 3.5
+	 * @since 3.8
 	 */
-	public function enable_filtering( $columns ) {
-
-		$include_types = array(
+	public function get_filterables() {
+		$column_types = array(
 
 			// WP default columns
 			'email',
@@ -41,20 +28,17 @@ class CAC_Filtering_Model_User extends CAC_Filtering_Model {
 			// Custom columns
 			'column-first_name',
 			'column-last_name',
+			'column-roles',
 			'column-rich_editing',
 			'column-user_registered',
 			'column-user_url',
-
 		);
 
-		foreach ( $columns as $column ) {
-			if ( in_array( $column->properties->type, $include_types ) ) {
-				$column->set_properties( 'is_filterable', true );
-			}
+		return $column_types;
+	}
 
-			$this->enable_filterable_custom_field( $column );
-			$this->enable_filterable_acf_field( $column );
-		}
+	public function get_default_filterables() {
+		return array( 'role' );
 	}
 
 	/**
@@ -64,10 +48,13 @@ class CAC_Filtering_Model_User extends CAC_Filtering_Model {
 	 */
 	public function filter_by_email( $query ) {
 		$query->query_where .= ' ' . $this->wpdb->prepare( "AND {$this->wpdb->users}.user_email = %s", $this->get_filter_value( 'email' ) );
+
 		return $query;
 	}
+
 	public function filter_by_username( $query ) {
 		$query->query_where .= ' ' . $this->wpdb->prepare( "AND {$this->wpdb->users}.user_login = %s", $this->get_filter_value( 'username' ) );
+
 		return $query;
 	}
 
@@ -78,11 +65,27 @@ class CAC_Filtering_Model_User extends CAC_Filtering_Model {
 	 */
 	public function filter_by_user_registered( $query ) {
 		$query->query_where .= ' ' . $this->wpdb->prepare( "AND {$this->wpdb->users}.user_registered LIKE %s", $this->get_filter_value( 'column-user_registered' ) . '%' );
+
 		return $query;
 	}
+
 	public function filter_by_user_url( $query ) {
 		$query->query_where .= ' ' . $this->wpdb->prepare( "AND {$this->wpdb->users}.user_url = %s", $this->get_filter_value( 'column-user_url' ) );
+
 		return $query;
+	}
+
+	/**
+	 * Handle filter request for ranges
+	 *
+	 * @since 3.7
+	 */
+	public function handle_filter_range_requests( $user_query ) {
+		if ( isset( $_REQUEST['cpac_filter-min'] ) ) {
+			$user_query->query_vars['meta_query'][] = $this->get_meta_query_range( $_REQUEST['cpac_filter-min'], $_REQUEST['cpac_filter-max'] );
+		}
+
+		return $user_query;
 	}
 
 	/**
@@ -92,9 +95,7 @@ class CAC_Filtering_Model_User extends CAC_Filtering_Model {
 	 */
 	public function handle_filter_requests( $user_query ) {
 
-		global $pagenow;
-
-		if ( $this->storage_model->page . '.php' != $pagenow || empty( $_REQUEST['cpac_filter'] ) || ! isset ( $_GET['cpac_filter_action'] ) ) {
+		if ( empty( $_REQUEST['cpac_filter'] ) || ! isset ( $_GET['cpac_filter_action'] ) ) {
 			return $user_query;
 		}
 
@@ -135,33 +136,36 @@ class CAC_Filtering_Model_User extends CAC_Filtering_Model {
 
 				// Custom
 				case 'column-first_name' :
-					$user_query->set( 'meta_query', array(
+					$user_query->query_vars['meta_query'][] = array(
 						array(
-							'key' => 'first_name',
-							'value' => $meta_value,
+							'key'     => 'first_name',
+							'value'   => $meta_value,
 							'compare' => $meta_query_compare
 						)
-					));
+					);
 					break;
 
 				case 'column-last_name' :
-					$user_query->set( 'meta_query', array(
+					$user_query->query_vars['meta_query'][] = array(
 						array(
-							'key' => 'last_name',
-							'value' => $meta_value,
+							'key'     => 'last_name',
+							'value'   => $meta_value,
 							'compare' => $meta_query_compare
 						)
-					));
+					);
+					break;
+
+				case 'column-roles' :
+					$user_query->set( 'role', $value );
 					break;
 
 				case 'column-rich_editing' :
-					$user_query->set( 'meta_query', array(
+					$user_query->query_vars['meta_query'][] = array(
 						array(
-							'key' => 'rich_editing',
-							'value' => '1' === $value ? 'true' : 'false',
-							'compare' => '='
+							'key'     => 'rich_editing',
+							'value'   => '1' === $value ? 'true' : 'false',
 						)
-					));
+					);
 					break;
 
 				case 'column-user_registered' :
@@ -174,30 +178,24 @@ class CAC_Filtering_Model_User extends CAC_Filtering_Model {
 
 				// Custom Fields
 				case 'column-meta' :
-					$user_query->set( 'meta_query', array(
-						array(
-							'key' => $column->options->field,
-							'value' => $meta_value,
-							'compare' => $meta_query_compare
-						)
-					));
+					$user_query->query_vars['meta_query'][] = $this->get_meta_query( $column->get_field_key(), $value, $column->get_option( 'field_type' ) );
 					break;
 
 				// ACF
 				case 'column-acf_field' :
-					if ( method_exists( $column, 'get_field' ) && ( $acf_field_obj = $column->get_field() ) ) {
-						$user_query->set( 'meta_query', array(
-							array(
-								'key' => $acf_field_obj['name'],
-								'value' => $meta_value,
-								'compare' => $meta_query_compare
-							)
-						));
+					if ( method_exists( $column, 'get_field_key' ) ) {
+						$user_query->query_vars['meta_query'][] = $this->get_meta_acf_query( $column->get_field_key(), $value, $column->get_field_type(), $column->get_option( 'filter_format' ) );
 					}
 					break;
 
-			endswitch;
+				// Try to filter by using the column's custom defined filter method
+				default :
+					if ( method_exists( $column, 'get_filter_user_vars' ) ) {
+						$column->set_filter( $this );
+						$user_query = $column->get_filter_user_vars( $user_query );
+					}
 
+			endswitch;
 		}
 
 		return $user_query;
@@ -210,18 +208,14 @@ class CAC_Filtering_Model_User extends CAC_Filtering_Model {
 	 */
 	public function get_values_by_user_field( $user_field ) {
 
-		$options = array();
-
 		$user_field = sanitize_key( $user_field );
 
-		$sql = "
+		$values = $this->wpdb->get_col( "
 			SELECT DISTINCT {$user_field}
 			FROM {$this->wpdb->users}
-			WHERE $user_field <> ''
+			WHERE {$user_field} <> ''
 			ORDER BY 1
-		";
-
-		$values = $this->wpdb->get_results( $sql, ARRAY_N );
+		" );
 
 		if ( is_wp_error( $values ) || ! $values ) {
 			return array();
@@ -235,10 +229,10 @@ class CAC_Filtering_Model_User extends CAC_Filtering_Model {
 	 *
 	 * @since 3.5
 	 */
-	public function get_values_by_meta_key( $meta_key ) {
+	public function get_values_by_meta_key( $meta_key, $operator = 'DISTINCT meta_value AS value' ) {
 
 		$sql = "
-			SELECT DISTINCT meta_value
+			SELECT {$operator}
 			FROM {$this->wpdb->usermeta} um
 			INNER JOIN {$this->wpdb->users} u ON um.user_id = u.ID
 			WHERE um.meta_key = %s
@@ -246,7 +240,7 @@ class CAC_Filtering_Model_User extends CAC_Filtering_Model {
 			ORDER BY 1
 		";
 
-		$values = $this->wpdb->get_results( $this->wpdb->prepare( $sql, $meta_key ), ARRAY_N );
+		$values = $this->wpdb->get_results( $this->wpdb->prepare( $sql, $meta_key ) );
 
 		if ( is_wp_error( $values ) || ! $values ) {
 			return array();
@@ -256,153 +250,121 @@ class CAC_Filtering_Model_User extends CAC_Filtering_Model {
 	}
 
 	/**
-	 * Add filtering dropdown
-	 *
-	 * @since 3.5
-	 * @todo: Add support for customfield values longer then 30 characters.
+	 * @since 3.6
 	 */
-	public function add_filtering_dropdown() {
+	public function get_dropdown_options_by_column( $column ) {
 
-		global $pagenow;
+		$options = array();
+		$empty_option = false;
+		$order = 'ASC';
 
-		if ( $this->storage_model->page . '.php' !== $pagenow ) {
-			return;
-		}
+		switch ( $column->properties->type ) :
 
-		foreach ( $this->storage_model->columns as $column ) {
-
-			if ( ! $column->properties->is_filterable || 'on' != $column->options->filter ) {
-				continue;
-			}
-
-			$options = array();
-			$empty_option = false;
-
-			// Use cache
-			$cache = $this->storage_model->get_cache( $this->get_cache_id(), $column->properties->name );
-
-			$order = 'ASC';
-
-			if ( $cache && $this->storage_model->is_cache_enabled() ) {
-				$options  		= $cache['options'];
-				$empty_option 	= $cache['empty_option'];
-			}
-
-			// no caching, go fetch :)
-			else {
-
-				switch ( $column->properties->type ) :
-
-					// WP Default
-					case 'email' :
-						$empty_option = true;
-						if ( $values = $this->get_values_by_user_field( 'user_email' ) ) {
-							foreach ( $values as $value ) {
-								$options[ $value[0] ] = $value[0];
-							}
-						}
-						break;
-
-					case 'role' :
-						$empty_option = true;
-						foreach ( $this->get_user_ids() as $id ) {
-							$u = get_userdata( $id );
-							if ( ! empty( $u->roles[0] ) ) {
-								$options[ $u->roles[0] ] = $u->roles[0];
-							}
-						}
-						break;
-
-					case 'username' :
-						$empty_option = true;
-						if ( $values = $this->get_values_by_user_field( 'user_login' ) ) {
-							foreach ( $values as $value ) {
-								$options[ $value[0] ] = $value[0];
-							}
-						}
-						break;
-
-					// Custom
-					case 'column-rich_editing' :
-						$options = array(
-							0 => __( 'No' ),
-							1 => __( 'Yes' ),
-						);
-						break;
-
-					case 'column-user_registered' :
-						$order = '';
-						foreach ( $this->get_user_ids() as $id ) {
-							$registered_date = $column->get_raw_value( $id );
-							$date = substr( $registered_date, 0, 7 ); // only year and month
-							$options[ $date ] = date_i18n( 'F Y', strtotime( get_date_from_gmt( $registered_date ) ) );
-						}
-						krsort( $options );
-						break;
-
-
-					case 'column-user_url' :
-						$empty_option = true;
-						if ( $values = $this->get_values_by_user_field( 'user_url' ) ) {
-							foreach ( $values as $value ) {
-								$options[ $value[0] ] = $value[0];
-							}
-						}
-						break;
-
-					case 'column-meta' :
-						if ( $_options = $this->get_meta_options( $column ) ) {
-							$empty_option = $_options['empty_option'];
-							$options = $_options['options'];
-						}
-						break;
-
-					case 'column-acf_field' :
-						if ( $_options = $this->get_acf_options( $column ) ) {
-							$empty_option = $_options['empty_option'];
-							$options = $_options['options'];
-						}
-						break;
-
-					// Filter by raw value
-					case 'column-first_name' :
-					case 'column-last_name' :
-						$empty_option = true;
-						foreach ( $this->get_user_ids() as $id ) {
-							if ( $raw_value = $column->get_raw_value( $id ) ) {
-								$options[ $raw_value ] = $raw_value;
-							}
-						}
-						break;
-
-				endswitch;
-
-				// sort the options
-				if ( 'ASC' == $order ) {
-					asort( $options );
+			// WP Default
+			case 'email' :
+				if ( $values = $this->get_values_by_user_field( 'user_email' ) ) {
+					foreach ( $values as $value ) {
+						$options[ $value ] = $value;
+					}
 				}
-				if ( 'DESC' == $order ) {
-					arsort( $options );
+				break;
+
+			case 'role' :
+			case 'column-roles' :
+				$roles = new WP_Roles();
+				foreach ( $this->get_user_ids() as $id ) {
+					$u = get_userdata( $id );
+					if ( ! empty( $u->roles[0] ) ) {
+						$options[ $u->roles[0] ] = $roles->roles[ $u->roles[0] ]['name'];
+					}
+				}
+				break;
+
+			case 'username' :
+				if ( $values = $this->get_values_by_user_field( 'user_login' ) ) {
+					foreach ( $values as $value ) {
+						$options[ $value ] = $value;
+					}
+				}
+				break;
+
+			// Custom
+			case 'column-rich_editing' :
+				$options = array(
+					0 => __( 'No' ),
+					1 => __( 'Yes' ),
+				);
+				break;
+
+			case 'column-user_registered' :
+				$order = '';
+				foreach ( $this->get_user_ids() as $id ) {
+					$registered_date = $column->get_raw_value( $id );
+					$date = substr( $registered_date, 0, 7 ); // only year and month
+					$options[ $date ] = date_i18n( 'F Y', strtotime( get_date_from_gmt( $registered_date ) ) );
+				}
+				krsort( $options );
+				break;
+
+
+			case 'column-user_url' :
+				$empty_option = true;
+				if ( $values = $this->get_values_by_user_field( 'user_url' ) ) {
+					foreach ( $values as $value ) {
+						$options[ $value ] = $value;
+					}
+				}
+				break;
+
+			case 'column-meta' :
+				if ( $_options = $this->get_meta_options( $column ) ) {
+					$empty_option = $_options['empty_option'];
+					$options = $_options['options'];
+				}
+				break;
+
+			case 'column-acf_field' :
+				if ( $_options = $this->get_acf_options( $column ) ) {
+					$empty_option = $_options['empty_option'];
+					$options = $_options['options'];
+				}
+				break;
+
+			// Filter by raw value
+			case 'column-first_name' :
+			case 'column-last_name' :
+				$empty_option = true;
+				foreach ( $this->get_user_ids() as $id ) {
+					if ( $raw_value = $column->get_raw_value( $id ) ) {
+						$options[ $raw_value ] = $raw_value;
+					}
+				}
+				break;
+
+			default :
+				if ( method_exists( $column, 'get_filter_options' ) ) {
+					$options = $column->get_filter_options();
 				}
 
-				// update cache
-				$this->storage_model->set_cache( $this->get_cache_id(), $column->properties->name, array( 'options' => $options, 'empty_option' =>  $empty_option ) );
-			}
+		endswitch;
 
-			if ( ! $options && ! $empty_option ) {
-				continue;
-			}
-
-			$this->dropdown( $column, $options, $empty_option );
+		// sort the options
+		if ( 'ASC' == $order ) {
+			asort( $options );
 		}
+		if ( 'DESC' == $order ) {
+			arsort( $options );
+		}
+
+		return array( 'options' => $options, 'empty_option' => $empty_option );
 	}
 
 	/**
 	 * @since 3.5
 	 */
-	public function add_filtering_buttom() {
+	public function add_filtering_button() {
 		if ( $this->has_dropdown ) : ?>
-		<input type="submit" name="cpac_filter_action" class="button" value="<?php _e ( 'Filter' ); ?>">
+			<input type="submit" name="cpac_filter_action" class="button" value="<?php _e( 'Filter' ); ?>">
 		<?php endif;
 	}
 }

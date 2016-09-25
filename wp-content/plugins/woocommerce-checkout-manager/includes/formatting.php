@@ -70,4 +70,25 @@ function wooccm_clean( $string ) {
 
 }
 
+function wooccm_wpml_string( $input = '' ) {
+
+	if( function_exists( 'icl_t' ) ) {
+		return icl_t('WooCommerce Checkout Manager', $input, $input );
+	} else {
+		return $input;
+	}
+
+}
+
+// Sort Checkout fields based on order
+function wooccm_sort_fields( $a, $b ) {
+
+	if( !isset( $a['order'] ) || !isset( $b['order'] ) )
+		return 0;
+
+	if( $a['order'] == $b['order'] )
+		return 0;
+	return ( $a['order'] < $b['order'] ) ? -1 : 1;
+
+}
 ?>

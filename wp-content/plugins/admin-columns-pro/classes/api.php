@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Admin Columns Pro website connection API
  *
@@ -10,7 +11,7 @@ class ACP_API {
      * API url
      *
      * @since 3.1.2
-     * @var type string
+     * @var $url string
      */
     public $url;
 
@@ -18,7 +19,7 @@ class ACP_API {
      * Request args
      *
      * @since 3.1.2
-     * @var type array
+     * @var $request_arg array
      */
     public $request_args;
 
@@ -33,14 +34,17 @@ class ACP_API {
             'sslverify' => false,
             'body' => array(
                 'wc-api' => 'software-licence-api',
-            ),
+            )
         );
-    }
+
+
+     }
 
     /**
      * Set url
      *
      * @since 3.1.2
+     * @param $api_url
      * @return ACP_API
      */
     public function set_url( $api_url ) {
@@ -63,6 +67,8 @@ class ACP_API {
      * Set request arg
      *
      * @since 3.1.2
+     * @param $key
+     * @param $value
      * @return ACP_API
      */
     public function set_request_arg( $key, $value ) {
@@ -100,13 +106,14 @@ class ACP_API {
 		return $response;
 	}
 
-	/**
-	 * Activate a license by its license key
-	 *
-	 * @since 3.0
-	 *
-	 * @return mixed API Response
-	 */
+    /**
+     * Activate a license by its license key
+     *
+     * @since 3.0
+     *
+     * @param $licence_key
+     * @return mixed API Response
+     */
 	public function deactivate_licence( $licence_key ) {
 
 		$response = $this->request( array(
@@ -118,13 +125,14 @@ class ACP_API {
 		return $response;
 	}
 
-	/**
-	 * Plugin HTML changelog
-	 *
-	 * @since 3.0
-	 *
-	 * @return mixed API Response
-	 */
+    /**
+     * Plugin HTML changelog
+     *
+     * @since 3.0
+     *
+     * @param $plugin_basename
+     * @return mixed API Response
+     */
 	public function get_plugin_changelog( $plugin_basename ) {
 
 		$response = $this->request( array(
@@ -224,14 +232,15 @@ class ACP_API {
         return is_wp_error( $response ) && 'http_request_failed' == $response->get_error_code() ? false : true;
 	}
 
-	/**
-	 * API Request
-	 *
-	 * @since 1.1
-	 *
-	 * @param array $body
-	 * @return mixed API Response
-	 */
+    /**
+     * API Request
+     *
+     * @since 1.1
+     *
+     * @param array $body
+     * @param string $format
+     * @return mixed API Response
+     */
 	protected function request( $body, $format = 'json' ) {
 
         $this->request_args['body'] = array_merge( $this->request_args['body'], $body );
@@ -252,7 +261,7 @@ class ACP_API {
 			return new WP_Error( $response->code, $response->message );
 		}
 		elseif ( empty( $response ) ) {
-			return new WP_Error( 'empty_response', __( 'Empty response from API.', 'cpac' ) );
+			return new WP_Error( 'empty_response', __( 'Empty response from API.', 'codepress-admin-columns' ) );
 		}
 
 		return $response;

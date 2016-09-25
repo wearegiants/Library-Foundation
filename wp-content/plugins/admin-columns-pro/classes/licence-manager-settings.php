@@ -14,20 +14,33 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 	 */
 	class Codepress_Licence_Manager_Settings extends Codepress_Licence_Manager {
 
+		/**
+		 * CPAC instance
+		 *
+		 * @var CPAC
+		 */
 		public $cpac;
 
 		/**
+		 * CAC_Pro instance
+		 */
+		public $pro;
+
+		/**
 		 * @since 1.0
+		 *
 		 * @param array $args Arguments; This must contain: api_url, option_key, version, file, secret_key, product_name
 		 */
-		function __construct( $file_path, $cpac ) {
+		function __construct( $file_path, $cpac, $pro ) {
 
 			parent::__construct( $file_path );
 
 			$this->cpac = $cpac;
+			$this->pro = $pro;
 
 			// Add UI
 			add_filter( 'cac/settings/groups', array( $this, 'settings_group' ) );
+			add_filter( 'cac/network_settings/groups', array( $this, 'settings_group' ) );
 			add_action( 'cac/settings/groups/row=addons', array( $this, 'display' ) );
 
 			// licence Requests
@@ -53,6 +66,7 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 
 			// add scripts, after settings page is set.
 			add_action( 'admin_menu', array( $this, 'scripts' ), 20 ); // low prio, after $settings_page has been set by CPAC_Settings.
+			add_action( 'network_admin_menu', array( $this, 'network_scripts' ), 20 );
 
 			// check for a secure connection
 			add_action( 'wp_ajax_cpac_check_connection', array( $this, 'ajax_check_connection' ) );
@@ -103,12 +117,16 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 			add_action( "admin_print_scripts-" . $settings_page, array( $this, 'admin_scripts' ) );
 		}
 
+		public function network_scripts() {
+			$settings_page = $this->pro->get_network_settings_page();
+			add_action( "admin_print_scripts-" . $settings_page, array( $this, 'admin_scripts' ) );
+		}
+
 		/**
 		 * @since 3.1.2
 		 */
 		public function admin_scripts() {
-			wp_enqueue_script( 'cac-addon-pro', CAC_PRO_URL . "assets/js/cac-addon-pro.js", array( 'jquery' ), CAC_PRO_VERSION );
-
+			wp_enqueue_script( 'cac-connection', CAC_PRO_URL . "assets/js/check-connection.js", array( 'jquery' ), CAC_PRO_VERSION );
 		}
 
 		/**
@@ -117,7 +135,7 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 		public function maybe_install_error( $error, $plugin_name ) {
 
 			if ( ! $this->is_license_active() ) {
-				$error = sprintf( __( "Licence not active. Enter your licence key under the <a href='%s'>Settings tab</a>.", 'cpac' ), $this->cpac->settings()->get_settings_url('settings') );
+				$error = sprintf( __( "Licence not active. Enter your licence key on <a href='%s'>the settings page</a>.", 'codepress-admin-columns' ), $this->get_license_page_url() );
 			}
 
 			$install_data = $this->get_plugin_install_data( $plugin_name, $clear_cache = true ); // get remote add-on info
@@ -154,7 +172,7 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 				}
 
 				$addons_update_data[] = array(
-					'plugin' => $basename,
+					'plugin'  => $basename,
 					'version' => $version
 				);
 			}
@@ -201,20 +219,21 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 				$licence_key = isset( $_POST[ $this->option_key ] ) ? sanitize_text_field( $_POST[ $this->option_key ] ) : '';
 
 				if ( empty( $licence_key ) ) {
-					cpac_admin_message( __( 'Empty licence.', 'cpac' ), 'error' );
+					cpac_admin_message( __( 'Empty licence.', 'codepress-admin-columns' ), 'error' );
+
 					return;
 				}
 
 				$response = $this->activate_licence( $licence_key );
 
 				if ( is_wp_error( $response ) ) {
-					cpac_admin_message( __( 'Wrong response from API.', 'cpac' ) . ' ' . $response->get_error_message(), 'error' );
+					cpac_admin_message( $response->get_error_message(), 'error' );
 				}
 				elseif ( isset( $response->activated ) ) {
 					cpac_admin_message( $response->message, 'updated' );
 				}
 				else {
-					cpac_admin_message( __( 'Wrong response from API.', 'cpac' ), 'error' );
+					cpac_admin_message( __( 'Wrong response from API.', 'codepress-admin-columns' ), 'error' );
 				}
 			}
 
@@ -224,13 +243,13 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 				$response = $this->deactivate_licence();
 
 				if ( is_wp_error( $response ) ) {
-					cpac_admin_message( __( 'Wrong response from API.', 'cpac' ) . ' ' . $response->get_error_message(), 'error' );
+					cpac_admin_message( __( 'Wrong response from API.', 'codepress-admin-columns' ) . ' ' . $response->get_error_message(), 'error' );
 				}
 				elseif ( isset( $response->deactivated ) ) {
 					cpac_admin_message( $response->message, 'updated' );
 				}
 				else {
-					cpac_admin_message( __( 'Wrong response from API.', 'cpac' ), 'error' );
+					cpac_admin_message( __( 'Wrong response from API.', 'codepress-admin-columns' ), 'error' );
 				}
 			}
 
@@ -252,7 +271,9 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 		 * Add settings group to Admin Columns settings page
 		 *
 		 * @since 1.0
+		 *
 		 * @param array $groups Add group to ACP settings screen
+		 *
 		 * @return array Settings group for ACP
 		 */
 		public function settings_group( $groups ) {
@@ -261,12 +282,24 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 				return $groups;
 			}
 
-			$groups['addons'] =  array(
-				'title'			=> __( 'Updates', 'cpac' ),
-				'description'	=> __( 'Enter your licence code to receive automatic updates.', 'cpac' )
+			$groups['addons'] = array(
+				'title'       => __( 'Updates', 'codepress-admin-columns' ),
+				'description' => __( 'Enter your licence code to receive automatic updates.', 'codepress-admin-columns' )
 			);
 
 			return $groups;
+		}
+
+		/**
+		 * Get the URL to manage your license based on network or site managed license
+		 *
+		 * @return string
+		 */
+		public function get_license_page_url() {
+			$urls = $this->cpac->settings()->get_settings_urls();
+			$key = $this->is_network_managed_license() ? 'network_settings' : 'settings';
+
+			return $urls[ $key ];
 		}
 
 		/**
@@ -277,22 +310,26 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 		 */
 		public function display() {
 
-			// Display message on multisite
-			if ( is_multisite() && is_plugin_active_for_network( plugin_basename( ACP_FILE ) ) && ! is_main_site() ) {
-				$settings_url = get_admin_url( get_current_site()->blog_id, 'options-general.php?page=codepress-admin-columns&tab=settings' )
+			// When the plugin is network activated, the license is managed globally
+			if ( $this->is_network_managed_license() && ! is_network_admin() ) {
 				?>
 				<p>
-					<?php _e( 'This plugin has been network activated.', 'cpac' ); ?>
-				<?php if ( current_user_can( 'manage_network_options' ) ) : ?>
-					<?php printf( __( 'Go to <a href="%s">network settings</a>.', 'cpac' ), $settings_url ); ?>
-				<?php endif; ?>
+					<?php
+					$page = __( 'network settings page', 'codepress-admin-columns' );
+
+					if ( current_user_can( 'manage_network_options' ) ) {
+						$page = sprintf( '<a href="%s">%s</a>', network_admin_url( 'settings.php?page=codepress-admin-columns' ), $page );
+					}
+
+					printf( __( 'The license can be managed on the %s.', 'codepress-admin-columns' ), $page );
+					?>
 				</p>
 				<?php
 				return;
 			}
 
 			// Use this hook when you want to hide to licence form
-			if ( ! apply_filters( 'cac/display_licence/addon=' . $this->option_key , true ) ) {
+			if ( ! apply_filters( 'cac/display_licence/addon=' . $this->option_key, true ) ) {
 				return;
 			}
 
@@ -302,7 +339,23 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 			if ( ! empty( $_POST[ $this->option_key ] ) ) {
 				$licence = $_POST[ $this->option_key ];
 			}
+
 			?>
+
+			<style type="text/css">
+				#licence_activation .dashicons-no-alt,
+				#licence_activation .dashicons-yes {
+					font-size: 25px;
+					color: #46b450;
+					vertical-align: -28%;
+					margin-left: -6px;
+					width: 22px;
+				}
+
+				#licence_activation .dashicons-no-alt {
+					color: #dc3232;
+				}
+			</style>
 
 			<form id="licence_activation" action="" method="post">
 				<label for="<?php echo $this->option_key; ?>">
@@ -310,27 +363,29 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 				</label>
 				<br/>
 
-			<?php if ( $this->is_license_active() ) : ?>
+				<?php if ( $this->is_license_active() ) : ?>
 
-				<?php wp_nonce_field( $this->option_key, '_wpnonce_addon_deactivate' ); ?>
-				<p>
-					<span class="icon-yes"></span>
-					<?php _e( 'Automatic updates are enabled.', 'cpac' ); ?> <?php //echo $this->get_masked_licence_key(); ?>
-					<input type="submit" class="button" value="<?php _e( 'Deactivate licence', 'cpac' ); ?>" >
-				</p>
+					<?php wp_nonce_field( $this->option_key, '_wpnonce_addon_deactivate' ); ?>
 
-			<?php else : ?>
+					<p>
+						<span class="dashicons dashicons-yes"></span>
+						<?php _e( 'Automatic updates are enabled.', 'codepress-admin-columns' ); ?> <?php //echo $this->get_masked_licence_key(); ?>
+						<input type="submit" class="button" value="<?php _e( 'Deactivate licence', 'codepress-admin-columns' ); ?>">
+					</p>
 
-				<?php wp_nonce_field( $this->option_key, '_wpnonce_addon_activate' ); ?>
+				<?php else : ?>
 
-				<input type="password" value="<?php echo $licence; ?>" id="<?php echo $this->option_key; ?>" name="<?php echo $this->option_key; ?>" size="30" placeholder="<?php _e( 'Enter your licence code', 'cpac' ) ?>" >
-				<input type="submit" class="button" value="<?php _e( 'Update licence', 'cpac' ); ?>" >
-				<p class="description">
-					<?php _e( 'Enter your licence code to receive automatic updates.', 'cpac' ); ?><br/>
-					<?php printf( __( 'You can find your license key on your %s.', 'cpac' ), '<a href="https://admincolumns.com/my-account" target="_blank">' . __( 'account page', 'cpac' ) . '</a>' ); ?>
-				</p>
+					<?php wp_nonce_field( $this->option_key, '_wpnonce_addon_activate' ); ?>
 
-			<?php endif; ?>
+					<input type="password" value="<?php echo $licence; ?>" id="<?php echo $this->option_key; ?>" name="<?php echo $this->option_key; ?>" size="30" placeholder="<?php _e( 'Enter your licence code', 'codepress-admin-columns' ) ?>">
+					<input type="submit" class="button" value="<?php _e( 'Update licence', 'codepress-admin-columns' ); ?>">
+					<p class="description">
+						<?php _e( 'Enter your licence code to receive automatic updates.', 'codepress-admin-columns' ); ?>
+						<br/>
+						<?php printf( __( 'You can find your license key on your %s.', 'codepress-admin-columns' ), '<a href="' . ac_get_site_url( 'my-account' ) . '" target="_blank">' . __( 'account page', 'codepress-admin-columns' ) . '</a>' ); ?>
+					</p>
+
+				<?php endif; ?>
 
 			</form>
 
@@ -338,16 +393,22 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 				<?php wp_nonce_field( $this->option_key, '_wpnonce_addon_toggle_ssl' ); ?>
 
 				<p style="padding: 20px;">
-					<?php _e( 'Could not connect to admincolumns.com — You will not receive update notifications or be able to activate your license until this is fixed. This issue is often caused by an improperly configured SSL server (https). We recommend fixing the SSL configuration on your server, but if you need a quick fix you can:', 'cpac' ); ?>
+					<?php printf( __( 'Could not connect to %s — You will not receive update notifications or be able to activate your license until this is fixed. This issue is often caused by an improperly configured SSL server (https). We recommend fixing the SSL configuration on your server, but if you need a quick fix you can:', 'codepress-admin-columns' ), ac_get_site_url() ); ?>
 					<br/><br/>
 
-			<?php if ( $this->is_ssl_enabled() ) : ?>
-				<input type="hidden" name="ssl" value="0" >
-				<input type="submit" class="button" value="<?php _e( 'Disable SSL', 'cpac' ); ?>" >
-			<?php else : ?>
-				<input type="hidden" name="ssl" value="1" >
-				<input type="submit" class="button" value="<?php _e( 'Enable SSL', 'cpac' ); ?>" >
-			<?php endif; ?>
+					<?php
+					$ssl_value = 1;
+					$ssl_label = __( 'Enable SSL', 'codepress-admin-columns' );
+
+					if ( $this->is_ssl_enabled() ) {
+						$ssl_value = 0;
+						$ssl_label = __( 'Disable SSL', 'codepress-admin-columns' );
+					}
+					?>
+
+					<input type="hidden" name="ssl" value="<?php echo $ssl_value; ?>">
+					<input type="submit" class="button" value="<?php echo $ssl_label; ?>">
+
 				</p>
 			</form>
 			<?php
@@ -369,30 +430,30 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 				if ( $days_to_expiry > 0 ) {
 
 					if ( $days_to_expiry < 28 ) { // for plugin page
-						$days = sprintf( _n( '1 day', '%s days', $days_to_expiry, 'cpac' ), $days_to_expiry );
+						$days = sprintf( _n( '1 day', '%s days', $days_to_expiry, 'codepress-admin-columns' ), $days_to_expiry );
 						if ( $discount = $this->get_license_renewal_discount() ) {
 							$message = sprintf(
-							__( "Your Admin Columns Pro license will expire in %s. %s now and get a %d%% discount!", 'cpac' ),
+								__( "Your Admin Columns Pro license will expire in %s. %s now and get a %d%% discount!", 'codepress-admin-columns' ),
 								'<strong>' . $days . '</strong>',
-								'<a href="https://admincolumns.com/my-account/">' . __( 'Renew your license', 'cpac' ) . '</a>',
+								'<a href="' . ac_get_site_url( 'my-account' ) . '">' . __( 'Renew your license', 'codepress-admin-columns' ) . '</a>',
 								$discount
 							);
 						}
 
 						else {
 							$message = sprintf(
-								__( "Your Admin Columns Pro license will expire in %s. %s now and get a discount!", 'cpac' ),
+								__( "Your Admin Columns Pro license will expire in %s. %s now and get a discount!", 'codepress-admin-columns' ),
 								'<strong>' . $days . '</strong>',
-								'<a href="https://admincolumns.com/my-account/">' . __( 'Renew your license', 'cpac' ) . '</a>'
+								'<a href="' . ac_get_site_url( 'my-account' ) . '">' . __( 'Renew your license', 'codepress-admin-columns' ) . '</a>'
 							);
 						}
 					}
 				}
 				else {
 					$message = sprintf(
-						__( 'Your Admin Columns Pro license has expired on %s! Renew your license now by going to your %s.', 'cpac' ),
+						__( 'Your Admin Columns Pro license has expired on %s! Renew your license now by going to your %s.', 'codepress-admin-columns' ),
 						date_i18n( get_option( 'date_format' ), $this->get_license_expiry_date() ),
-						'<a href="https://admincolumns.com/my-account/">' . __( 'My Account page', 'cpac' ) . '</a>'
+						'<a href="' . ac_get_site_url( 'my-account' ) . '">' . __( 'My Account page', 'codepress-admin-columns' ) . '</a>'
 					);
 				}
 			}
@@ -407,47 +468,47 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 		 */
 		private function get_check_license_button() {
 
-			$check_message_success = esc_js( __( 'Your license was successfully renewed!', 'cpac' ) );
-			$check_message_error = esc_js( __( 'Your license has not been renewed yet.', 'cpac' ) );
+			$check_message_success = esc_js( __( 'Your license was successfully renewed!', 'codepress-admin-columns' ) );
+			$check_message_error = esc_js( __( 'Your license has not been renewed yet.', 'codepress-admin-columns' ) );
 			?>
-			<a href="#" class="button cpac-check-license"><?php _e( 'Check my license', 'cpac' ); ?></a>
+			<a href="#" class="button cpac-check-license"><?php _e( 'Check my license', 'codepress-admin-columns' ); ?></a>
 			<script type="text/javascript">
-				if ( typeof cpac_license_check_js == 'undefined' ) {
+				if (typeof cpac_license_check_js == 'undefined') {
 					var cpac_license_check_js = true;
 
-					jQuery( document ).ready( function( $ ) {
-						$( 'body' ).on( 'click', '.cpac-check-license', function( e ) {
-							if ( ! $( this ).hasClass( 'disabled' ) ) {
-								var el = $( this ).parents( 'p' );
+					jQuery(document).ready(function ($) {
+						$('body').on('click', '.cpac-check-license', function (e) {
+							if (!$(this).hasClass('disabled')) {
+								var el = $(this).parents('p');
 
-								if ( el.length == 0 ) {
-									el = $( this ).parents( '.update-message' );
+								if (el.length == 0) {
+									el = $(this).parents('.update-message');
 								}
 
-								$( this ).after( '<div class="spinner inline"></div>' ).show();
-								$( this ).addClass( 'disabled' );
+								$(this).after('<div class="spinner inline"></div>').show();
+								$(this).addClass('disabled');
 
-								$.post( ajaxurl, {
+								$.post(ajaxurl, {
 									'action': 'cpac_check_license_renewed'
-								}, function( data ) {
-									el.find( '.spinner' ).hide();
+								}, function (data) {
+									el.find('.spinner').hide();
 
-									if ( '1' === data ) {
+									if ('1' === data) {
 										el.parent().removeClass('error').addClass('updated');
-										el.html( '<?php echo $check_message_success; ?>' );
+										el.html('<?php echo $check_message_success; ?>');
 									}
 									else {
 										el.parent().removeClass('warning');
 										var msg = '<?php echo $check_message_error; ?> ';
-										el.find('a.cpac-check-license').replaceWith( '<strong><?php echo $check_message_error; ?></strong>' );
+										el.find('a.cpac-check-license').replaceWith('<strong><?php echo $check_message_error; ?></strong>');
 									}
 
-								} );
+								});
 							}
 
 							return false;
-						} );
-					} );
+						});
+					});
 				}
 			</script>
 			<?php
@@ -470,33 +531,37 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 								<?php echo $this->get_check_license_button(); ?>
 
 								<style type="text/css">
-								.cac-plugin-update .spinner.right {
-									display: block;
-									right: 8px;
-									text-decoration: none;
-									text-align: right;
-									position: absolute;
-									top: 50%;
-									margin-top: -10px;
-								}
-								.cac-plugin-update .spinner.inline {
-									display: inline-block;
-									position: absolute;
-									margin: 4px 0 0 4px;
-									padding: 0;
-									float: none;
-								}
-								.plugin-update-tr .cac-plugin-update {
-									border-left: 4px solid #2EA2CC;
-								}
-								.plugin-update-tr .cac-plugin-update .update-message {
-									margin-top: 6px;
-									line-height: 28px;
-								}
-								.plugin-update-tr .cac-plugin-update .update-message:before {
-									content: "\f348";
-									margin-top: 3px;
-								}
+									.cac-plugin-update .spinner.right {
+										display: block;
+										right: 8px;
+										text-decoration: none;
+										text-align: right;
+										position: absolute;
+										top: 50%;
+										margin-top: -10px;
+									}
+
+									.cac-plugin-update .spinner.inline {
+										display: inline-block;
+										position: absolute;
+										margin: 4px 0 0 4px;
+										padding: 0;
+										float: none;
+									}
+
+									.plugin-update-tr .cac-plugin-update {
+										border-left: 4px solid #2EA2CC;
+									}
+
+									.plugin-update-tr .cac-plugin-update .update-message {
+										margin-top: 6px;
+										line-height: 28px;
+									}
+
+									.plugin-update-tr .cac-plugin-update .update-message:before {
+										content: "\f348";
+										margin-top: 3px;
+									}
 								</style>
 							</div>
 						</td>
@@ -509,11 +574,20 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 			else {
 				$plugin_details = $this->get_plugin_details();
 
-				$message = __( 'To finish activating Admin Columns Pro, please ', 'cpac' );
+				$message = __( 'To finish activating Admin Columns Pro, please ', 'codepress-admin-columns' );
 				if ( isset( $plugin_details->version ) && version_compare( $this->get_version(), $plugin_details->version, '<' ) ) {
-					$message = __( 'To update, ', 'cpac' );
+					$message = __( 'To update, ', 'codepress-admin-columns' );
 				}
-				$message .= sprintf( __( 'go to %s and enter your licence key. If you don\'t have a licence key, you may <a href="%s" target="_blank">purchase one</a>.', 'cpac' ), sprintf( '<a href="%s">%s</a>', admin_url( 'options-general.php?page=codepress-admin-columns&tab=settings' ), __( 'Settings', 'cpac' ) ), 'https://www.admincolumns.com/' );
+
+				$message .= sprintf(
+					__( "go to %s and enter your licence key. If you don't have a licence key, you may <a href='%s' target='_blank'>purchase one</a>.", 'codepress-admin-columns' ),
+					sprintf(
+						'<a href="%s">%s</a>',
+						$this->get_license_page_url(),
+						__( 'Settings', 'codepress-admin-columns' )
+					),
+					ac_get_site_url()
+				);
 
 				?>
 				<tr class="plugin-update-tr">
@@ -523,15 +597,17 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 							<?php echo $message; ?>
 
 							<style type="text/css">
-							.plugin-update-tr .cac-plugin-update {
-								border-left: 4px solid #2EA2CC;
-							}
-							.plugin-update-tr .cac-plugin-update .update-message {
-								margin-top: 6px;
-							}
-							.plugin-update-tr .cac-plugin-update .update-message:before {
-								content: "\f348";
-							}
+								.plugin-update-tr .cac-plugin-update {
+									border-left: 4px solid #2EA2CC;
+								}
+
+								.plugin-update-tr .cac-plugin-update .update-message {
+									margin-top: 6px;
+								}
+
+								.plugin-update-tr .cac-plugin-update .update-message:before {
+									content: "\f348";
+								}
 							</style>
 						</div>
 					</td>
@@ -564,7 +640,7 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 			 *
 			 * @param bool $hide Whether to hide the renewal notice. Defaults to false.
 			 */
-			if ( apply_filters( 'cac/hide_renewal_notice', false ) ) {
+			if ( apply_filters( 'cac/hide_renewal_notice', false ) || cpac()->suppress_site_wide_notices() ) {
 				return;
 			}
 
@@ -619,9 +695,11 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 							position: relative;
 							padding-right: 40px;
 						}
+
 						.cpac_message.error.warning {
 							border-left: 4px solid #ffba00;
 						}
+
 						.cpac_message .spinner.right {
 							display: block;
 							right: 8px;
@@ -631,6 +709,7 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 							top: 50%;
 							margin-top: -10px;
 						}
+
 						.cpac_message .spinner.inline {
 							display: inline-block;
 							position: absolute;
@@ -638,6 +717,7 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 							padding: 0;
 							float: none;
 						}
+
 						.cpac_message .hide-notice {
 							right: 8px;
 							text-decoration: none;
@@ -648,6 +728,7 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 							height: 32px;
 							margin-top: -16px;
 						}
+
 						.cpac_message .hide-notice:before {
 							display: block;
 							content: '\f335';
@@ -658,25 +739,25 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 					</style>
 
 					<script type="text/javascript">
-						jQuery( function( $ ) {
-							$( document ).ready( function() {
-								$( '.cpac_message .hide-notice' ).click( function( e ) {
-									var el = $( this ).parents( '.cpac_message' );
+						jQuery(function ($) {
+							$(document).ready(function () {
+								$('.cpac_message .hide-notice').click(function (e) {
+									var el = $(this).parents('.cpac_message');
 
-									$( this ).after( '<div class="spinner right"></div>' ).show();
-									$( this ).hide();
+									$(this).after('<div class="spinner right"></div>').show();
+									$(this).hide();
 
-									$.post( ajaxurl, {
+									$.post(ajaxurl, {
 										'action': 'cpac_hide_license_expiry_notice'
-									}, function( data ) {
-										el.find( '.spinner' ).hide();
+									}, function (data) {
+										el.find('.spinner').hide();
 										el.slideUp();
-									} );
+									});
 
 									return false;
-								} );
-							} );
-						} );
+								});
+							});
+						});
 					</script>
 				</div>
 				<?php
@@ -687,6 +768,7 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 
 			return array( 0, 7, 21 );
 		}
+
 		/**
 		 * Handle an AJAX request for hiding license expiry notices
 		 *
@@ -710,7 +792,7 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 
 				$new_phase = $phase - 1;
 
-				if ( $new_phase == -1 ) {
+				if ( $new_phase == - 1 ) {
 					update_user_meta( get_current_user_id(), 'cpac_hide_license_notice_timeout', 0 );
 					update_user_meta( get_current_user_id(), 'cpac_hide_license_notice_phase', 'completed' );
 				}
@@ -732,11 +814,12 @@ if ( ! class_exists( 'Codepress_Licence_Manager_Settings' ) ) {
 		 *
 		 * @param  array $plugin_data
 		 * @param  object $r
+		 *
 		 * @return void
 		 */
-		public function need_license_message ( $plugin_data, $r ) {
+		public function need_license_message( $plugin_data, $r ) {
 			if ( empty( $r->package ) ) {
-				printf( ' ' . __( "To enable updates for this product, please <a href='%s'>activate your license</a>.", 'cpac' ), $this->cpac->settings()->get_settings_url('settings') );
+				printf( ' ' . __( "To enable updates for this product, please <a href='%s'>activate your license</a>.", 'codepress-admin-columns' ), $this->cpac->settings()->get_settings_url( 'settings' ) );
 			}
 		}
 	}

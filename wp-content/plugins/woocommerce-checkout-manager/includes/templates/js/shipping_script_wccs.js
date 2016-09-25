@@ -87,15 +87,19 @@ jQuery(document).ready( function() {
 	});
 
 	// Remove button
-	jQuery('.shipping-wccs-table .shipping-wccs-remove-button').live('click', function(){
+	jQuery('.shipping-wccs-table .shipping-wccs-remove-button').live('click', function(e){
+
 		var shippingdiv = jQuery('.shipping-wccs-table'),
-			tr = jQuery(this).closest('tr');
+		tr = jQuery(this).closest('tr');
+		e.preventDefault();
+		var choice = confirm( 'Are you sure you want to delete this Checkout field?' );
+		if( choice ) {
+			tr.animate({'left' : '50px', 'opacity' : 0}, 250, function(){
+				tr.remove();
+				shipping_update_order_numbers(shippingdiv);
+			});
+			return false;
+		}
 
-		tr.animate({'left' : '50px', 'opacity' : 0}, 250, function(){
-			tr.remove();
-			shipping_update_order_numbers(shippingdiv);
-		});
-
-		return false;
 	});
 });

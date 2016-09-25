@@ -88,15 +88,19 @@ jQuery(document).ready( function() {
 	});
 
 	// Remove button
-	jQuery('.billing-wccs-table .billing-wccs-remove-button').live('click', function(){
+	jQuery('.billing-wccs-table .billing-wccs-remove-button').live('click', function(e){
+
 		var billingdiv = jQuery('.billing-wccs-table'),
-			tr = jQuery(this).closest('tr');
+		tr = jQuery(this).closest('tr');
+		e.preventDefault();
+		var choice = confirm( 'Are you sure you want to delete this Checkout field?' );
+		if( choice ) {
+			tr.animate({'left' : '50px', 'opacity' : 0}, 250, function(){
+				tr.remove();
+				billing_update_order_numbers(billingdiv);
+			});
+			return false;
+		}
 
-		tr.animate({'left' : '50px', 'opacity' : 0}, 250, function(){
-			tr.remove();
-			billing_update_order_numbers(billingdiv);
-		});
-
-		return false;
 	});
 });

@@ -1,28 +1,27 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit when accessed directly
+defined( 'ABSPATH' ) or die();
 
 /**
  * @since 1.0
  */
-class CPAC_WC_Column_Post_Product_Thumbnails extends CPAC_Column {
+class CPAC_WC_Column_Post_Product_Thumbnails extends CPAC_WC_Column {
 
 	/**
 	 * @see CPAC_Column::init()
 	 * @since 1.0
 	 */
 	public function init() {
-
 		parent::init();
 
 		// Properties
-		$this->properties['type']	= 'column-wc-product_thumbnails';
-		$this->properties['label']	= __( 'Product Thumbnails', 'cpac' );
-		$this->properties['group']	= 'woocommerce-custom';
+		$this->properties['type'] = 'column-wc-product_thumbnails';
+		$this->properties['label'] = __( 'Product Thumbnails', 'woocommerce' );
+
 
 		// Options
-		$this->options['image_size']	= '';
-		$this->options['image_size_w']	= 80;
-		$this->options['image_size_h']	= 80;
+		$this->options['image_size'] = '';
+		$this->options['image_size_w'] = 80;
+		$this->options['image_size_h'] = 80;
 	}
 
 	/**
@@ -76,7 +75,6 @@ class CPAC_WC_Column_Post_Product_Thumbnails extends CPAC_Column {
 	 * @since 2.0
 	 */
 	public function display_settings() {
-
 		$this->display_field_preview_size();
 	}
 }

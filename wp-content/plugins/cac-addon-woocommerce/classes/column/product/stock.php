@@ -1,10 +1,10 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit when accessed directly
+defined( 'ABSPATH' ) or die();
 
 /**
  * @since 1.1
  */
-class CPAC_WC_Column_Post_Stock extends CPAC_Column_Default {
+class CPAC_WC_Column_Post_Stock extends CPAC_WC_Column_Default {
 
 	/**
 	 * @see CPAC_Column::init()
@@ -15,9 +15,8 @@ class CPAC_WC_Column_Post_Stock extends CPAC_Column_Default {
 		parent::init();
 
 		// define properties
-		$this->properties['type']	= 'is_in_stock';
-		$this->properties['label']	= __( 'Stock', 'cpac' );
-		$this->properties['group']	= 'woocommerce-default';
+		$this->properties['type'] = 'is_in_stock';
+		$this->properties['label'] = __( 'Stock', 'woocommerce' );
 		$this->properties['handle'] = 'is_in_stock';
 	}
 
@@ -26,8 +25,7 @@ class CPAC_WC_Column_Post_Stock extends CPAC_Column_Default {
 	 * @since 1.1
 	 */
 	public function get_raw_value( $post_id ) {
-
-		$product = get_product( $post_id );
+		$product = wc_get_product( $post_id );
 
 		if ( $product->is_type( 'variable', 'grouped', 'external' ) ) {
 			return;

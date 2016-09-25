@@ -130,40 +130,40 @@ if( isset( $_FILES['general-import'] ) && check_admin_referer( 'ie-import' ) ) {
 <form method='post' class='import_form' enctype='multipart/form-data'>
 
 	<?php wp_nonce_field('ie-import'); ?>
-	<input type="button" class="button button-hero button-secondary import tap_dat12" value="Import" />
+	<input type="button" id="wccs_import_submit" class="button button-hero button-secondary import" value="Import" />
 
 	<div id="wp-auth-check-wrap" class="click_showWccm" style="display:none;">
 		<div id="wp-auth-check-bg"></div>
 		<div id="wp-auth-check" style="max-height: 700px;">
 		<div class="wp-auth-check-close" tabindex="0" title="Close"></div>
 		<div class="updated">
-			<h3>Field Data Import</h3>
+			<h3><?php _e( 'Field Data Import', 'woocommerce-checkout-manager' ); ?></h3>
 			<p>
-				Import General Settings or new Billing, Shipping or Additional fields exported from the WooCheckout > Export screen back into WooCheckout.<br /><br />
+				<?php _e( 'Import General Settings or new Billing, Shipping or Additional fields exported from the WooCheckout > Export screen back into WooCheckout.' ); ?><br /><br />
 				<span class="make_smalla">Max Upload Size: <?php echo size_format( wp_max_upload_size() ); ?> <br /></span>
 			</p>
 		</div>
 		<div class="updated jellow">
 			<p>
-				<span class="heading_smalla">General Settings<br></span>
+				<span class="heading_smalla"><?php _e( 'General Settings', 'woocommerce-checkout-manager'); ?><br></span>
 				<input type="file" name="general-import" class="wccm_importer" />
 				<input type="submit" class="button button-primary wccm_importer_submit" name="submit" value="<?php _e('Import CSV', 'woocommerce-checkout-manager'); ?>" />
 			</p>
 			<hr />
 			<p>
-				<span class="heading_smalla">Billing fields</span>
+				<span class="heading_smalla"><?php _e( 'Billing fields', 'woocommerce-checkout-manager'); ?></span>
 				<input type="file" name="billing-import" class="wccm_importer" />
 				<input type="submit" class="button button-primary wccm_importer_submit" name="submit" value="<?php _e('Import CSV', 'woocommerce-checkout-manager'); ?>" />
 			</p>
 			<hr />
 			<p>
-				<span class="heading_smalla">Shipping fields</span>
+				<span class="heading_smalla"><?php _e( 'Shipping fields', 'woocommerce-checkout-manager'); ?></span>
 				<input type="file" name="shipping-import" class="wccm_importer" />
 				<input type="submit" class="button button-primary wccm_importer_submit" name="submit" value="<?php _e('Import CSV', 'woocommerce-checkout-manager'); ?>" />
 			</p>
 			<hr />
 			<p>
-				<span class="heading_smalla">Additional fields</span>
+				<span class="heading_smalla"><?php _e( 'Additional fields', 'woocommerce-checkout-manager'); ?></span>
 				<input type="file" name="import" class="wccm_importer" />
 				<input type="submit" class="button button-primary wccm_importer_submit" name="submit" value="<?php _e('Import CSV', 'woocommerce-checkout-manager'); ?>" />
 			</p>
@@ -179,7 +179,7 @@ if( isset( $_FILES['general-import'] ) && check_admin_referer( 'ie-import' ) ) {
 <script type="text/javascript">
 jQuery(document).ready(function() {
 
-	jQuery('.import.tap_dat12').click(function() {
+	jQuery('#wccs_import_submit').click(function() {
 		jQuery('#wp-auth-check-wrap').slideToggle('slow');
 	});
 

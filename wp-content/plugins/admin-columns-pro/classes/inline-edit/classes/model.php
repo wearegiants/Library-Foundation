@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Storage model for editability
  * This class can be extended for different storage models, such as post, user and taxonomy storage models
@@ -16,13 +17,6 @@ abstract class CACIE_Editable_Model {
 	 * @access protected
 	 */
 	public $storage_model;
-
-	/**
-	 * Enable inline edit for Custom Fields
-	 *
-	 * @since 3.1.2
-	 */
-	protected $is_custom_field_editable;
 
 	/**
 	 * Get default properties of editability of column types
@@ -48,7 +42,7 @@ abstract class CACIE_Editable_Model {
 	 * @param CPAC_Column $column Column object instance
 	 * @param mixed $value Value to be saved
 	 */
-	abstract function column_save( $id, $column, $value );
+	abstract public function column_save( $id, $column, $value );
 
 	/**
 	 * Get the available items on the current page for passing them to JS
@@ -58,7 +52,7 @@ abstract class CACIE_Editable_Model {
 	 *
 	 * @return array Items on the current page ([entry_id] => (array) [entry_data])
 	 */
-	abstract function get_items();
+	abstract public function get_items();
 
 	/**
 	 * Output value for WP default column
@@ -72,6 +66,11 @@ abstract class CACIE_Editable_Model {
 	abstract function manage_value( $column, $id );
 
 	/**
+	 * @since 3.6.1
+	 */
+	abstract function get_ajax_options( $column, $search );
+
+	/**
 	 * Constructor
 	 *
 	 * @since 1.0
@@ -79,55 +78,103 @@ abstract class CACIE_Editable_Model {
 	 * @param CPAC_Storage_Model $storage_model Main storage model class instance
 	 */
 	function __construct( $storage_model ) {
-
 		$this->storage_model = $storage_model;
+	}
 
-		$this->is_custom_field_editable = $this->storage_model->get_general_option( 'custom_field_editable' );
+	/**
+	 * @since 3.7
+	 */
+	public function is_custom_field_editable() {
+		return $this->storage_model->get_general_option( 'custom_field_editable' );
+	}
 
-		// Enable inline edit per column
-		add_action( "cac/columns/storage_key={$this->storage_model->key}", array( $this, 'enable_inlineedit' ) );
+	/**
+	 * Check whether a column is editable
+	 *
+	 * @since 1.0
+	 *
+	 * @param array $column Column options
+	 *
+	 * @return bool Whether the column is editable
+	 */
+	public function is_editable( $column ) {
+		$is_editable = false;
 
-		// Add columns to javascript
-		add_action( 'admin_enqueue_scripts', array( $this, 'scripts' ), 20 );
+		switch ( $column->get_type() ) {
 
-		// Save column value from inline edit
-		add_action( 'wp_ajax_cacie_column_save', array( $this, 'ajax_column_save' ) );
+			// ACF
+			case 'column-acf_field':
+				if ( method_exists( $column, 'get_field' ) ) {
+					switch ( $column->get_field_type() ) {
+						case 'checkbox':
+						case 'color_picker':
 
-		// Save user preference of the edititability state
-		add_action( 'wp_ajax_cacie_editability_state_save', array( $this, 'ajax_editability_state_save' ) );
+							//case 'date_time_picker':
+						case 'email':
+						case 'file':
+						case 'gallery':
+							//case 'google_map':
+						case 'image':
+							//case 'message':
+						case 'number':
+						case 'oembed':
+						case 'page_link':
+						case 'password':
+						case 'post_object':
+						case 'radio':
+							//case 'relationship':
+							//case 'repeater':
+						case 'select':
+						case 'taxonomy':
+						case 'text':
+						case 'textarea':
+						case 'true_false':
+						case 'url':
+						case 'user':
+						case 'wysiwyg':
+							$is_editable = true;
+							break;
+						case 'date_picker':
+							$is_editable = true;
+							$field = $column->get_field();
+							if ( isset( $field['date_format'] ) && 'yymmdd' != $field['date_format'] ) {
+								$is_editable = false;
+							}
 
-		// Get options for editable field by ajax
-		add_action( 'wp_ajax_cacie_get_options', array( $this, 'ajax_get_options' ) );
+					}
+				}
+				break;
+
+			// Custom Fields
+			case 'column-meta':
+				if ( $this->is_custom_field_editable() ) {
+					switch ( $column->get_option( 'field_type' ) ) {
+						case '' :
+						case 'checkmark' :
+						case 'color' :
+						case 'date' :
+						case 'excerpt' :
+						case 'image' :
+						case 'link' :
+						case 'library_id' :
+						case 'numeric' :
+						case 'title_by_id' :
+						case 'user_by_id' :
+							$is_editable = true;
+							break;
+					}
+				}
+				break;
+		}
+
+		return $is_editable;
 	}
 
 	/**
 	 * @since 3.5
 	 */
-	protected function get_list_selector() {
+	public function get_list_selector() {
 		return '#the-list';
-	}
-
-	/**
-	 * Admin scripts
-	 *
-	 * @since 1.0
-	 */
-	public function scripts() {
-
-		if ( ! $this->storage_model->is_columns_screen() ) {
-			return;
-		}
-
-		// Allow JS to access the column and item data for this storage model on the edit page
-		wp_localize_script( 'cacie-admin-edit', 'CACIE_List_Selector', $this->get_list_selector() );
-		wp_localize_script( 'cacie-admin-edit', 'CACIE_Storage_Model', $this->storage_model->key );
-		wp_localize_script( 'cacie-admin-edit', 'CACIE_Columns', $this->get_columns() );
-		wp_localize_script( 'cacie-admin-edit', 'CACIE_Items', $this->get_items() );
-		wp_localize_script( 'cacie-admin-edit', 'CACIE', array(
-			'inline_edit' => array(
-				'active' => $this->get_editability_preference()
-			)
-		) );
 	}
 
 	/**
@@ -141,6 +188,7 @@ abstract class CACIE_Editable_Model {
 	 * @uses WP_Query
 	 *
 	 * @param array $query_args Additional query arguments for WP_Query
+	 *
 	 * @return array List of options, grouped by posttype
 	 */
 	public function get_posts_options( $query_args = array() ) {
@@ -149,21 +197,30 @@ abstract class CACIE_Editable_Model {
 
 		$args = wp_parse_args( $query_args, array(
 			'posts_per_page' => 100, // max 100 records in case we get a very large db
-			'post_type' => 'any',
-			'orderby' => 'title',
-			'order' => 'ASC'
+			'post_type'      => 'any',
+			'orderby'        => 'title',
+			'order'          => 'ASC',
 		) );
+
+		$processed = array();
 
 		if ( $posts = get_posts( $args ) ) {
 			foreach ( $posts as $post ) {
 				if ( ! isset( $options[ $post->post_type ] ) ) {
 					$options[ $post->post_type ] = array(
-						'label' => $post->post_type,
-						'options' => array()
+						'label'   => $post->post_type,
+						'options' => array(),
 					);
 				}
 
-				$options[ $post->post_type ]['options'][ $post->ID ] = $post->post_title;
+				$label = $post->post_title;
+				if ( in_array( $label, $processed ) ) {
+					$label .= ' - #' . $post->ID;
+				}
+
+				$options[ $post->post_type ]['options'][ $post->ID ] = $label;
+
+				$processed[] = $label;
 			}
 		}
 
@@ -181,10 +238,11 @@ abstract class CACIE_Editable_Model {
 	 * @uses WP_User_Query
 	 *
 	 * @param array $query_args Additional query arguments for WP_User_query
-	 * @param object $column_object CPAC_Column object
+	 * @param string $display Display format
+	 *
 	 * @return array List of options, grouped by author role
 	 */
-	public function get_users_options( $query_args = array(), $column_object = null ) {
+	public function get_users_options( $query_args = array(), $display_format = array( 'display_name' ) ) {
 
 		global $wp_roles;
 
@@ -192,7 +250,7 @@ abstract class CACIE_Editable_Model {
 
 		$query_args = wp_parse_args( $query_args, array(
 			'orderby' => 'display_name',
-			'number' => 100 // max 100 records in case we get a very large db
+			'number'  => 100 // max 100 records in case we get a very large db
 		) );
 
 		if ( isset( $query_args['search'] ) && ! isset( $query_args['search_columns'] ) ) {
@@ -204,224 +262,35 @@ abstract class CACIE_Editable_Model {
 		$users = $users_query->get_results();
 
 		// Get roles
-        $roles = $wp_roles->roles;
+		$roles = $wp_roles->roles;
 
 		// Generate options by grouping users by role
 		foreach ( $users as $user ) {
 			$role = CACIE_Roles::get_user_role( $user->ID );
 
-			// User name
-			$name = $user->display_name;
-
-			// If the column is an author name column, we use the name format set in the column
-			// instead of the normal display name
-			if ( is_a( $column_object, 'CPAC_Column_Post_Author_Name' ) ) {
-				$name = $column_object->get_display_name( $user->ID );
-			}
-
 			if ( ! isset( $options[ $role ] ) ) {
 				$options[ $role ] = array(
-					'label' => translate_user_role( $roles[ $role ]['name'] ),
-					'options' => array()
+					'label'   => translate_user_role( $roles[ $role ]['name'] ),
+					'options' => array(),
 				);
 			}
 
-			$options[ $role ]['options'][ $user->ID ] = esc_attr( $name );
+			// Display format
+			$names = array();
+			foreach ( $display_format as $field ) {
+				if ( ! empty( $user->{$field} ) ) {
+					$names[] = $user->{$field};
+				}
+			}
+
+			if ( empty( $names ) ) {
+				$names = array( $user->display_name );
+			}
+
+			$options[ $role ]['options'][ $user->ID ] = esc_attr( implode( ' ', $names ) ) . ' (' . $user->ID . ')';
 		}
 
 		return $options;
-	}
-
-	/**
-	 * AJAX callback for retrieving options for a column
-	 * Results can be formatted in two ways: an array of options ([value] => [label]) or
-	 * an array of option groups ([group key] => [group]) with [group] being an array with
-	 * two keys: label (the label displayed for the group) and options (an array ([value] => [label])
-	 * of options)
-	 *
-	 * @since 1.0
-	 *
-	 * @return array List of options, possibly grouped
-	 */
-	public function ajax_get_options() {
-
-		if ( $this->storage_model->key != $_REQUEST['storage_model'] ) {
-			return;
-		}
-
-		$options = array();
-
-		if ( empty( $_GET['column'] ) ) {
-			wp_send_json_error( __( 'Invalid request.', 'cpac' ) );
-		}
-
-		$column = $this->storage_model->get_column_by_name( $_GET['column'] );
-
-		if ( empty( $column ) ) {
-			wp_send_json_error( __( 'Invalid column.', 'cpac' ) );
-		}
-
-		$search = isset( $_GET['searchterm'] ) ? $_GET['searchterm'] : '';
-
-		// Custom Field
-		if ( 'column-meta' == $column->properties->type ) {
-
-			switch ( $column->options->field_type ) {
-				case 'title_by_id':
-					$options = $this->get_posts_options( array( 's' => $search ) );
-					break;
-
-				case 'user_by_id':
-					$options = $this->get_users_options( array(
-						'search' => '*' . $search . '*'
-					) );
-					break;
-			}
-		}
-
-		// ACF
-		else if ( 'column-acf_field' == $column->properties->type ) {
-
-			switch ( $column->get_field_type() ) {
-				case 'page_link':
-				case 'post_object':
-
-					// ACF 5
-					if ( function_exists( 'acf_get_setting' ) ) {
-						$field = ( $column->get_field_type() == 'post_object' ) ? new acf_field_post_object() : new acf_field_page_link();
-						$choices = $field->get_choices( array(
-							's' => $search,
-							'field_key' => $column->get_field_key(),
-							'post_id' => $_GET['item_id']
-						) );
-
-						$options = array();
-
-						foreach ( $choices as $choice ) {
-							if ( ! isset( $choice['id'] ) ) {
-								$options[ $choice['text'] ] = array(
-									'label' => $choice['text'],
-									'options' => array()
-								);
-
-								foreach ( $choice['children'] as $subchoice ) {
-									$options[ $choice['text'] ]['options'][ $subchoice['id'] ] = $subchoice['text'];
-								}
-							}
-							else {
-								$options[ $choice['id'] ] = $choice['text'];
-							}
-						}
-					}
-
-					// ACF 4
-					else {
-						$field = $column->get_field();
-
-						$post_type = 'any';
-						if ( ! empty( $field['post_type'] ) ) {
-							$post_type = $field['post_type'];
-						}
-
-						$options = $this->get_posts_options( array( 's' => $search, 'post_type' => $post_type ) );
-					}
-
-					break;
-				case 'user':
-					if ( function_exists( 'acf_get_setting' ) ) {
-
-						$field = new acf_field_user();
-						$choices = $field->get_choices( array(
-							's' => $search,
-							'field_key' => $column->get_field_key(),
-							'post_id' => $_GET['item_id']
-						) );
-
-						$options = array();
-
-						foreach ( $choices as $choice ) {
-							if ( ! isset( $choice['id'] ) ) {
-								$options[ $choice['text'] ] = array(
-									'label' => $choice['text'],
-									'options' => array()
-								);
-
-								foreach ( $choice['children'] as $subchoice ) {
-									$options[ $choice['text'] ]['options'][ $subchoice['id'] ] = $subchoice['text'];
-								}
-							}
-							else {
-								$options[ $choice['id'] ] = $choice['text'];
-							}
-						}
-
-					}
-					else {
-						$options = $this->get_users_options( array(
-							'search' => '*' . $search . '*'
-						) );
-					}
-
-					break;
-			}
-		}
-
-		// Author
-		else if ( in_array( $column->properties->type, array(
-			'author',
-			'column-author_name',
-			'column-user' // comment column
-			) ) ) {
-			$options = $this->get_users_options( array(
-				'search' => '*' . $search . '*'
-			) );
-		}
-
-		// Post parent
-		else if ( $column->properties->type == 'column-parent' ) {
-			$options = $this->get_posts_options( array( 's' => $search, 'post_type' => $column->get_post_type() ) );
-		}
-
-		// WooCommerce: Upsells
-		// WooCommerce: Crosssells
-		// WooCommerce: Included Products
-		// WooCommerce: Excluded Products
-		else if ( in_array( $column->properties->type, array( 'column-wc-upsells', 'column-wc-crosssells', 'column-wc-exclude_products', 'column-wc-include_products' ) ) ) {
-			$args = array(
-				'post_type'			=> 'product',
-				'post_status' 		=> 'publish',
-				'posts_per_page' 	=> -1,
-				's' 				=> $search,
-				'fields'			=> 'ids',
-				'posts_per_page'	=> 100
-			);
-
-			$args2 = array(
-				'post_type'			=> 'product',
-				'post_status' 		=> 'publish',
-				'posts_per_page' 	=> -1,
-				'meta_query' 		=> array(
-					array(
-						'key' 	=> '_sku',
-						'value' => $search,
-						'compare' => 'LIKE'
-					)
-				),
-				'fields'			=> 'ids',
-				'posts_per_page'	=> 100
-			);
-
-			$posts = array_unique( array_merge( get_posts( $args ), get_posts( $args2 ) ) );
-
-			$options = array();
-
-			foreach ( $posts as $post ) {
-				$product = get_product( $post );
-				$options[ $post ] = $product->get_formatted_name();
-			}
-		}
-
-		wp_send_json_success( $this->format_options( $options ) );
 	}
 
 	/**
@@ -466,13 +335,120 @@ abstract class CACIE_Editable_Model {
 	 * @since 1.1
 	 *
 	 * @param object CPAC_Column
+	 *
 	 * @return bool
 	 */
 	public function is_edit_enabled( $column ) {
-		if ( ! isset( $column->properties->is_editable ) || ! $column->properties->is_editable || ! isset( $column->options ) || ! isset( $column->options->edit ) || $column->options->edit != 'on' ) {
-			return false;
+		return ( 'on' == $column->get_option( 'edit' ) ) && ac_editable()->is_editable( $column );
+	}
+
+	/**
+	 * Settings based on ACF field type
+	 * @since 3.6
+	 */
+	private function get_acf_editable_settings_by_field( $field ) {
+		$editable = array();
+
+		switch ( $field['type'] ) {
+			case 'checkbox':
+				$editable['type'] = 'checklist';
+				break;
+			case 'color_picker':
+				$editable['type'] = 'text';
+				break;
+			case 'date_picker':
+				$editable['type'] = 'date';
+				break;
+			case 'email':
+				$editable['type'] = 'email';
+				break;
+			case 'file':
+				// @todo Implement "attachment" type
+				$editable['type'] = 'attachment';
+
+				if ( empty( $field['required'] ) ) {
+					$editable['clear_button'] = true;
+				}
+				break;
+			case 'gallery':
+				$editable['type'] = 'media';
+				$editable['multiple'] = true;
+				$editable['attachment']['disable_select_current'] = true;
+				break;
+			case 'image':
+				$editable['type'] = 'media';
+				$editable['attachment']['library']['type'] = 'image';
+
+				if ( empty( $field['required'] ) ) {
+					$editable['clear_button'] = true;
+				}
+
+				break;
+			case 'number':
+				$editable['type'] = 'number';
+				$editable['range_step'] = 'any';
+				break;
+			case 'oembed':
+				$editable['type'] = 'text';
+				break;
+			case 'taxonomy':
+				$editable['type'] = 'select';
+				$editable['advanced_dropdown'] = true;
+				break;
+			case 'page_link':
+			case 'post_object':
+				if ( ! function_exists( 'acf_get_setting' ) || version_compare( acf_get_setting( 'version' ), '5.1.0' ) >= 0 ) {
+					$editable['type'] = 'select2_dropdown';
+					$editable['ajax_populate'] = true;
+					$editable['advanced_dropdown'] = true;
+					$editable['formatted_value'] = 'post';
+				}
+
+				if ( $field['multiple'] == 0 && $field['allow_null'] == 1 ) {
+					$editable['clear_button'] = true;
+				}
+				break;
+			case 'password':
+				$editable['type'] = 'password';
+				break;
+			case 'radio':
+				$editable['type'] = 'select';
+				break;
+			case 'select':
+				$editable['type'] = 'select';
+				$editable['advanced_dropdown'] = true;
+
+				if ( $field['multiple'] == 0 && $field['allow_null'] == 1 ) {
+					$editable['clear_button'] = true;
+				}
+				break;
+			case 'text':
+				$editable['type'] = 'text';
+				break;
+			case 'textarea':
+				$editable['type'] = 'textarea';
+				break;
+			case 'true_false':
+				$editable['type'] = 'togglable';
+				$editable['options'] = array( '0', '1' );
+				break;
+			case 'url':
+				$editable['type'] = 'url';
+				break;
+			case 'user':
+				if ( ! function_exists( 'acf_get_setting' ) || version_compare( acf_get_setting( 'version' ), '5.1.0' ) >= 0 ) {
+					$editable['type'] = 'select2_dropdown';
+					$editable['ajax_populate'] = true;
+					$editable['advanced_dropdown'] = true;
+					$editable['formatted_value'] = 'user';
+				}
+				break;
+			case 'wysiwyg':
+				$editable['type'] = 'textarea';
+				break;
 		}
-		return true;
+
+		return $editable;
 	}
 
 	/**
@@ -483,6 +459,7 @@ abstract class CACIE_Editable_Model {
 	 * @since 1.0
 	 *
 	 * @param array|string $column Column options or column name. In case a column name is provided, the column object is fetched based on the name
+	 *
 	 * @return bool|array Returns false if the column is not editable, an array with editability settings otherwise
 	 */
 	public function get_editable( $column ) {
@@ -508,213 +485,140 @@ abstract class CACIE_Editable_Model {
 		$editable = ! empty( $editables[ $column['type'] ] ) ? $editables[ $column['type'] ] : array();
 
 		// ACF Field
-		if ( 'column-acf_field' == $column['type'] ) {
+		switch ( $column['type'] ) {
 
-			// make sure acf and the add-on are still active...
-			if ( ! function_exists( 'acf' ) || ! function_exists( 'cpac_get_acf_field' ) ) {
-				return false;
-			}
+			// ACF Field
+			case 'column-acf_field' :
 
-			// Load field settings from ACF
-			if ( $field = cpac_get_acf_field( $column['field'] ) ) {
-				// Repeaters should ese subfield as field
-				/*
-				if ( 'repeater' == $field['type'] ) {
-					if ( ! empty( $field['sub_fields'] ) ) {
-						foreach ( $field['sub_fields'] as $sub_field ) {
-							if ( $sub_field['key'] === $column['sub_field'] ) {
-								$field = $sub_field;
+				// make sure acf and the add-on are still active...
+				if ( ! function_exists( 'acf' ) || ! function_exists( 'cpac_get_acf_field' ) ) {
+					return false;
+				}
+
+				// Load field settings from ACF
+				if ( $field = cpac_get_acf_field( $column['field'] ) ) {
+
+					$editable['advanced_dropdown'] = false;
+
+					// add acf editable settings
+					$editable = array_merge( $editable, $this->get_acf_editable_settings_by_field( $field ) );
+
+					// Create an advanced dropdown menu
+					if ( $editable['advanced_dropdown'] ) {
+						if ( ! empty( $field['multiple'] ) || ( ! empty( $field['field_type'] ) && in_array( $field['field_type'], array( 'checkbox', 'multi_select' ) ) ) ) {
+							$editable['type'] = 'select2_dropdown';
+							$editable['multiple'] = true;
+						}
+						else {
+							if ( ! empty( $field['allow_null'] ) ) {
+								if ( $field['type'] == 'taxonomy' ) {
+									$option_null = array(
+										'' => __( 'None' ),
+									);
+								}
+								else {
+									$option_null = array(
+										'null' => __( '- Select -', 'codepress-admin-columns' ),
+									);
+								}
+
+								if ( ! isset( $editable['options'] ) || ! is_array( $editable['options'] ) ) {
+									$editable['options'] = array();
+								}
+
+								$editable['options'] = $option_null + $editable['options'];
 							}
 						}
 					}
+
+					if ( ! empty( $field['required'] ) ) {
+						$editable['required'] = true;
+					}
+
+					if ( ! empty( $field['placeholder'] ) ) {
+						$editable['placeholder'] = $field['placeholder'];
+					}
+
+					if ( ! empty( $field['maxlength'] ) ) {
+						$editable['maxlength'] = $field['maxlength'];
+					}
+
+					if ( ! empty( $field['min'] ) ) {
+						$editable['range_min'] = $field['min'];
+					}
+
+					if ( ! empty( $field['max'] ) ) {
+						$editable['range_max'] = $field['max'];
+					}
+
+					if ( ! empty( $field['step'] ) ) {
+						$editable['range_step'] = $field['step'];
+					}
+
+					if ( ! empty( $field['library'] ) ) {
+						if ( $field['library'] == 'uploadedTo' ) {
+							$editable['attachment']['library']['uploaded_to_post'] = true;
+						}
+					}
+
+					if ( empty( $field['ajax_populate'] ) ) {
+						// Options from ACF
+						$fieldoptions = new CACIE_ACF_FieldOptions();
+						$options = $fieldoptions->get_field_options( $field );
+
+						if ( $options !== false ) {
+							$editable['options'] = $options;
+						}
+					}
 				}
-				*/
+				break;
 
-				$editable['advanced_dropdown'] = false;
+			// Custom Fields
+			case 'column-meta' :
 
-				// Settings based on field type
-				switch ( $field['type'] ) {
-					case 'checkbox':
-						$editable['type'] = 'checklist';
-						break;
-					case 'color_picker':
-						$editable['type'] = 'text';
-						break;
-					case 'date_picker':
-						$editable['type'] = 'date';
-						break;
-					case 'email':
-						$editable['type'] = 'email';
-						break;
-					case 'file':
-						// @todo Implement "attachment" type
-						$editable['type'] = 'attachment';
-
-						if ( empty( $field['required'] ) ) {
-							$editable['clear_button'] = true;
-						}
-						break;
-					case 'gallery':
-						$editable['type'] = 'media';
-						$editable['multiple'] = true;
-						$editable['attachment']['disable_select_current'] = true;
-						break;
-					case 'image':
-						$editable['type'] = 'media';
-						$editable['attachment']['library']['type'] = 'image';
-
-						if ( empty( $field['required'] ) ) {
-							$editable['clear_button'] = true;
-						}
-
-						break;
-					case 'number':
-						$editable['type'] = 'number';
-						$editable['range_step'] = 'any';
-						break;
-					case 'taxonomy':
-						$editable['type'] = 'select';
-						$editable['advanced_dropdown'] = true;
-						break;
-					case 'page_link':
-					case 'post_object':
-						if ( ! function_exists( 'acf_get_setting' ) || version_compare( acf_get_setting( 'version' ), '5.1.0' ) >= 0 ) {
-							$editable['type'] = 'select2_dropdown';
-							$editable['ajax_populate'] = true;
-							$editable['advanced_dropdown'] = true;
-						}
-						break;
-					case 'password':
-						$editable['type'] = 'password';
-						break;
-					case 'radio':
-						$editable['type'] = 'select';
-						break;
-					case 'select':
-						$editable['type'] = 'select';
-						$editable['advanced_dropdown'] = true;
-						break;
-					case 'text':
-						$editable['type'] = 'text';
-						break;
-					case 'textarea':
+				switch ( $column['field_type'] ) {
+					case 'excerpt' :
 						$editable['type'] = 'textarea';
 						break;
-					case 'true_false':
+					case 'date':
+						$editable['type'] = 'date';
+						break;
+					case 'checkmark' :
 						$editable['type'] = 'togglable';
 						$editable['options'] = array( '0', '1' );
 						break;
-					case 'url':
-						$editable['type'] = 'text';
+					case 'library_id' :
+						$editable['type'] = 'attachment';
+						$editable['clear_button'] = true;
 						break;
-					case 'user':
-						if ( ! function_exists( 'acf_get_setting' ) || version_compare( acf_get_setting( 'version' ), '5.1.0' ) >= 0 ) {
-							$editable['type'] = 'select2_dropdown';
-							$editable['ajax_populate'] = true;
-							$editable['advanced_dropdown'] = true;
-						}
-						break;
-					case 'wysiwyg':
-						$editable['type'] = 'textarea';
-						break;
-				}
-
-
-				// Create an advanced dropdown menu
-				if ( $editable['advanced_dropdown'] ) {
-					if ( ! empty( $field['multiple'] ) || ( ! empty( $field['field_type'] ) && in_array( $field['field_type'], array( 'checkbox', 'multi_select' ) ) ) ) {
+					case 'title_by_id' :
 						$editable['type'] = 'select2_dropdown';
-						$editable['multiple'] = true;
-					}
-					else {
-						if ( ! empty( $field['allow_null'] ) ) {
-							if ( $field['type'] == 'taxonomy' ) {
-								$option_null = array(
-									'' => __( 'None' )
-								);
-							}
-							else {
-								$option_null = array(
-									'null' => __( '- Select -', 'cpac' )
-								);
-							}
-
-							if ( ! is_array( $editable['options'] ) ) {
-								$editable['options'] = array();
-							}
-
-							$editable['options'] = $option_null + $editable['options'];
-						}
-					}
+						$editable['ajax_populate'] = true;
+						$editable['formatted_value'] = 'post';
+						break;
+					case 'user_by_id' :
+						$editable['type'] = 'select2_dropdown';
+						$editable['ajax_populate'] = true;
+						$editable['formatted_value'] = 'user';
+						break;
+					default :
+						$editable['type'] = 'text';
 				}
+				break;
 
-				if ( ! empty( $field['required'] ) ) {
-					$editable['required'] = true;
+			// Taxonomy column
+			case 'column-taxonomy' :
+			case 'categories' :
+			case 'tags' :
+
+				if ( isset( $column['enable_term_creation'] ) && 'on' == $column['enable_term_creation'] ) {
+					$editable['type'] = 'select2_tags';
 				}
-
-				if ( ! empty( $field['placeholder'] ) ) {
-					$editable['placeholder'] = $field['placeholder'];
-				}
-
-				if ( ! empty( $field['maxlength'] ) ) {
-					$editable['maxlength'] = $field['maxlength'];
-				}
-
-				if ( ! empty( $field['min'] ) ) {
-					$editable['range_min'] = $field['min'];
-				}
-
-				if ( ! empty( $field['max'] ) ) {
-					$editable['range_max'] = $field['max'];
-				}
-
-				if ( ! empty( $field['step'] ) ) {
-					$editable['range_step'] = $field['step'];
-				}
-
-				if ( ! empty( $field['library'] ) ) {
-					if ( $field['library'] == 'uploadedTo' ) {
-						$editable['attachment']['library']['uploaded_to_post'] = true;
-					}
-				}
-
-				if ( empty( $field['ajax_populate'] ) ) {
-					// Options from ACF
-					$fieldoptions = new CACIE_ACF_FieldOptions();
-					$options = $fieldoptions->get_field_options( $field );
-
-					if ( $options !== false ) {
-						$editable['options'] = $options;
-					}
-				}
-			}
-		}
-
-		// Meta field
-		else if ( 'column-meta' == $column['type'] ) {
-			switch( $column['field_type'] ) {
-				case 'excerpt' :
-					$editable['type'] = 'textarea';
-					break;
-				case 'checkmark' :
-					$editable['type'] = 'togglable';
-					$editable['options'] = array( '0', '1' );
-					break;
-				case 'library_id' :
-					$editable['type'] = 'attachment';
-					$editable['clear_button'] = true;
-					break;
-				case 'title_by_id' :
+				else {
 					$editable['type'] = 'select2_dropdown';
-					$editable['ajax_populate'] = true;
-					break;
-				case 'user_by_id' :
-					$editable['type'] = 'select2_dropdown';
-					$editable['ajax_populate'] = true;
-					break;
-				default :
-					$editable['type'] = 'text';
-			}
+					$editable['multiple'] = true;
+				}
+				break;
 		}
 
 		// Developers can define editable settings with their column by using get_editable_settings();
@@ -734,8 +638,6 @@ abstract class CACIE_Editable_Model {
 			if ( $options !== false ) {
 				$editable['options'] = $options;
 			}
-
-			// Format options
 			if ( ! empty( $editable['options'] ) ) {
 				$editable['options'] = $this->format_options( $editable['options'] );
 			}
@@ -748,10 +650,11 @@ abstract class CACIE_Editable_Model {
 		 * Filters the options for the editable field.
 		 *
 		 * @since 3.2.2
+		 *
 		 * @param array $editable List of edit options ([type] => [field_type] )
 		 * @param array $column Stored column settings
 		 */
-		return apply_filters( 'cac/editable/options', $editable, $column );
+		return apply_filters( 'cac/editable/options', $editable, $column, $this );
 	}
 
 	/**
@@ -763,17 +666,14 @@ abstract class CACIE_Editable_Model {
 	 * @return array List of columns ([column_name] => [column_options])
 	 */
 	public function get_columns() {
-
-		// Editable columns
 		$columns = array();
-
-		if ( $stored_columns = $this->storage_model->get_stored_columns() ) {
-			foreach ( $stored_columns as $column_name => $column ) {
-				if ( false !== ( $editable = $this->get_editable( $column ) ) ) {
-
-					$columns[ $column_name ] = $column;
-					$columns[ $column_name ]['addon_cacie'] = array( 'editable' => $editable );
-				}
+		foreach ( $this->storage_model->get_columns() as $column ) {
+			$column_name = $column->get_name();
+			if ( $this->is_edit_enabled( $column ) && ( false !== ( $editable = $this->get_editable( $column_name ) ) ) ) {
+				$columns[ $column_name ] = array(
+					'type'        => $column->get_type(),
+					'addon_cacie' => array( 'editable' => $editable ),
+				);
 			}
 		}
 
@@ -781,33 +681,26 @@ abstract class CACIE_Editable_Model {
 	}
 
 	/**
-	* Get possible options for column with a defined set of possible options
-	*
-	* @since 1.0
-	*
-	* @param array $column Column array with column options
-	* @return array List of options with option value as key and option label as value
-	*/
+	 * Get possible options for column with a defined set of possible options
+	 *
+	 * @since 1.0
+	 *
+	 * @param array $column Column array with column options
+	 *
+	 * @return array List of options with option value as key and option label as value
+	 */
 	public function get_column_options( $column ) {
 
 		return false;
 	}
 
 	/**
-	 * Ajax callback for storing user preference of the default state of editability on an overview page
+	 * Update editability preference
 	 *
-	 * @since 3.2.1
+	 * @since 3.8.4
 	 */
-	public function ajax_editability_state_save() {
-
-		if ( $this->storage_model->key != $_POST['storage_model'] ) {
-			return;
-		}
-
-		$is_enabled = $_POST['value'] ? '1' : '0';
-
-		update_user_meta( get_current_user_id(), 'cacie_editability_state' . $this->storage_model->key, $is_enabled );
-		exit( $is_enabled );
+	public function update_editability_preference( $is_enabled = false ) {
+		update_user_meta( get_current_user_id(), 'cacie_editability_state' . $this->storage_model->key, $is_enabled ? '1' : '0' );
 	}
 
 	/**
@@ -833,213 +726,13 @@ abstract class CACIE_Editable_Model {
 	}
 
 	/**
-	 * Ajax callback for saving a column
-	 *
-	 * @since 1.0
-	 */
-	public function ajax_column_save() {
-
-		if ( $this->storage_model->key != $_POST['storage_model'] ) {
-			return;
-		}
-		// Basic request validation
-		if ( empty( $_POST['plugin_id'] ) || empty( $_POST['pk'] ) || empty( $_POST['column'] ) ) {
-			wp_send_json_error( __( 'Required fields missing.', 'cpac' ) );
-		}
-
-		// Get ID of entry to edit
-		if ( ! ( $id = intval( $_POST['pk'] ) ) ) {
-			wp_send_json_error( __( 'Invalid item ID.', 'cpac' ) );
-		}
-
-		// Get column instance
-		$column = $this->storage_model->get_column_by_name( $_POST['column'] );
-
-		if ( ! $column ) {
-			wp_send_json_error( __( 'Invalid column.', 'cpac' ) );
-		}
-
-		$value = isset( $_POST['value'] ) ? $_POST['value'] : '';
-
-		/**
-		 * Filter for changing the value before storing it to the DB
-		 *
-		 * @since 3.2.1
-		 *
-		 * @param mixed $value Value send from inline edit ajax callback
-		 * @param object CPAC_Column instance
-		 * @param int $id ID
-		 */
-		$value = apply_filters( 'cac/inline-edit/ajax-column-save/value', $value, $column, $id );
-
-		// Store column
-		$save_result = $this->column_save( $id, $column, $value );
-
-		if ( is_wp_error( $save_result ) ) {
-			status_header( 400 );
-			echo $save_result->get_error_message();
-			exit;
-		}
-
-		ob_start();
-
-		// WP default column
-		if ( $column->properties->default ) {
-			$this->manage_value( $column, $id );
-		}
-
-		// Taxonomy
-		else if ( 'taxonomy' == $this->storage_model->type ) {
-			echo $this->storage_model->manage_value( '', $column->properties->name, $id );
-		}
-
-		// Custom Admin column
-		else {
-			echo $this->storage_model->manage_value( $column->properties->name, $id );
-		}
-
-		$contents = ob_get_clean();
-
-		/**
-		 * Fires after a inline-edit succesfully saved a value
-		 *
-		 * @since ????
-		 *
-		 * @param CPAC_Column $column Column instance
-		 * @param int $id Item ID
-		 * @param string $value User submitted input
-		 * @param object $this CACIE_Editable_Model $editable_model_instance Editability model instance
-		 */
-		do_action( 'cac/inline-edit/after_ajax_column_save', $column, $id, $value, $this );
-
-		$jsondata = array(
-			'success' => true,
-			'data' => array(
-				'value' => $contents
-			)
-		);
-
-		if ( ! $column->properties->default ) {
-			$jsondata['data']['rawvalue'] = $this->get_column_editability_value( $column, $id );
-		}
-
-		if ( is_callable( array( $column, 'get_item_data' ) ) ) {
-			$jsondata['data']['itemdata'] = $column->get_item_data( $id );
-		}
-
-		wp_send_json( $jsondata );
-	}
-
-	/**
-	 * Check whether a column is editable
-	 *
-	 * @since 1.0
-	 *
-	 * @param array $column Column options
-	 * @return bool Whether the column is editable
-	 */
-	public function is_editable( $column ) {
-		$is_editable = false;
-
-		switch ( $column->properties->type ) {
-
-			// ACF
-			case 'column-acf_field':
-
-				if ( ! method_exists( $column, 'get_field' ) ) {
-					break;
-				}
-
-				$acf_field = $column->get_field();
-
-				if ( ! isset( $acf_field['type'] ) ) {
-					break;
-				}
-
-				switch ( $acf_field['type'] ) {
-					case 'checkbox':
-					case 'color_picker':
-					case 'date_picker':
-					//case 'date_time_picker':
-					case 'email':
-					case 'file':
-					case 'gallery':
-					//case 'google_map':
-					case 'image':
-					//case 'message':
-					case 'number':
-					case 'page_link':
-					case 'password':
-					case 'post_object':
-					case 'radio':
-					//case 'relationship':
-					//case 'repeater':
-					case 'select':
-					case 'taxonomy':
-					case 'text':
-					case 'textarea':
-					case 'true_false':
-					case 'url':
-					case 'user':
-					case 'wysiwyg':
-						$is_editable = true;
-					break;
-				}
-				break;
-
-			// Custom Fields
-			case 'column-meta':
-
-				/**
-				 * Filter for making all custom fields editable. Only use this
-				 * when you are well aware of any formatting and validating rules
-				 * on how your custom field value are stored.
-				 *
-				 * @since 3.1.2
-				 *
-				 * @param bool $is_editable Set tot true to make all custom fields fields editable.
-				 */
-				if ( $this->is_custom_field_editable ) {
-					switch ( $column->options->field_type ) {
-						case '' :
-						case 'checkmark' :
-						case 'color' :
-						case 'excerpt' :
-						case 'image' :
-						case 'library_id' :
-						case 'numeric' :
-						case 'title_by_id' :
-						case 'user_by_id' :
-							$is_editable = true;
-						break;
-
-						case 'date' :
-							$is_editable = true;
-
-							// @todo: the datepicker conflicts with ACF 'jquery-ui-datepicker' on upload.php
-							if ( class_exists('acf') && 'media' === $column->storage_model->type ) {
-								$is_editable = false;
-							}
-						break;
-					}
-				}
-
-				break;
-		}
-
-		return $is_editable;
-	}
-
-	/**
 	 * Add the option of inline editing to columns
 	 *
 	 * @since 1.0
 	 */
 	public function enable_inlineedit( $columns ) {
-
 		foreach ( $columns as $column ) {
 			if ( $this->is_editable( $column ) ) {
-				// Enable editing
 				$column->set_properties( 'is_editable', true );
 			}
 		}
@@ -1051,8 +744,14 @@ abstract class CACIE_Editable_Model {
 	 * @since 1.0
 	 */
 	protected function update_meta( $id, $meta_key, $value ) {
-
 		update_metadata( $this->storage_model->meta_type, $id, $meta_key, $value );
+	}
+
+	/**
+	 * @since 3.8
+	 */
+	protected function delete_meta( $id, $meta_key ) {
+		delete_metadata( $this->storage_model->meta_type, $id, $meta_key );
 	}
 
 	/**
@@ -1061,10 +760,10 @@ abstract class CACIE_Editable_Model {
 	 * @since 1.0
 	 *
 	 * @param array $options List of options, possibly with option groups
+	 *
 	 * @return array Formatted option list
 	 */
-	protected function format_options( $options ) {
-
+	public function format_options( $options ) {
 		$newoptions = array();
 
 		if ( $options ) {
@@ -1076,7 +775,7 @@ abstract class CACIE_Editable_Model {
 				else {
 					$newoptions[] = array(
 						'value' => $index,
-						'label' => $option
+						'label' => $option,
 					);
 				}
 			}
@@ -1089,72 +788,50 @@ abstract class CACIE_Editable_Model {
 	 * @since ?
 	 */
 	public function get_formatted_value( $column, $raw_value ) {
-		$formattedvalue = NULL;
 
-		// ACF Field
-		if ( 'column-acf_field' == $column->properties->type && method_exists( $column, 'get_field' ) ) {
-
-			$acf_field = $column->get_field();
-
-			if ( isset( $acf_field['type'] ) ) {
-				switch ( $acf_field['type'] ) {
-					case 'post_object':
-					case 'page_link':
-						$formattedvalue = array();
-
-						if ( ! empty( $raw_value ) ) {
-							foreach ( (array) $raw_value as $id ) {
-								$formattedvalue[ $id ] = get_post_field( 'post_title', $id );
-							}
-						}
-						break;
-					case 'user':
-						$formattedvalue = array();
-
-						if ( ! empty( $raw_value ) ) {
-							foreach ( (array) $raw_value as $id ) {
-								$user = get_user_by( 'id', $id );
-
-								if ( is_a( $user, 'WP_User' ) ) {
-									$formattedvalue[ $id ] = $user->display_name;
-								}
-							}
-						}
-						break;
-				}
-			}
+		if ( empty( $raw_value ) || is_wp_error( $raw_value ) ) {
+			return null;
 		}
 
-		// Author
-		// Display Author As
-		else if ( in_array( $column->properties->type, array( 'author', 'column-author_name' ) ) ) {
-			$formattedvalue = array();
+		$formattedvalues = null;
 
-			if ( ! empty( $raw_value ) ) {
-				$user = get_user_by( 'id', $raw_value );
+		$editable = $this->get_editable( $column->get_name() );
+		$formatted_value = isset( $editable['formatted_value'] ) ? $editable['formatted_value'] : '';
 
-				if ( is_a( $user, 'WP_User' ) ) {
-					$formattedvalue[ $raw_value ] = $user->display_name;
-				}
-			}
-		}
-
-		// WooCommerce: Upsells
-		// WooCommerce: Crosssells
-		// WooCommerce: Included Products
-		// WooCommerce: Excluded Products
-		else if ( in_array( $column->properties->type, array( 'column-wc-upsells', 'column-wc-crosssells', 'column-wc-exclude_products', 'column-wc-include_products' ) ) ) {
-			$formattedvalue = array();
-
-			if ( ! empty( $raw_value ) ) {
+		switch ( $formatted_value ) {
+			case 'post' :
+				$formattedvalues = array();
 				foreach ( (array) $raw_value as $id ) {
-					$product = get_product( $id );
-					$formattedvalue[ $id ] = $product->get_title();
+					$formattedvalues[ $id ] = get_post_field( 'post_title', $id );
 				}
-			}
+				break;
+			case 'user' :
+				$formattedvalues = array();
+				foreach ( (array) $raw_value as $id ) {
+					$user = get_user_by( 'id', $id );
+					if ( is_a( $user, 'WP_User' ) ) {
+						$formattedvalues[ $id ] = $user->display_name;
+					}
+				}
+				break;
+			case 'wc_product' :
+				$formattedvalues = array();
+				foreach ( (array) $raw_value as $id ) {
+					if ( $product = wc_get_product( $id ) ) {
+						$formattedvalues[ $id ] = $product->get_title();
+					}
+				}
+				break;
+			case 'term' :
+				foreach ( (array) $raw_value as $id ) {
+					if ( $term = get_term_by( 'ID', $id, $this->storage_model->get_taxonomy() ) ) {
+						$formattedvalues[ $id ] = $term->name;
+					}
+				}
+				break;
 		}
 
-		return $formattedvalue;
+		return $formattedvalues;
 	}
 
 	/**
@@ -1164,6 +841,7 @@ abstract class CACIE_Editable_Model {
 	 *
 	 * @param string $taxonomy Taxonomy name
 	 * @param string $default Default option ( key is always zero )
+	 *
 	 * @return List of term options (term_id => name)
 	 */
 	public function get_term_options( $taxonomy, $default = '' ) {
@@ -1174,12 +852,12 @@ abstract class CACIE_Editable_Model {
 		}
 
 		$terms = get_terms( $taxonomy, array(
-		 	'hide_empty' => 0,
-		));
+			'hide_empty' => 0,
+		) );
 
 		if ( $terms && ! is_wp_error( $terms ) ) {
-			foreach ( $terms as  $term ) {
-				$options[ $term->term_id ] = $term->name;
+			foreach ( $terms as $term ) {
+				$options[ $term->term_id ] = htmlspecialchars_decode( $term->name );
 			}
 		}
 
@@ -1252,10 +930,14 @@ abstract class CACIE_Editable_Model {
 	 *
 	 * @param CPAC_Column $column Column
 	 * @param integer $id Item ID
+	 *
 	 * @return mixed Raw value
 	 */
 	public function get_column_editability_value( $column, $id ) {
+		if ( ! $column->properties->default ) {
+			return $column->get_raw_value( $id );
+		}
 
-		return $column->get_raw_value( $id );
+		return null;
 	}
 }

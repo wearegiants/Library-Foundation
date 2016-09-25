@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit when accessed directly
 /**
  * @since 1.1
  */
-class CPAC_WC_Column_Post_Order_Total extends CPAC_Column {
+class CPAC_WC_Column_Post_Order_Total extends CPAC_WC_Column {
 
 	/**
 	 * @see CPAC_Column::init()
@@ -16,8 +16,7 @@ class CPAC_WC_Column_Post_Order_Total extends CPAC_Column {
 
 		// Properties
 		$this->properties['type']	= 'column-wc-total_order_amount';
-		$this->properties['label']	= __( 'Total order amount', 'cpac' );
-		$this->properties['group']	= 'woocommerce-custom';
+		$this->properties['label']	= __( 'Total order amount', 'codepress-admin-columns' );
 	}
 
 	/**

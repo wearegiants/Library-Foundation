@@ -7,119 +7,138 @@
 if ( !defined( 'ABSPATH' ) ) exit;
 
 
-function scripts_enhanced() {
+function wooccm_scripts() {
 
 	global $woocommerce;
 
 	$options = get_option( 'wccs_settings' );
 
-	$saved = WC()->session->get('wooccm_retain', array() );
+	$saved = WC()->session->get( 'wooccm_retain', array() );
 
-	if( !empty( $options['buttons'] ) ) {
-		foreach( $options['buttons'] as $btn ) {
+	// Check if we have any buttons
+	if( empty( $options['buttons'] ) )
+		return;
 
-			if( $btn['type'] == 'datepicker' ) {
-				echo '
+	foreach( $options['buttons'] as $btn ) {
+
+		if( $btn['type'] == 'datepicker' ) {
+			echo '
 <script type="text/javascript">
 jQuery(document).ready(function() {
 	var today = new Date();
 	if( jQuery.isFunction(jQuery.fn.datepicker) ) {
 		jQuery("input#'.$btn['cow'].'").datepicker({
 ';
-				if( empty($btn['format_date']) ) {
-					echo 'dateFormat : "dd-mm-yy",'; 
+			if( empty($btn['format_date']) ) {
+				echo 'dateFormat : "dd-mm-yy",'; 
+			}
+			if( !empty($btn['format_date']) ) {
+				echo 'dateFormat : "'.str_replace( ' ', '', $btn['format_date'] ).'",'; 
+			}
+			if( !empty($btn['single_yy']) ) {
+				echo 'minDate: new Date( '.$btn['single_yy'].', '.$btn['single_mm'].' - 1, '.$btn['single_dd'].'),';
+			}
+			if( !empty($btn['min_before']) ) {
+				echo 'minDate: '.$btn['min_before'].',';
+			}
+			if( !empty($btn['single_max_yy']) ) {
+				echo 'maxDate: new Date( '.$btn['single_max_yy'].', '.$btn['single_max_mm'].' - 1, '.$btn['single_max_dd'].'),';
+			}
+			if( !empty($btn['max_after']) ) {
+				echo 'maxDate: '.$btn['max_after'].',';
+			}
+			if( !empty($btn['days_disabler']) ) {
+				echo 'beforeShowDay: function(date) { var day = date.getDay(); return [(';
+				if( !empty($btn['days_disabler0']) ) {
+					echo 'day == 0';
+				} else { echo 'day == "x"'; }
+				if( !empty($btn['days_disabler1']) ) {
+					echo ' || day == 1';
 				}
-				if( !empty($btn['format_date']) ) {
-					echo 'dateFormat : "'.str_replace( ' ', '', $btn['format_date'] ).'",'; 
+				if( !empty($btn['days_disabler2']) ) {
+					echo ' || day == 2';
 				}
-				if( !empty($btn['single_yy']) ) {
-					echo 'minDate: new Date( '.$btn['single_yy'].', '.$btn['single_mm'].' - 1, '.$btn['single_dd'].'),';
+				if( !empty($btn['days_disabler3']) ) {
+					echo ' || day == 3';
 				}
-				if( !empty($btn['min_before']) ) {
-					echo 'minDate: '.$btn['min_before'].',';
+				if( !empty($btn['days_disabler4']) ) {
+					echo ' || day == 4';
 				}
-				if( !empty($btn['single_max_yy']) ) {
-					echo 'maxDate: new Date( '.$btn['single_max_yy'].', '.$btn['single_max_mm'].' - 1, '.$btn['single_max_dd'].'),';
+				if( !empty($btn['days_disabler5']) ) {
+					echo ' || day == 5';
 				}
-				if( !empty($btn['max_after']) ) {
-					echo 'maxDate: '.$btn['max_after'].',';
+				if( !empty($btn['days_disabler6']) ) {
+					echo '|| day == 6';
 				}
-				if( !empty($btn['days_disabler']) ) {
-					echo 'beforeShowDay: function(date) { var day = date.getDay(); return [(';
-					if( !empty($btn['days_disabler0']) ) {
-						echo 'day == 0';
-					} else { echo 'day == "x"'; }
-					if( !empty($btn['days_disabler1']) ) {
-						echo ' || day == 1';
-					}
-					if( !empty($btn['days_disabler2']) ) {
-						echo ' || day == 2';
-					}
-					if( !empty($btn['days_disabler3']) ) {
-						echo ' || day == 3';
-					}
-					if( !empty($btn['days_disabler4']) ) {
-						echo ' || day == 4';
-					}
-					if( !empty($btn['days_disabler5']) ) {
-						echo ' || day == 5';
-					}
-					if( !empty($btn['days_disabler6']) ) {
-						echo '|| day == 6';
-					}
-					echo ')]; }';
-				}
-				echo '
+				echo ')]; }';
+			}
+			do_action( 'wooccm_js_datepicker_additional_args', $btn );
+			echo '
 		});
 	}
 });
 </script>
 ';
-			}
+		}
 
-			if( $btn['type'] == 'time' ) {
-				echo '
+		if( $btn['type'] == 'time' ) {
+			$args = '
+			showPeriod: true,';
+			if( !empty($btn['start_hour']) ) {
+				$args .= '
+			hours: { starts: '.$btn['start_hour'].', ends: '.$btn['end_hour'].' },';
+			}
+			if( !empty($btn['interval_min']) ) {
+				$args .= '
+			minutes: {interval: '.$btn['interval_min'].', manual: ['.$btn['manual_min'].'] },';
+			}
+			$args .= '
+			showLeadingZero: true';
+			$args = apply_filters( 'wooccm_timepicker_jquery_args', $args, $btn );
+			echo '
+<!-- Additional section: TimePicker -->
 <script type="text/javascript">
 jQuery(document).ready(function() {
 	if( jQuery.isFunction(jQuery.fn.timepicker) ) {
-		jQuery("#'.$btn['cow'].'_field input#'.$btn['cow'].'").timepicker({
-			showPeriod: true,';
-				if( !empty($btn['start_hour']) ) {
-					echo 'hours: { starts: '.$btn['start_hour'].', ends: '.$btn['end_hour'].' },';
-				}
-				if( !empty($btn['interval_min']) ) {
-					echo 'minutes: {interval: '.$btn['interval_min'].', manual: ['.$btn['manual_min'].'] },';
-				}
-				echo 'showLeadingZero: true
+		jQuery("#'.$btn['cow'].'_field input#'.$btn['cow'].'").timepicker({'
+;
+			echo $args;
+			echo '
 		});
 	}
 });
 </script>
 ';
-			}
+		}
 
-			if ( $btn['type'] == 'password' ) {
-				echo '
+		if ( $btn['type'] == 'password' ) {
+			echo '
 <script type="text/javascript">
 jQuery(document).ready(function() {
 	jQuery("p#'.$btn['cow'].'_field").css("display");
 });
 </script>
 ';
-			}
+		}
 
-			if ( $btn['type'] == 'colorpicker' && $btn['colorpickertype'] == 'farbtastic' ) { ?>
+		if( $btn['type'] == 'colorpicker' ) {
+			switch( $btn['colorpickertype'] ) {
+
+				case 'farbtastic':
+?>
 <script type="text/javascript">
 jQuery(document).ready(function($) {
 	jQuery('#<?php echo $btn['cow']; ?>_colorpickerdiv').hide();
-	jQuery('#<?php echo $btn['cow']; ?>_colorpickerdiv').farbtastic("#<?php echo $btn['cow']; ?>_colorpicker");
-	jQuery("#<?php echo $btn['cow']; ?>_colorpicker").click(function(){jQuery('#<?php echo $btn['cow']; ?>_colorpickerdiv').slideToggle()});
+	if( jQuery.isFunction(jQuery.fn.farbtastic) ) {
+		jQuery('#<?php echo $btn['cow']; ?>_colorpickerdiv').farbtastic("#<?php echo $btn['cow']; ?>_colorpicker");
+		jQuery("#<?php echo $btn['cow']; ?>_colorpicker").click(function(){jQuery('#<?php echo $btn['cow']; ?>_colorpickerdiv').slideToggle()});
+	}
 });
 </script>
 <?php
-			}
+					break;
 
-			if ( $btn['type'] == 'colorpicker' && $btn['colorpickertype'] == 'iris' ) {
+				case 'iris':
 ?>
 <script type="text/javascript">
 jQuery(document).ready(function($) {
@@ -145,11 +164,14 @@ jQuery(document).ready(function($) {
 });
 </script>
 <?php
-}
+					break;
+
+			}
+		}
 
 // ============================== radio button & checkbox ===========================================
 
-			if ( ($btn['type'] == 'wooccmradio' || $btn['type'] == 'checkbox_wccm') && !empty( $btn['tax_remove'] ) ) {
+		if( ( $btn['type'] == 'wooccmradio' || $btn['type'] == 'checkbox_wccm' ) && !empty( $btn['tax_remove'] ) ) {
 ?>
 <script type="text/javascript">
 jQuery(document).ready(function($) {
@@ -177,9 +199,9 @@ jQuery(document).ready(function($) {
 });
 </script>
 <?php
-			}
+		}
 
-			if ( ($btn['type'] == 'wooccmradio' || $btn['type'] == 'checkbox_wccm') && !empty( $btn['add_amount'] ) && !empty( $btn['fee_name'] ) && !empty( $btn['add_amount_field'] ) ) {
+		if( ( $btn['type'] == 'wooccmradio' || $btn['type'] == 'checkbox_wccm' ) && !empty( $btn['add_amount'] ) && !empty( $btn['fee_name'] ) && !empty( $btn['add_amount_field'] ) ) {
 ?>
 <script type="text/javascript">
 jQuery(document).ready(function($) {
@@ -206,11 +228,11 @@ jQuery(document).ready(function($) {
 });
 </script>
 <?php
-			}
+		}
 
 // =========================================== select options =========================================
 
-			if ( ($btn['type'] == 'wooccmselect') && !empty( $btn['tax_remove'] ) ) {
+		if ( ($btn['type'] == 'wooccmselect') && !empty( $btn['tax_remove'] ) ) {
 ?>
 <script type="text/javascript">
 jQuery(document).ready(function($) {
@@ -237,14 +259,14 @@ jQuery(document).ready(function($) {
 });
 </script>
 <?php
-			}
+		}
 
-			if ( ($btn['type'] == 'wooccmselect') && !empty( $btn['add_amount'] ) && !empty( $btn['fee_name'] ) && !empty( $btn['add_amount_field'] ) ) {
+		if ( ($btn['type'] == 'wooccmselect') && !empty( $btn['add_amount'] ) && !empty( $btn['fee_name'] ) && !empty( $btn['add_amount_field'] ) ) {
 ?>
 <script type="text/javascript">
 jQuery(document).ready(function($) {
 
-<?php if( !empty($saved['wooccm_addamount453user']) ) { ?>                                
+<?php if( !empty( $saved['wooccm_addamount453user'] ) ) { ?>
 	jQuery('#<?php echo $btn['cow']; ?>_field select').val( '<?php echo $saved['wooccm_addamount453user']; ?>' );
 <?php } ?>
 
@@ -267,11 +289,11 @@ jQuery(document).ready(function($) {
 });
 </script>
 <?php
-			}
+		}
 
 // =========================================== add apply button ==========================================
 
-			if ( ($btn['type'] == 'text') && !empty( $btn['add_amount'] ) && !empty( $btn['fee_name'] ) && empty( $btn['add_amount_field'] ) ) {
+		if ( ($btn['type'] == 'text') && !empty( $btn['add_amount'] ) && !empty( $btn['fee_name'] ) && empty( $btn['add_amount_field'] ) ) {
 ?>
 <script type="text/javascript">
 jQuery(document).ready(function() {
@@ -304,27 +326,10 @@ jQuery(document).ready(function($) {
 });
 </script>
 <?php
-			}
+		}
 
 // =====================================================
 
-			if ( $btn['type'] == 'checkbox_wccm' ) {
-?>
-<script type="text/javascript">
-jQuery(document).ready(function() {
-	jQuery('#<?php echo $btn['cow']; ?>_checkbox').change(function(){
-		if(jQuery(this).is(':checked')){
-			jQuery("#<?php echo $btn['cow']; ?>_checkboxhiddenfield").prop("disabled", true);
-		}else{
-			jQuery("#<?php echo $btn['cow']; ?>_checkboxhiddenfield").prop("disabled", false);
-		}
-	});
-});
-</script>
-<?php
-			}
-
-		}
 	}
 
 }
@@ -371,7 +376,7 @@ function wooccm_override_this() {
 }
 </style>';
 		}
-		if ( !empty($btn['conditional_tie']) && empty($btn['conditional_parent']) && !empty($btn['conditional_parent_use'])) {
+		if( !empty( $btn['conditional_tie'] ) && empty( $btn['conditional_parent'] ) && !empty( $btn['conditional_parent_use'] ) ) {
 			echo '
 <style type="text/css">
 .woocommerce form #customer_details #'.$btn['cow'].'_field.'.$btn['conditional_tie'].',
@@ -387,21 +392,21 @@ function wooccm_override_this() {
 // script when clicked show
 // =============================================================
 ?>
+<!-- Additional section: Checkbox -->
 <script type="text/javascript">
 jQuery(document).ready(function($){
-        
 <?php
 	foreach( $options['buttons'] as $btn ) {
 		if ( !empty( $btn['label'] ) &&  ($btn['type'] == 'checkbox_wccm') ) {
 
-			if( !empty($btn['conditional_parent']) && !empty($btn['conditional_parent_use']) && !empty($btn['chosen_valt'])) {
+			if( !empty( $btn['conditional_parent'] ) && !empty( $btn['conditional_parent_use'] ) && !empty( $btn['chosen_valt'] ) ) {
 ?>
 
 	jQuery("#<?php echo ''.$btn['cow'].'_field.'.$btn['conditional_tie']; ?> input[name=<?php echo $btn['cow']; ?>]").click(function(){
 
 <?php
 				foreach( $options['buttons'] as $btn3 ) {
-					if ( empty($btn3['conditional_parent']) && !empty($btn3['conditional_parent_use']) && !empty($btn3['conditional_tie'])) {
+					if( empty( $btn3['conditional_parent'] ) && !empty( $btn3['conditional_parent_use'] ) && !empty( $btn3['conditional_tie'] ) ) {
 ?>
 		if(jQuery('#<?php echo ''.$btn['cow'].'_field.'.$btn['conditional_tie']; ?> input[name=<?php echo $btn['cow']; ?>]:checked').val() === '<?php echo $btn3['chosen_valt']; ?>' ) {
 			jQuery("#<?php echo ''.$btn3['cow'].'_field.'.$btn['conditional_tie']; ?>").show( "slow" );
@@ -409,7 +414,7 @@ jQuery(document).ready(function($){
 		if(jQuery('#<?php echo ''.$btn['cow'].'_field.'.$btn['conditional_tie']; ?> input[name=<?php echo $btn['cow']; ?>]:checked').val() !== '<?php echo $btn3['chosen_valt']; ?>' ) {
 			jQuery("#<?php echo ''.$btn3['cow'].'_field.'.$btn['conditional_tie']; ?>").hide( "slow" );
 
-<?php if ( !empty($btn2['fee_name']) && !empty($btn2['add_amount']) ) { ?>
+<?php if( !empty( $btn2['fee_name'] ) && !empty( $btn2['add_amount'] ) ) { ?>
 
 			$( 'form.checkout' ).block({ message: null, overlayCSS: { background: '#fff url(' + wc_checkout_params.ajax_loader_url + ') no-repeat center', backgroundSize: '16px 16px', opacity: 0.6 } });
 
@@ -451,6 +456,7 @@ jQuery(document).ready(function($){
 // script when clicked show
 // =============================================================
 ?>
+<!-- Additional section: Select options -->
 <script type="text/javascript">
 jQuery(document).ready(function($){
 
@@ -458,14 +464,14 @@ jQuery(document).ready(function($){
 	foreach( $options['buttons'] as $btn ) {
 		if( !empty( $btn['label'] ) &&  ($btn['type'] == 'wooccmselect') ) {
 
-			if( !empty($btn['conditional_parent']) && !empty($btn['conditional_parent_use']) && !empty($btn['chosen_valt'])) {
+			if( !empty( $btn['conditional_parent'] ) && !empty( $btn['conditional_parent_use'] ) && !empty( $btn['chosen_valt'] ) ) {
 ?>
 
 	jQuery("#<?php echo ''.$btn['cow'].'_field.'.$btn['conditional_tie']; ?> select").change(function(){
 
 <?php
 				foreach( $options['buttons'] as $btn3 ) {
-					if ( empty($btn3['conditional_parent']) && !empty($btn3['conditional_parent_use']) && !empty($btn3['conditional_tie'])) {
+					if( empty( $btn3['conditional_parent'] ) && !empty( $btn3['conditional_parent_use'] ) && !empty( $btn3['conditional_tie'] ) ) {
 ?>
 
 		if(jQuery('#<?php echo ''.$btn['cow'].'_field.'.$btn['conditional_tie'].' #'.$btn['cow'].''; ?> option:selected').val() === '<?php echo $btn3['chosen_valt']; ?>' ) {
@@ -475,7 +481,7 @@ jQuery(document).ready(function($){
 		if(jQuery('#<?php echo ''.$btn['cow'].'_field.'.$btn['conditional_tie'].' #'.$btn['cow'].''; ?> option:selected').val() !== '<?php echo $btn3['chosen_valt']; ?>' ) {
 			jQuery("#<?php echo ''.$btn3['cow'].'_field.'.$btn['conditional_tie']; ?>").hide( "slow" );
 
-<?php if ( !empty($btn2['fee_name']) && !empty($btn2['add_amount']) ) { ?>
+<?php if( !empty( $btn2['fee_name'] ) && !empty( $btn2['add_amount'] ) ) { ?>
 
 			$( 'form.checkout' ).block({ message: null, overlayCSS: { background: '#fff url(' + wc_checkout_params.ajax_loader_url + ') no-repeat center', backgroundSize: '16px 16px', opacity: 0.6 } });
 
@@ -515,6 +521,7 @@ jQuery(document).ready(function($){
 // =============================================================
 
 ?>
+<!-- Additional section: Radio buttons -->
 <script type="text/javascript">
 jQuery(document).ready(function($){
 
@@ -522,14 +529,14 @@ jQuery(document).ready(function($){
 	foreach( $options['buttons'] as $btn ) {
 		if ( !empty( $btn['label'] ) &&  ($btn['type'] == 'wooccmradio') ) {
 
-			if ( !empty($btn['conditional_parent']) && !empty($btn['conditional_parent_use']) && !empty($btn['chosen_valt'])) {
+			if( !empty( $btn['conditional_parent'] ) && !empty( $btn['conditional_parent_use'] ) && !empty( $btn['chosen_valt'] ) ) {
 ?>
 
 	jQuery("#<?php echo ''.$btn['cow'].'_field.'.$btn['conditional_tie']; ?> input").click(function(){
 
 <?php
 				foreach( $options['buttons'] as $btn3 ) {
-					if( empty($btn3['conditional_parent']) && !empty($btn3['conditional_parent_use']) && !empty($btn3['conditional_tie'])) {
+					if( empty( $btn3['conditional_parent'] ) && !empty( $btn3['conditional_parent_use'] ) && !empty( $btn3['conditional_tie'] ) ) {
 ?>
 
 		if(jQuery('#<?php echo ''.$btn['cow'].'_field.'.$btn['conditional_tie']; ?> input[name=<?php echo $btn['cow']; ?>]:checked').val() === '<?php echo $btn3['chosen_valt']; ?>' ) {
@@ -539,7 +546,7 @@ jQuery(document).ready(function($){
 		if(jQuery('#<?php echo ''.$btn['cow'].'_field.'.$btn['conditional_tie']; ?> input[name=<?php echo $btn['cow']; ?>]:checked').val() !== '<?php echo $btn3['chosen_valt']; ?>' ) {
 			jQuery("#<?php echo ''.$btn3['cow'].'_field.'.$btn['conditional_tie']; ?>").hide( "slow" );
 
-<?php if ( !empty($btn2['fee_name']) && !empty($btn2['add_amount']) ) { ?>
+<?php if( !empty( $btn2['fee_name'] ) && !empty( $btn2['add_amount'] ) ) { ?>
 
 			$( 'form.checkout' ).block({ message: null, overlayCSS: { background: '#fff url(' + wc_checkout_params.ajax_loader_url + ') no-repeat center', backgroundSize: '16px 16px', opacity: 0.6 } });
 
@@ -582,7 +589,7 @@ jQuery(document).ready(function($){
 // ---------------------------------------------------------------------
 
 	foreach( $options['buttons'] as $btn ) {
-		foreach ($woocommerce->cart->cart_contents as $key => $values ) {
+		foreach( $woocommerce->cart->cart_contents as $key => $values ) {
 
 			$multiproductsx = $btn['single_p'];
 			$show_field_single = $btn['single_px'];
@@ -595,11 +602,11 @@ jQuery(document).ready(function($){
 			// hide field
 
 			// without more
-			if ( !empty($btn['single_p']) && empty($btn['more_content']) ) {
+			if( !empty( $btn['single_p'] ) && empty( $btn['more_content'] ) ) {
 
-				$multiarrayproductsx = explode(',',$multiproductsx);
+				$multiarrayproductsx = explode( ',', $multiproductsx );
 
-				if(in_array($values['product_id'],$multiarrayproductsx) && ( count($woocommerce->cart->cart_contents) < 2) ){
+				if( in_array( $values['product_id'], $multiarrayproductsx ) && ( count( $woocommerce->cart->cart_contents ) < 2 ) ) {
 					echo '
 <style type="text/css">
 .woocommerce form #customer_details #'.$btn['cow'].'_field,
@@ -612,11 +619,11 @@ jQuery(document).ready(function($){
 			}
 
 			// show field without more
-			if ( !empty($btn['single_px']) && empty($btn['more_content']) ) {
+			if( !empty( $btn['single_px'] ) && empty( $btn['more_content'] ) ) {
 
-				$show_field_array = explode('||',$show_field_single);
+				$show_field_array = explode( '||', $show_field_single );
 
-				if(in_array($values['product_id'], $show_field_array) && ( count($woocommerce->cart->cart_contents) < 2) ){
+				if( in_array( $values['product_id'], $show_field_array ) && ( count( $woocommerce->cart->cart_contents ) < 2 ) ) {
 					echo '
 <style type="text/css">
 .woocommerce form #customer_details #'.$btn['cow'].'_field,
@@ -627,7 +634,7 @@ jQuery(document).ready(function($){
 </style>';
 				}
 
-				if(!in_array($values['product_id'], $show_field_array) && ( count($woocommerce->cart->cart_contents) < 2) ){
+				if( !in_array( $values['product_id'], $show_field_array ) && ( count( $woocommerce->cart->cart_contents ) < 2 ) ) {
 					echo '
 <style type="text/css">
 .woocommerce form #customer_details #'.$btn['cow'].'_field,
@@ -649,11 +656,11 @@ jQuery(document).ready(function($){
 
 					// without more
 
-					if ( !empty($btn['single_p_cat']) && empty($btn['more_content']) ) {
+					if( !empty( $btn['single_p_cat'] ) && empty( $btn['more_content'] ) ) {
 
-						$multiarrayproductsx_cat = explode(',',$multiproductsx_cat);
+						$multiarrayproductsx_cat = explode( ',', $multiproductsx_cat );
 
-						if(in_array($term->slug,$multiarrayproductsx_cat) && ( count($woocommerce->cart->cart_contents) < 2) ){
+						if( in_array( $term->slug, $multiarrayproductsx_cat ) && ( count( $woocommerce->cart->cart_contents ) < 2 ) ) {
 							echo '
 <style type="text/css">
 .woocommerce form #customer_details #'.$btn['cow'].'_field,
@@ -666,11 +673,11 @@ jQuery(document).ready(function($){
 					}
 
 					// show field without more
-					if ( !empty($btn['single_px_cat']) && empty($btn['more_content']) ) {
+					if( !empty( $btn['single_px_cat'] ) && empty( $btn['more_content'] ) ) {
 
 						$show_field_array_cat = explode('||',$show_field_single_cat);
 
-						if(in_array($term->slug, $show_field_array_cat)  && ( count($woocommerce->cart->cart_contents) < 2)  ){
+						if( in_array( $term->slug, $show_field_array_cat ) && ( count( $woocommerce->cart->cart_contents ) < 2 ) ) {
 							echo '
 <style type="text/css">
 .woocommerce form #customer_details #'.$btn['cow'].'_field,
@@ -681,7 +688,7 @@ jQuery(document).ready(function($){
 </style>';
 						}
 
-						if( !in_array($term->slug, $show_field_array_cat)  && ( count($woocommerce->cart->cart_contents) < 2)  ){
+						if( !in_array( $term->slug, $show_field_array_cat ) && ( count( $woocommerce->cart->cart_contents ) < 2 ) ) {
 							echo '
 <style type="text/css">
 .woocommerce form #customer_details #'.$btn['cow'].'_field,
@@ -704,11 +711,11 @@ jQuery(document).ready(function($){
 		// hide field
 
 		// with more
-		if ( !empty($btn['single_p']) && !empty($btn['more_content']) ) {
+		if( !empty( $btn['single_p'] ) && !empty( $btn['more_content'] ) ) {
 
-			$multiarrayproductsx = explode(',',$multiproductsx);
+			$multiarrayproductsx = explode( ',', $multiproductsx );
 
-			if(array_intersect($productsarraycm,$multiarrayproductsx)  ){
+			if( array_intersect( $productsarraycm, $multiarrayproductsx ) ) {
 				echo '
 <style type="text/css">
 .woocommerce form #customer_details #'.$btn['cow'].'_field,
@@ -721,11 +728,11 @@ jQuery(document).ready(function($){
 		}
 
 		// show field with more
-		if ( !empty($btn['single_px']) && !empty($btn['more_content']) ) {
+		if( !empty( $btn['single_px'] ) && !empty( $btn['more_content'] ) ) {
 
-			$show_field_array = explode('||',$show_field_single);
+			$show_field_array = explode( '||', $show_field_single );
 
-			if(array_intersect($productsarraycm, $show_field_array) ){
+			if( array_intersect( $productsarraycm, $show_field_array ) ) {
 				echo '
 <style type="text/css">
 .woocommerce form #customer_details #'.$btn['cow'].'_field,
@@ -736,7 +743,7 @@ jQuery(document).ready(function($){
 </style>';
 			}
 
-			if(!array_intersect($productsarraycm, $show_field_array)  ){
+			if( !array_intersect( $productsarraycm, $show_field_array ) ) {
 				echo '
 <style type="text/css">
 .woocommerce form #customer_details #'.$btn['cow'].'_field,
@@ -752,11 +759,11 @@ jQuery(document).ready(function($){
 		// hide field
 
 		// with more
-		if ( !empty($btn['single_p_cat']) && !empty($btn['more_content']) ) {
+		if( !empty( $btn['single_p_cat'] ) && !empty( $btn['more_content'] ) ) {
 
-			$multiarrayproductsx_cat = explode(',',$multiproductsx_cat);
+			$multiarrayproductsx_cat = explode( ',', $multiproductsx_cat );
 
-			if(array_intersect($categoryarraycm,$multiarrayproductsx_cat) ){
+			if( array_intersect( $categoryarraycm, $multiarrayproductsx_cat ) ) {
 				echo '
 <style type="text/css">
 .woocommerce form #customer_details #'.$btn['cow'].'_field,
@@ -769,11 +776,11 @@ jQuery(document).ready(function($){
 		}
 
 		// show field with more
-		if ( !empty($btn['single_px_cat']) && !empty($btn['more_content']) ) {
+		if( !empty( $btn['single_px_cat'] ) && !empty( $btn['more_content'] ) ) {
 
-			$show_field_array_cat = explode('||',$show_field_single_cat);
+			$show_field_array_cat = explode( '||', $show_field_single_cat );
 
-			if(array_intersect($categoryarraycm, $show_field_array_cat)  ){
+			if( array_intersect( $categoryarraycm, $show_field_array_cat ) ) {
 				echo '
 <style type="text/css">
 .woocommerce form #customer_details #'.$btn['cow'].'_field,
@@ -784,7 +791,7 @@ jQuery(document).ready(function($){
 </style>';
 			}
 
-			if( !array_intersect($categoryarraycm, $show_field_array_cat) ){
+			if( !array_intersect( $categoryarraycm, $show_field_array_cat ) ) {
 				echo '
 <style type="text/css">
 .woocommerce form #customer_details #'.$btn['cow'].'_field,

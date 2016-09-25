@@ -1,17 +1,18 @@
 === WooCommerce Checkout Manager ===
 
-Contributors: visser, Emark
+Contributors: visser, visser.labs, Emark
+Donate link: https://www.visser.com.au/donations/
 Tags: woocommerce, ecommerce, e-commerce, store, cart, checkout, manager, editor, field, shipping, billing, order
 Requires at least: 3.0
-Tested up to: 4.5
-Stable tag: 4.0.2
+Tested up to: 4.6
+Stable tag: 4.0.9
 License: GPLv2 or later
 
 Manages WooCommerce Checkout, the advanced way.
 
 == Description ==
 
-This extension plugin gives you capabilities to manage your fields on your [WooCommerce](http://wordpress.org/plugins/woocommerce/) Checkout page.
+WooCommerce Checkout Manager allows you to customise and manage the fields on your [WooCommerce](http://wordpress.org/plugins/woocommerce/) Checkout page. Re-order, rename, hide and extend Checkout fields within the Billing, Shipping and Additional sections.
 
 **Notice**: There has been a change of Plugin ownership on 11/03/2016, please see the *Change of Plugin ownership* section below for more information.
 
@@ -22,18 +23,17 @@ This extension plugin gives you capabilities to manage your fields on your [WooC
 * Remove & Make required fields. 
 * Added fields will appear on Order Summary, Receipt and Back-end in Orders.
 * Enable/ Disable "Additional Fields" section name on the Order Summary and Receipt.
-* **Four ( 4 )** fields types included: Text Input + Check Box + Select Options + Date Picker.
-* Compatible with [WPML](http://wpml.org/) | [WooCommerce Print Invoice & Delivery Note](http://wordpress.org/plugins/woocommerce-delivery-notes/) | [ WooCommerce Order/Customer CSV Export](http://www.woothemes.com/products/ordercustomer-csv-export/)
-* Show or Hide fields for user roles
-* Upload files on Checkout Page
-* Sort Orders by Field Name
-* Export Orders by Field Name
-* Add new fields to the **Billing** and **Shipping** Section **separately** from Additional Section. 
+* **Fifteen ( 15 )** fields types included: Text Input, Text Area, Password, Radio Button, Check Box, Select Options, Date Picker, Time Picker, Color Picker, Heading, Multi-Select, Multi-Checkbox, Country, State, File Picker.
+* Compatible with [WPML](http://wpml.org/), [WooCommerce Print Invoice & Delivery Note](http://wordpress.org/plugins/woocommerce-delivery-notes/), [ Store Exporter Deluxe](http://www.visser.com.au/plugins/store-exporter-deluxe//), [ WooCommerce Order/Customer CSV Export](http://www.woothemes.com/products/ordercustomer-csv-export/).
+* Show or Hide fields for different User Roles.
+* Upload files on Checkout Page.
+* Sort Orders by Field Name.
+* Export Orders by Field Name.
+* Add new fields to the **Billing** and **Shipping** sections **separately** from Additional fields. 
 * These fields can be edited on your customers **account** page.
-* **Fifteen ( 16 )** field types included: Text Area + Password + Radio + Select + Pre-defined Check Box + Time Picker + **Text/ Html Swapper** + Color Picker + Heading + Multi-Select + Multi-Checkbox + **File Picker** etc...
 * Create Conditional Fields.
-* Create field to remove tax.
-* Create field to add additional amount.
+* Create fields to remove tax.
+* Create fields to add additional amount.
 * Replace Text using Text/ Html Swapper.
 * Allow Customers to **Upload files** for each order on order details page.
 * Show or Hide added field for Specific Product or Category Only.
@@ -61,30 +61,42 @@ This extension plugin gives you capabilities to manage your fields on your [WooC
 
 * WooCommerce 2.2 +
 * WordPress 3.8 or greater
-* PHP version 5.2.4 or greater
-* MySQL version 5.0 or greater
+* PHP 5.2.4 or greater
+* MySQL 5.0 or greater
 
-= WP installation =
+= Automatic Plugin installation =
 
-1. Log in to your WordPress dashboard
-2. Navigate to the Plugins menu and click Add New.
-2. Click Upload Plugin
-3. Click Choose File and select downloaded zip file
-4. Click Install Now
+1. Login to your WordPress Administration
+2. Navigate to the Plugins screen and click Add New
+3. Within the Search Plugins text field enter 'WooCommerce Checkout Manager' and press Enter
+4. Click the Install Now button
 
-= NP: The downloaded zip file is the file that you download from wordpress.org. =
+= Manual Plugin installation =
 
-= FTP installation =
-
-The manual installation method involves downloading the plugin and uploading it to your webserver via an FTP application. The WordPress codex contains instructions on how to do this here.
+The manual installation method involves downloading the Plugin and uploading it to your web server via an FTP application. The [WordPress Codex](https://codex.wordpress.org/Managing_Plugins#Manual_Plugin_Installation) contains instructions on how to do this.
 
 = Updating =
 
-Automatic updates are delivered just like any other WordPress plugin.
+Automatic updates are delivered just like any other WordPress Plugin.
 
 == Frequently Asked Questions ==
 
+= How do I add conditional Checkout fields? =
+
+Read through the [Adding Conditional Checkout fields](https://www.visser.com.au/documentation/woocommerce-checkout-manager/usage/#Adding_Conditional_Checkout_Fields) walkthrough on our website.
+
+= [Insert feature] is not working within WooCommerce Checkout Manager =
+
+First de-activate and re-activate the WooCommerce Checkout Manager from the Plugins screen within the WordPress Administration. This triggers the Plugin installation script to be run and often resolves issues when updating from a legacy release of WooCommerce Checkout Manager (e.g. <4.0).
+
+If your issue persists visit the [WooCommerce Checkout Manager > Support section](https://wordpress.org/support/plugin/woocommerce-checkout-manager). This is the place to comment on existing topics and raise new support topics.
+
+= Why can't I do [insert feature] within WooCommerce Checkout Manager? =
+
+Visit the [WooCommerce Checkout Manager > Ideas/Feature requests Trello board](https://trello.com/b/XSpf40lq) or open a new topic on the [WooCommerce Checkout Manager > Support section](https://wordpress.org/support/plugin/woocommerce-checkout-manager).
+
 = How to fix fields that are not showing on checkout page properly? = 
+
 Usually this is an CSS issue. If your theme comes with the option to input your very own custom CSS, you can use the abbreviation field name as part of the CSS code to set the fields in the way that you want. 
 
 Example :
@@ -92,15 +104,9 @@ Example :
 	float: right;
 }`
 
-= How do I review the data from the custom fields? =
+= How do I review the Order data from the custom fields? =
 
-Your order data can be reviewed in each order. By default your "Custom Fields" section should be showing allowing you to see the custom fields data.
-If the fields are not showing, follow these steps:
-
-1. Go to your desired Order.
-2. Click "Screen Options"
-3. Check "Custom Fields"
-4. Scroll down till you see "Custom Fields" section.
+Your Order data can be reviewed in each Order within the default WooCommerce Order Data box of the WooCommerce > Edit Order screen within the WordPress Administration. Custom fields are separated by Billing, Shipping and Additional sections.
 
 = How do you access saved data to be used with WooCommerce PDF Invoices & Packing Slips? =
 
@@ -111,21 +117,79 @@ Example:
 
 == Screenshots ==
 
-1. SETTINGS PAGE
+1. Customise or add additional fields to your Checkout screen.
 
-2. ORDER SUMMARY
+2. New Checkout fields appear in the Order Summary.
 
-3. RECEIPT
+3. New Checkout fields also appear in the Order Receipt e-mail sent to the customer.
 
-4. INPUT TYPE
+4. You can add up to 15 different types of Checkout fields.
 
-5. CHECKBOX
+5. Text fields, Description blocks, Dropdowns, Radio lists, Date & Time Pickers, etc.
 
-6. DATE PICKER
+6. Add Date and Time fields to the Checkout.
 
-7. SELECT OPTIONS
+7. Let you customer fill in forms using dropdown lists at Checkout.
+
+8. Customize Checkout fields from the WooCheckout menu item in the WordPress Administration.
 
 == Changelog ==
+
+= 4.0.9 =
+* Added: ID to custom fields on Edit Order screen
+* Added: Hover state to custom fields on Edit Order screen
+* Fixed: Shipping Methods not updating at Checkout
+
+= 4.0.8 =
+* Fixed: PHP notice on Checkout screen
+* Added: WordPress Action to override DatePicker Options
+* Changed: Check for farbtastic on ColorPicker
+* Added: Modal prompt on deleting Checkout field
+* Added: Hover labels for WooCheckout fields
+* Fixed: Checkout issue with Multi-Checkbox Type
+
+= 4.0.7 =
+* Changed: Wide is now the default Position for new custom Checkout fields
+* Fixed: Multi-checkbox showing reversed on Checkout screen
+
+= 4.0.6 =
+* Fixed: Billing fields not showing in Edit Order screen
+* Fixed: Additional checkbox required state not working
+* Fixed: Billing checkbox required state not working
+* Fixed: Shipping checkbox required state not working
+
+= 4.0.5 =
+* Fixed: Notice unable to be dismissed outside WooCheckout screen
+* Fixed: Only dismiss notices to Users with manage_options User Capability
+* Fixed: Only show Administrator Actions to Users with manage_options User Capability
+
+= 4.0.4 =
+* Fixed: Required field message for non-required fields at Checkout
+* Added: Delete WCM WordPress Options to Advanced tab
+* Added: Delete WCM Orders Post meta to Advanced tab
+* Added: Delete WCM Users meta to Advanced tab
+* Added: Confirmation prompt to Advanced tab links
+* Changed: Hide empty File uploader fields on Edit Order screen
+* Added: Force show Billing fields to Switches tab
+* Changed: Took out all !important CSS references
+* Fixed: Line-breaks being stripped from Text Area fields
+* Changed: Default rows for textarea field is 5
+* Changed: Default columns for textarea field is 25
+* Added: wooccm_checkout_field_texarea_rows Filter for overriding default textarea field rows
+* Added: wooccm_checkout_field_texarea_columns Filter for overriding default textarea field rows
+* Changed: WooCheckout screen now using template files
+* Changed: Center Position label to Full-width
+
+= 4.0.3 =
+* Changed: Notice references to WooCommerce Checkout Manager
+* Fixed: Broken JavaScript on Checkout page (thanks mandelkind)
+* Fixed: Checking for array variables before loading them
+* Added: WordPress Filters to override DatePicker and TimePicker (thanks freddes51)
+* Added: Additional fields appear under General Details on the Edit Order screen
+* Fixed: Image editor on Checkout page when logged-in as Administrator
+* Changed: Handler tab to Order Notes on WooCheckout screen
+* Added: Advanced tab to WooCheckout screen
+* Fixed: Heading type breaking the table on the Order Received screen
 
 = 4.0.2 =
 * Fixed: PHP warning notices on Checkout page (thanks sfowles)

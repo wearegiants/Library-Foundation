@@ -1,10 +1,97 @@
 <?php
+
 /**
  * Post storage model for editability
  *
  * @since 1.0
  */
 class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
+
+	/**
+	 * @since 3.6.1
+	 */
+	public function get_ajax_options( $column, $search ) {
+
+		$options = array();
+
+		switch ( $column->properties->type ) {
+
+			case 'column-parent':
+			case 'column-wc-parent':
+				$options = $this->get_posts_options( array( 's' => $search, 'post_type' => $column->get_post_type() ) );
+				break;
+
+			// WooCommerce: Upsells
+			// WooCommerce: Crosssells
+			// WooCommerce: Included Products
+			// WooCommerce: Excluded Products
+			case 'column-wc-upsells':
+			case 'column-wc-crosssells':
+			case 'column-wc-exclude_products':
+			case 'column-wc-include_products':
+				$args = array(
+					'post_type'      => 'product',
+					'post_status'    => 'any',
+					's'              => $search,
+					'fields'         => 'ids',
+					'posts_per_page' => 60
+				);
+
+				$args2 = array(
+					'post_type'      => 'product',
+					'post_status'    => 'any',
+					'meta_query'     => array(
+						array(
+							'key'     => '_sku',
+							'value'   => $search,
+							'compare' => 'LIKE'
+						)
+					),
+					'fields'         => 'ids',
+					'posts_per_page' => 60
+				);
+
+				$posts = array_unique( array_merge( get_posts( $args ), get_posts( $args2 ) ) );
+
+				$options = array();
+
+				foreach ( $posts as $post ) {
+					$product = wc_get_product( $post );
+					$options[ $post ] = wp_kses_post( html_entity_decode( $product->get_formatted_name(), ENT_QUOTES, get_bloginfo( 'charset' ) ) );
+				}
+				break;
+
+			// WooCommerce: Parent Product
+			case 'column-wc-parent':
+				$args = array(
+					'post_type'      => 'product',
+					'post_status'    => 'any',
+					'posts_per_page' => 100,
+					's'              => $search,
+					'tax_query'      => array(
+						array(
+							'taxonomy' => 'product_type',
+							'field'    => 'slug',
+							'terms'    => 'grouped'
+						)
+					),
+					'fields'         => 'ids',
+				);
+
+				$posts = get_posts( $args );
+
+				$options = array();
+
+				foreach ( $posts as $post ) {
+					$product = wc_get_product( $post );
+					$name = str_replace( '&ndash; ', '', $product->get_formatted_name() ); // removes arrow
+					$options[ $post ] = $name;
+				}
+				break;
+		}
+
+		return $options;
+	}
 
 	/**
 	 * @see CACIE_Editable_Model::is_editable()
@@ -15,7 +102,7 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 		// By default, inherit editability from parent
 		$is_editable = parent::is_editable( $column );
 
-		switch ( $column->properties->type ) {
+		switch ( $column->get_type() ) {
 			// Default columns
 			case 'author':
 			case 'date':
@@ -23,11 +110,12 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 			case 'tags':
 			case 'title':
 
-			// Custom columns
+				// Custom columns
 			case 'column-author_name':
 			case 'column-attachment':
 			case 'column-comment_status':
 			case 'column-content':
+			case 'column-date_published':
 			case 'column-excerpt':
 			case 'column-featured_image':
 			case 'column-order':
@@ -40,9 +128,9 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 			case 'column-sticky':
 			case 'column-taxonomy':
 
-			// WooCommerce columns
+				// WooCommerce columns
 
-			// Product
+				// Product
 			case 'thumb':
 			case 'name':
 			case 'sku':
@@ -54,6 +142,7 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 			case 'column-wc-crosssells':
 			case 'column-wc-dimensions':
 			case 'column-wc-featured':
+			case 'column-wc-parent':
 			case 'column-wc-reviews_enabled':
 			case 'column-wc-shipping_class':
 			case 'column-wc-stock-status':
@@ -61,10 +150,10 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 			case 'column-wc-visibility':
 			case 'column-wc-weight':
 
-			// Order
+				// Order
 			case 'order_status':
 
-			// Coupon
+				// Coupon
 			case 'coupon_code':
 			case 'type':
 			case 'amount':
@@ -121,8 +210,10 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 				$options = get_post_format_strings();
 				break;
 			case 'column-status':
-				$options = get_post_statuses();
-				$options['trash'] = __( 'Trash' );
+				if ( ( $_column = $this->storage_model->get_column_by_name( $column['column-name'] ) ) && ( method_exists( $_column, 'get_statuses' ) ) ) {
+					$options = $_column->get_statuses();
+					$options['trash'] = __( 'Trash' );
+				}
 				break;
 			case 'column-taxonomy':
 				$options = $this->get_term_options( $column['taxonomy'] );
@@ -144,7 +235,7 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 				}
 				break;
 			case 'column-wc-shipping_class':
-				$options = $this->get_term_options( 'product_shipping_class', __( 'No shipping class', 'cpac' ) );
+				$options = $this->get_term_options( 'product_shipping_class', __( 'No shipping class', 'codepress-admin-columns' ) );
 				break;
 		}
 
@@ -171,13 +262,10 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 	 * @return array Order status options ([slug] => [label])
 	 */
 	public function get_wc_order_status_options() {
-
 		$statuses = array();
-
 		if ( cpac_is_wc_version_gte( '2.2' ) ) {
 			$statuses = wc_get_order_statuses();
 		}
-
 		else {
 			$statuses_raw = (array) get_terms( 'shop_order_status', array( 'hide_empty' => 0, 'orderby' => 'id' ) );
 			foreach ( $statuses_raw as $status ) {
@@ -196,12 +284,11 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 	 * @return array Parent post options ([post ID] => [post title])
 	 */
 	public function get_post_parent_options() {
-
 		$options = array();
 
 		$posts_query = new WP_Query( array(
-			'post_type' => $this->storage_model->key,
-			'posts_per_page' => -1
+			'post_type'      => $this->storage_model->key,
+			'posts_per_page' => - 1
 		) );
 
 		if ( $posts_query->have_posts() ) {
@@ -228,25 +315,26 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 			 * Default columns
 			 *
 			 */
-			'author' => array(
-				'type' 		=> 'select2_dropdown',
-				'property' 	=> 'post_author',
-				'ajax_populate' => true
+			'author'                => array(
+				'type'            => 'select2_dropdown',
+				'property'        => 'post_author',
+				'ajax_populate'   => true,
+				'formatted_value' => 'user'
 			),
-			'categories' => array(
-				'type' 		=> 'select2_tags'
+			'categories'            => array(
+				'type' => 'select2_tags'
 			),
-			'date' => array(
-				'type' 		=> 'date',
-				'property' 	=> 'post_date'
+			'date'                  => array(
+				'type'     => 'date',
+				'property' => 'post_date'
 			),
-			'tags' => array(
-				'type' 		=> 'select2_tags'
+			'tags'                  => array(
+				'type' => 'select2_tags'
 			),
-			'title' => array(
-				'type' 		=> 'text',
-				'property' 	=> 'post_title',
-				'js' 		=> array(
+			'title'                 => array(
+				'type'         => 'text',
+				'property'     => 'post_title',
+				'js'           => array(
 					'selector' => 'a.row-title',
 				),
 				'display_ajax' => false
@@ -256,85 +344,91 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 			 * Custom columns
 			 *
 			 */
-			'column-author_name' => array(
-				'type' 		=> 'select2_dropdown',
-				'property' 	=> 'post_author',
-				'ajax_populate' => true
+			'column-author_name'    => array(
+				'type'            => 'select2_dropdown',
+				'property'        => 'post_author',
+				'ajax_populate'   => true,
+				'formatted_value' => 'user'
 			),
-			'column-attachment' => array(
-				'type' => 'media',
+			'column-attachment'     => array(
+				'type'       => 'media',
 				'attachment' => array(
 					'disable_select_current' => true,
 				),
-				'multiple' => true
+				'multiple'   => true
 			),
 			'column-comment_status' => array(
-				'type' 		=> 'togglable',
-				'property' 	=> 'comment_status',
-				'options' 	=> array( 'closed', 'open' )
+				'type'     => 'togglable',
+				'property' => 'comment_status',
+				'options'  => array( 'closed', 'open' )
 			),
-			'column-excerpt' => array(
-				'type' 		=> 'textarea',
-				'property' 	=> 'post_excerpt',
-				'placeholder' => __( 'Excerpt automatically generated from content.', 'cpac' )
+			'column-date_published' => array(
+				'type'     => 'date',
+				'property' => 'post_date'
+			),
+			'column-excerpt'        => array(
+				'type'        => 'textarea',
+				'property'    => 'post_excerpt',
+				'placeholder' => __( 'Excerpt automatically generated from content.', 'codepress-admin-columns' )
 			),
 			'column-featured_image' => array(
-				'type' 		=> 'media',
-				'attachment' => array(
-					'library'	=> array(
+				'type'         => 'media',
+				'attachment'   => array(
+					'library' => array(
 						'type' => 'image'
 					)
 				),
 				'clear_button' => true
 			),
-			'column-post_formats' => array(
-				'type' 		=> 'select'
+			'column-post_formats'   => array(
+				'type' => 'select'
 			),
-			'column-page_template' => array(
-				'type' 		=> 'select'
+			'column-page_template'  => array(
+				'type' => 'select'
 			),
-			'column-parent' 	=> array(
-				'type'			=> 'select2_dropdown',
-				'property'		=> 'post_parent',
-				'ajax_populate'	=> true,
-				'multiple'		=> false
+			'column-parent'         => array(
+				'type'            => 'select2_dropdown',
+				'property'        => 'post_parent',
+				'ajax_populate'   => true,
+				'multiple'        => false,
+				'clear_button'    => true,
+				'formatted_value' => 'post'
 			),
-			'column-ping_status' => array(
-				'type' 		=> 'togglable',
-				'property' 	=> 'ping_status',
-				'options' 	=> array( 'closed', 'open' )
+			'column-ping_status'    => array(
+				'type'     => 'togglable',
+				'property' => 'ping_status',
+				'options'  => array( 'closed', 'open' )
 			),
-			'column-content' => array(
-				'type' 		=> 'textarea',
-				'property' 	=> 'post_content',
+			'column-content'        => array(
+				'type'     => 'textarea',
+				'property' => 'post_content',
 			),
-			'column-order' => array(
-				'type' 		=> 'text',
-				'property' 	=> 'menu_order',
+			'column-order'          => array(
+				'type'     => 'text',
+				'property' => 'menu_order',
 			),
-			'column-slug' => array(
-				'type'		=> 'text',
-				'property' 	=> 'post_name',
+			'column-slug'           => array(
+				'type'     => 'text',
+				'property' => 'post_name',
 			),
-			'column-sticky' => array(
-				'type'		=> 'togglable',
-				'options' 	=> array( 'no', 'yes' )
+			'column-sticky'         => array(
+				'type'    => 'togglable',
+				'options' => array( 'no', 'yes' )
 			),
 			// @todo on DOM update also refresh title ( contains post status aswell )
-			'column-status' => array(
-				'type'		=> 'select',
-				'property' 	=> 'post_status'
+			'column-status'         => array(
+				'type'     => 'select',
+				'property' => 'post_status'
 			),
-			'column-taxonomy' => array(
-				'type' 		=> 'select2_tags'
+			'column-taxonomy'       => array(
+				'type' => 'select2_tags'
 			),
 
 			/**
 			 * Custom fields column
 			 *
 			 */
-			'column-meta' => array(
-				// settings are set in CACIE_Editable_Model::get_columns()
+			'column-meta'           => array(// settings are set in CACIE_Editable_Model::get_columns()
 			)
 		);
 
@@ -345,134 +439,143 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 		if ( function_exists( 'WC' ) ) {
 
 			$wc_data = array(
-				'name' => array(
-					'type' 		=> 'text',
-					'property' 	=> 'post_title',
-					'js' 		=> array(
+				'name'                         => array(
+					'type'         => 'text',
+					'property'     => 'post_title',
+					'js'           => array(
 						'selector' => 'a.row-title',
 					),
 					'display_ajax' => false
 				),
-				'amount' => array(
+				'amount'                       => array(
 					'type' => 'text'
 				),
-				'column-wc-minimum_amount' => array(
+				'column-wc-minimum_amount'     => array(
 					'type' => 'text'
 				),
-				'order_status' => array(
+				'order_status'                 => array(
 					'type' => 'select'
 				),
-				'coupon_code' => array(
-					'type' => 'text',
-					'js' => array(
+				'coupon_code'                  => array(
+					'type'     => 'text',
+					'js'       => array(
 						'selector' => '.row-actions'
 					),
 					'property' => 'post_title'
 				),
-				'column-wc-free_shipping' => array(
-					'type' => 'togglable',
+				'column-wc-free_shipping'      => array(
+					'type'    => 'togglable',
 					'options' => array( 'no', 'yes' )
 				),
-				'column-wc-apply_before_tax' => array(
-					'type' => 'togglable',
+				'column-wc-apply_before_tax'   => array(
+					'type'    => 'togglable',
 					'options' => array( 'no', 'yes' )
 				),
-				'price' => array(
+				'price'                        => array(
 					'type' => 'wc_price'
 				),
-				'column-wc-weight' => array(
+				'column-wc-weight'             => array(
 					'type' => 'float',
-					'js' => array(
+					'js'   => array(
 						'inputclass' => 'small-text'
 					)
 				),
-				'column-wc-dimensions' => array(
+				'column-wc-dimensions'         => array(
 					'type' => 'dimensions'
 				),
-				'sku' => array(
+				'sku'                          => array(
 					'type' => 'text'
 				),
-				'is_in_stock' => array(
+				'is_in_stock'                  => array(
 					'type' => 'wc_stock'
 				),
-				'column-wc-stock-status' => array(
-					'type' 		=> 'togglable',
-					'options' 	=> array( 'outofstock', 'instock' )
+				'column-wc-stock-status'       => array(
+					'type'    => 'togglable',
+					'options' => array( 'outofstock', 'instock' )
 				),
-				'type' => array(
-					'type' 		=> 'select',
-					'options'	=> wc_get_coupon_types()
+				'type'                         => array(
+					'type'    => 'select',
+					'options' => wc_get_coupon_types()
 				),
-				'thumb' => array(
-					'type' => 'media',
-					'attachment' => array(
-						'library'	=> array(
+				'thumb'                        => array(
+					'type'         => 'media',
+					'attachment'   => array(
+						'library' => array(
 							'type' => 'image'
 						)
 					),
 					'clear_button' => true
 				),
-				'column-wc-upsells' => array(
-					'type'				=> 'select2_dropdown',
-					'ajax_populate' 	=> true,
-					'advanced_dropdown'	=> true,
-					'multiple'			=> true
+				'column-wc-upsells'            => array(
+					'type'              => 'select2_dropdown',
+					'ajax_populate'     => true,
+					'advanced_dropdown' => true,
+					'multiple'          => true,
+					'formatted_value'   => 'wc_product'
 				),
-				'column-wc-crosssells' => array(
-					'type'				=> 'select2_dropdown',
-					'ajax_populate' 	=> true,
-					'advanced_dropdown'	=> true,
-					'multiple'			=> true
+				'column-wc-crosssells'         => array(
+					'type'              => 'select2_dropdown',
+					'ajax_populate'     => true,
+					'advanced_dropdown' => true,
+					'multiple'          => true,
+					'formatted_value'   => 'wc_product'
 				),
-				'column-wc-exclude_products' => array(
-					'type'				=> 'select2_dropdown',
-					'ajax_populate' 	=> true,
-					'advanced_dropdown'	=> true,
-					'multiple'			=> true
+				'column-wc-parent'             => array(
+					'type'              => 'select2_dropdown',
+					'ajax_populate'     => true,
+					'advanced_dropdown' => true,
+					'clear_button'      => true
 				),
-				'column-wc-include_products' => array(
-					'type'				=> 'select2_dropdown',
-					'ajax_populate' 	=> true,
-					'advanced_dropdown'	=> true,
-					'multiple'			=> true
+				'column-wc-exclude_products'   => array(
+					'type'              => 'select2_dropdown',
+					'ajax_populate'     => true,
+					'advanced_dropdown' => true,
+					'multiple'          => true,
+					'formatted_value'   => 'wc_product'
 				),
-				'column-wc-shipping_class' => array(
+				'column-wc-include_products'   => array(
+					'type'              => 'select2_dropdown',
+					'ajax_populate'     => true,
+					'advanced_dropdown' => true,
+					'multiple'          => true,
+					'formatted_value'   => 'wc_product'
+				),
+				'column-wc-shipping_class'     => array(
 					'type' => 'select'
 				),
-				'usage' => array(
+				'usage'                        => array(
 					'type' => 'wc_usage'
 				),
-				'description' => array(
-					'type' 		=> 'textarea',
-					'property' 	=> 'post_excerpt'
+				'description'                  => array(
+					'type'     => 'textarea',
+					'property' => 'post_excerpt'
 				),
-				'column-wc-reviews_enabled' => array(
-					'type' 		=> 'togglable',
-					'property' 	=> 'comment_status',
-					'options' 	=> array( 'closed', 'open' )
+				'column-wc-reviews_enabled'    => array(
+					'type'     => 'togglable',
+					'property' => 'comment_status',
+					'options'  => array( 'closed', 'open' )
 				),
 				'column-wc-backorders_allowed' => array(
-					'type' 		=> 'select',
-					'options' 	=> array(
-						'no' => __( 'Do not allow', 'woocommerce' ),
+					'type'    => 'select',
+					'options' => array(
+						'no'     => __( 'Do not allow', 'woocommerce' ),
 						'notify' => __( 'Allow, but notify customer', 'woocommerce' ),
-						'yes' => __( 'Allow', 'woocommerce' )
+						'yes'    => __( 'Allow', 'woocommerce' )
 					)
 				),
 
-
 				// Products
-				'product_cat' => array(
-					'type' 		=> 'select2_tags'
+				'product_cat'                  => array(
+					'type' => 'select2_tags'
 				),
-				'product_tag' => array(
-					'type' 		=> 'select2_tags'
+				'product_tag'                  => array(
+					'type' => 'select2_tags'
 				),
-				'column-wc-featured' => array(
-					'type' => 'togglable',
+				'column-wc-featured'           => array(
+					'type'    => 'togglable',
 					'options' => array( 'no', 'yes' )
 				),
-				'column-wc-visibility' => array(
+				'column-wc-visibility'         => array(
 					'type' => 'select',
 				)
 			);
@@ -495,9 +598,10 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 		 * @param array $data {
 		 *     Editability settings.
 		 *
-		 *     @type string		$type		Editability type. Accepts 'text', 'select', 'textarea', etc.
-		 *     @type array		$options	Optional. Options for dropdown ([value] => [label]), only used when $type is "select"
+		 * @type string $type Editability type. Accepts 'text', 'select', 'textarea', etc.
+		 * @type array $options Optional. Options for dropdown ([value] => [label]), only used when $type is "select"
 		 * }
+		 *
 		 * @param CACIE_Editable_Model $model Editability storage model
 		 */
 		$data = apply_filters( 'cac/editable/editables_data', $data, $this );
@@ -524,7 +628,7 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 
 			$columndata = array();
 
-			foreach ( $this->storage_model->columns as $column_name => $column ) {
+			foreach ( $this->storage_model->get_columns() as $column_name => $column ) {
 
 				// Edit enabled for this column?
 				if ( ! $this->is_edit_enabled( $column ) ) {
@@ -579,7 +683,7 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 				else {
 					$raw_value = $this->get_column_editability_value( $column, $post->ID );
 
-					if ( $raw_value === NULL ) {
+					if ( $raw_value === null ) {
 						continue;
 					}
 
@@ -599,7 +703,7 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 				$value = apply_filters( 'cac/editable/column_value', $value, $column, $post->ID, $this );
 				$value = apply_filters( 'cac/editable/column_value/column=' . $column->get_type(), $value, $column, $post->ID, $this );
 
-				// Get item data
+				// Get item data from Add-ons, like ACF or WC
 				$itemdata = array();
 
 				if ( method_exists( $column, 'get_item_data' ) ) {
@@ -608,10 +712,10 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 
 				// Add data
 				$columndata[ $column_name ] = array(
-					'revisions' => array( $value ),
+					'revisions'        => array( $value ),
 					'current_revision' => 0,
-					'itemdata' => $itemdata,
-					'editable' => array(
+					'itemdata'         => $itemdata,
+					'editable'         => array(
 						'formattedvalue' => $this->get_formatted_value( $column, $value )
 					)
 				);
@@ -619,8 +723,8 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 
 			// Add post to items list
 			$items[ $post->ID ] = array(
-				'ID' 			=> $post->ID,
-				'columndata' 	=> $columndata
+				'ID'         => $post->ID,
+				'columndata' => $columndata
 			);
 		}
 
@@ -634,23 +738,33 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 	 *
 	 * @param CPAC_Column $column Column
 	 * @param integer $id Item ID
+	 *
 	 * @return mixed Raw value
 	 */
 	public function get_column_editability_value( $column, $id ) {
 
-		$raw_value = $column->get_raw_value( $id );
+		$raw_value = null;
 
-		if ( $column->properties->type == 'column-wc-stock-status' ) {
-			$product = get_product( $id );
-
-			if ( $product->is_type( 'variable', 'grouped', 'external' ) ) {
-				return NULL;
-			}
+		if ( ! $column->properties->default ) {
+			$raw_value = $column->get_raw_value( $id );
 		}
-		else if ( $column->properties->type == 'order_status' ) {
-			if ( substr( $raw_value, 0, 3 ) != 'wc-' ) {
-				return 'wc-' . $raw_value;
-			}
+
+		switch ( $column->properties->type ) {
+			case 'column-wc-stock-status':
+				$product = wc_get_product( $id );
+
+				if ( $product->is_type( 'variable', 'grouped', 'external' ) ) {
+					$raw_value = null;
+				}
+				break;
+			case 'order_status':
+				if ( substr( $raw_value, 0, 3 ) != 'wc-' ) {
+					$raw_value = 'wc-' . $raw_value;
+				}
+				break;
+			case '':
+				$raw_value = date( 'Ymd', strtotime( $column->get_raw_value( $id ) ) );
+				break;
 		}
 
 		return $raw_value;
@@ -672,8 +786,8 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 			foreach ( $terms as $t ) {
 				$posts_in_term_qv = array(
 					'post_type' => 'post',
-					'taxonomy'	=> $taxonomy,
-					'term'		=> $t->slug
+					'taxonomy'  => $taxonomy,
+					'term'      => $t->slug
 				);
 
 				$out[] = sprintf( '<a href="%s">%s</a>',
@@ -690,7 +804,7 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 	 * @see CACIE_Editable_Model::manage_value()
 	 * @since 1.0
 	 */
-	public function manage_value( $column, $id ){
+	public function manage_value( $column, $id ) {
 
 		global $post;
 
@@ -709,7 +823,7 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 						'<a href="%s">%s</a>',
 						esc_url( add_query_arg( array(
 							'post_type' => $post->post_type,
-							'author' => get_the_author_meta( 'ID' )
+							'author'    => get_the_author_meta( 'ID' )
 						), 'edit.php' ) ),
 						get_the_author()
 					);
@@ -718,6 +832,7 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 					$this->display_terms( $id, 'category' );
 					break;
 				case 'date':
+				case 'column-date_published':
 					// variables
 					global $post;
 					$post = get_post( $id );
@@ -730,33 +845,42 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 					if ( '0000-00-00 00:00:00' == $post->post_date ) {
 						$t_time = $h_time = __( 'Unpublished' );
 						$time_diff = 0;
-					} else {
+					}
+					else {
 						$t_time = get_the_time( __( 'Y/m/d g:i:s A' ) );
 						$m_time = $post->post_date;
 						$time = get_post_time( 'G', true, $post );
 
 						$time_diff = time() - $time;
 
-						if ( $time_diff > 0 && $time_diff < DAY_IN_SECONDS )
+						if ( $time_diff > 0 && $time_diff < DAY_IN_SECONDS ) {
 							$h_time = sprintf( __( '%s ago' ), human_time_diff( $time ) );
-						else
+						}
+						else {
 							$h_time = mysql2date( __( 'Y/m/d' ), $m_time );
+						}
 					}
 
 					//echo '<td ' . $attributes . '>';
-					if ( 'excerpt' == $mode )
+					if ( 'excerpt' == $mode ) {
 						echo apply_filters( 'post_date_column_time', $t_time, $post, $column_name, $mode );
-					else
+					}
+					else {
 						echo '<abbr title="' . $t_time . '">' . apply_filters( 'post_date_column_time', $h_time, $post, $column_name, $mode ) . '</abbr>';
+					}
 					echo '<br />';
 					if ( 'publish' == $post->post_status ) {
 						_e( 'Published' );
-					} elseif ( 'future' == $post->post_status ) {
-						if ( $time_diff > 0 )
+					}
+					elseif ( 'future' == $post->post_status ) {
+						if ( $time_diff > 0 ) {
 							echo '<strong class="attention">' . __( 'Missed schedule' ) . '</strong>';
-						else
+						}
+						else {
 							_e( 'Scheduled' );
-					} else {
+						}
+					}
+					else {
 						_e( 'Last Modified' );
 					}
 					//echo '</td>';
@@ -814,37 +938,33 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 		}
 
 		// Get editability data for the column to be saved
-		$editable = $this->get_editable( $column->properties->name );
+		$editable = $this->get_editable( $column->get_name() );
 
-		switch ( $column->properties->type ) {
+		switch ( $column->get_type() ) {
 
 			// Default
 			case 'categories':
 				$this->set_post_terms( $id, $value, 'category' );
 				break;
 			case 'date':
+			case 'column-date_published':
 				// preserve the original time
-				$time = strtotime("1970-01-01 " . date( 'H:i:s', strtotime( $post->post_date ) ) );
+				$time = strtotime( "1970-01-01 " . date( 'H:i:s', strtotime( $post->post_date ) ) );
 
 				wp_update_post( array(
-					'ID' => $post->ID,
+					'ID'        => $post->ID,
 					'edit_date' => 1, // needed for GMT date
 					'post_date' => date( 'Y-m-d H:i:s', strtotime( $value ) + $time )
-				));
+				) );
 				break;
 			case 'tags':
 				$this->set_post_terms( $id, $value, 'post_tag' );
 				break;
 
 			// Custom columns
-			case 'column-acf_field':
-				if ( function_exists( 'update_field' ) ) {
-					update_field( $column->get_field_key(), $value, $post->ID );
-				}
-				break;
 			case 'column-attachment':
 				// detach
-				if ( $attachment_ids = get_posts( array( 'post_type' => 'attachment', 'post_parent' => $post->ID, 'posts_per_page' => -1, 'fields' => 'ids' ) ) ) {
+				if ( $attachment_ids = get_posts( array( 'post_type' => 'attachment', 'post_parent' => $post->ID, 'posts_per_page' => - 1, 'fields' => 'ids' ) ) ) {
 					foreach ( $attachment_ids as $attachment_id ) {
 						wp_update_post( array( 'ID' => $attachment_id, 'post_parent' => '' ) );
 					}
@@ -883,12 +1003,13 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 				}
 				break;
 			case 'column-taxonomy':
-				if ( ! empty( $column->options->taxonomy ) && taxonomy_exists( $column->options->taxonomy ) ) {
-					if ( 'post_format' == $column->options->taxonomy && ! empty( $value ) ) {
+				$taxonomy = $column->get_option( 'taxonomy' );
+				if ( $taxonomy && taxonomy_exists( $taxonomy ) ) {
+					if ( 'post_format' == $taxonomy && ! empty( $value ) ) {
 						$value = $value[0];
 					}
 
-					$this->set_post_terms( $id, $value, $column->options->taxonomy );
+					$this->set_post_terms( $id, $value, $taxonomy );
 				}
 				break;
 
@@ -899,15 +1020,15 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 			case 'price':
 				if ( is_array( $value ) && isset( $value['regular_price'] ) && isset( $value['sale_price'] ) && isset( $value['sale_price_dates_from'] ) && isset( $value['sale_price_dates_to'] ) ) {
 					CACIE_WooCommerce::update_product_pricing( $post->ID, array(
-						'regular_price' => $value['regular_price'],
-						'sale_price' => $value['sale_price'],
+						'regular_price'         => $value['regular_price'],
+						'sale_price'            => $value['sale_price'],
 						'sale_price_dates_from' => $value['sale_price_dates_from'],
-						'sale_price_dates_to' => $value['sale_price_dates_to'],
+						'sale_price_dates_to'   => $value['sale_price_dates_to'],
 					) );
 				}
 				break;
 			case 'column-wc-weight':
-				$product = get_product( $post->ID );
+				$product = wc_get_product( $post->ID );
 
 				if ( ! $product->is_virtual() ) {
 					update_post_meta( $post->ID, '_weight', ( $value === '' ) ? '' : wc_format_decimal( $value ) );
@@ -915,7 +1036,7 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 				break;
 			case 'column-wc-dimensions':
 				if ( is_array( $value ) && isset( $value['length'] ) && isset( $value['width'] ) && isset( $value['height'] ) ) {
-					$product = get_product( $post->ID );
+					$product = wc_get_product( $post->ID );
 
 					if ( ! $product->is_virtual() ) {
 						update_post_meta( $post->ID, '_length', ( $value === '' ) ? '' : wc_format_decimal( $value['length'] ) );
@@ -925,8 +1046,6 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 				}
 				break;
 			case 'sku':
-				$product = get_product( $post->ID );
-
 				$current_sku = get_post_meta( $post->ID, '_sku', true );
 				$new_sku = wc_clean( $value );
 
@@ -935,7 +1054,7 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 				}
 
 				if ( $new_sku != $current_sku ) {
-					$existing_id = $wpdb->get_var( $wpdb->prepare("
+					$existing_id = $wpdb->get_var( $wpdb->prepare( "
 						SELECT $wpdb->posts.ID
 					    FROM $wpdb->posts
 					    LEFT JOIN $wpdb->postmeta ON ($wpdb->posts.ID = $wpdb->postmeta.post_id)
@@ -945,7 +1064,7 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 					", $new_sku ) );
 
 					if ( $existing_id ) {
-						return new WP_Error( 'cacie_error_sku_exists', __( 'The SKU must be unique.', 'cpac' ) );
+						return new WP_Error( 'cacie_error_sku_exists', __( 'The SKU must be unique.', 'codepress-admin-columns' ) );
 					}
 
 					update_post_meta( $post->ID, '_sku', $new_sku );
@@ -1047,6 +1166,9 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 
 				update_post_meta( $id, 'product_ids', implode( ',', $product_ids ) );
 				break;
+			case 'column-wc-parent':
+				wp_update_post( array( 'ID' => $id, 'post_parent' => $value ) );
+				break;
 			case 'column-wc-minimum_amount':
 				update_post_meta( $id, 'minimum_amount', wc_format_decimal( $value ) );
 				break;
@@ -1084,7 +1206,7 @@ class CACIE_Editable_Model_Post extends CACIE_Editable_Model {
 
 					if ( isset( $post->{$property} ) ) {
 						wp_update_post( array(
-							'ID' => $post->ID,
+							'ID'      => $post->ID,
 							$property => $value
 						) );
 					}

@@ -7,25 +7,15 @@
  */
 class CAC_Sortable_Model_Link extends CAC_Sortable_Model {
 
-	/**
-	 * Constructor
-	 *
-	 * @since 1.0
-	 */
-	function __construct( $storage_model ) {
-		parent::__construct( $storage_model );
-
-		// default sortby
-		$this->default_orderby = '';
-
-		// handle sorting request
+	public function init_hooks() {
 		add_filter( 'get_bookmarks', array( $this, 'handle_sorting_request' ), 10, 2 );
+		add_filter( "manage_" . $this->storage_model->get_screen_id() . "_sortable_columns", array( $this, 'add_sortable_headings' ) );
+	}
 
-		// register sortable headings
-		add_filter( "manage_{$storage_model->page}_sortable_columns", array( $this, 'add_sortable_headings' ) );
-
-		// add reset button
-		//add_action( 'restrict_manage_comments', array( $this, 'add_reset_button' ) );
+	/**
+	 * @since 3.7
+	 */
+	public function get_items( $args ) {
 	}
 
 	/**
@@ -65,10 +55,6 @@ class CAC_Sortable_Model_Link extends CAC_Sortable_Model {
 	 * @return array Vars
 	 */
 	public function handle_sorting_request( $results, $vars ) {
-		global $pagenow;
-
-		if ( 'link-manager.php' !== $pagenow )
-			return $results;
 
 		$vars = $this->apply_sorting_preference( $vars );
 
@@ -81,8 +67,6 @@ class CAC_Sortable_Model_Link extends CAC_Sortable_Model {
 		if ( empty( $column ) ) {
 			return $results;
 		}
-
-		$posts = array(); // unsorted Posts
 
 		$length = '';
 

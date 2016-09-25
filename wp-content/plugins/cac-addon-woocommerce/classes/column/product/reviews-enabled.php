@@ -1,5 +1,5 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit when accessed directly
+defined( 'ABSPATH' ) or die();
 
 /**
  * @since 1.0
@@ -11,13 +11,10 @@ class CPAC_WC_Column_Post_Reviews_Enabled extends CPAC_Column_Post_Comment_Statu
 	 * @since 1.0
 	 */
 	public function init() {
-
 		parent::init();
 
-		// Properties
-		$this->properties['type']	= 'column-wc-reviews_enabled';
-		$this->properties['label']	= __( 'Reviews enabled', 'cpac' );
-		$this->properties['group']	= 'woocommerce-custom';
+		$this->properties['type'] = 'column-wc-reviews_enabled';
+		$this->properties['label'] = __( 'Reviews enabled', 'codepress-admin-columns' );
+		$this->properties['group'] = __( 'WooCommerce', 'codepress-admin-columns' );
 	}
-
 }

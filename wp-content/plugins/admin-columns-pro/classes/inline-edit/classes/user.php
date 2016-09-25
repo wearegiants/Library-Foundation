@@ -1,4 +1,5 @@
 <?php
+
 /**
  * User storage model for editability
  *
@@ -7,6 +8,7 @@
 class CACIE_Editable_Model_User extends CACIE_Editable_Model {
 
 	private $users;
+
 	public $items;
 
 	/**
@@ -18,6 +20,12 @@ class CACIE_Editable_Model_User extends CACIE_Editable_Model {
 		parent::__construct( $storage_model );
 
 		add_action( 'pre_user_query', array( $this, 'populate_users' ), 99 );
+	}
+
+	/**
+	 * @since 3.6.1
+	 */
+	public function get_ajax_options( $column, $search ) {
 	}
 
 	/**
@@ -33,12 +41,13 @@ class CACIE_Editable_Model_User extends CACIE_Editable_Model {
 			// Default columns
 			case 'email':
 			case 'role':
+			case 'username':
 
-			// Custom columns
+				// Custom columns
 			case 'column-first_name':
 			case 'column-last_name':
-			case 'column-meta':
 			case 'column-nickname':
+			case 'column-roles':
 			case 'column-rich_editing':
 			case 'column-user_description':
 			case 'column-user_url':
@@ -73,14 +82,16 @@ class CACIE_Editable_Model_User extends CACIE_Editable_Model {
 
 			// WP Default
 			case 'role':
+			case 'column-roles':
 				if ( $_roles = get_editable_roles() ) {
 					foreach ( $_roles as $k => $role ) {
-						$options[ $k ] = $role['name'];
+						$options[ $k ] = translate_user_role( $role['name'] );
 					}
 				}
 				break;
 
 		}
+
 		return $options;
 	}
 
@@ -96,45 +107,55 @@ class CACIE_Editable_Model_User extends CACIE_Editable_Model {
 			 * Default columns
 			 *
 			 */
-			'email' => array(
-				'type' 		=> 'text',
-				'property' 	=> 'user_email'
+			'email'                   => array(
+				'type'     => 'text',
+				'property' => 'user_email'
 			),
-			'role' => array(
-				'type' 		=> 'select',
+			'role'                    => array(
+				'type' => 'select',
+			),
+			'username'                => array(
+				'type'         => 'text',
+				'js'           => array(
+					'selector' => 'strong > a',
+				),
+				'display_ajax' => false
 			),
 
 			/**
 			 * Custom columns
 			 *
 			 */
-			'column-first_name' => array(
-				'type' 		=> 'text',
+			'column-first_name'       => array(
+				'type' => 'text',
 			),
-			'column-last_name' => array(
-				'type' 		=> 'text',
+			'column-last_name'        => array(
+				'type' => 'text',
 			),
-			'column-nickname' => array(
-				'type' 		=> 'text',
+			'column-nickname'         => array(
+				'type' => 'text',
 			),
-			'column-rich_editing' => array(
-				'type' 		=> 'togglable',
-				'options' 	=> array( 'true', 'false' )
+			'column-roles'            => array(
+				'type'     => 'select2_dropdown',
+				'multiple' => true
+			),
+			'column-rich_editing'     => array(
+				'type'    => 'togglable',
+				'options' => array( true, false )
 			),
 			'column-user_description' => array(
-				'type' 		=> 'textarea',
+				'type' => 'textarea',
 			),
-			'column-user_url' => array(
-				'type' 		=> 'text',
-				'property' 	=> 'user_url'
+			'column-user_url'         => array(
+				'type'     => 'text',
+				'property' => 'user_url'
 			),
 
 			/**
 			 * Custom fields column
 			 *
 			 */
-			'column-meta' => array(
-				// settings are set in CACIE_Editable_Model::get_columns()
+			'column-meta'             => array(// settings are set in CACIE_Editable_Model::get_columns()
 			)
 		);
 
@@ -146,13 +167,14 @@ class CACIE_Editable_Model_User extends CACIE_Editable_Model {
 		 * @param array $data {
 		 *     Editability settings.
 		 *
-		 *     @type string		$type		Editability type. Accepts 'text', 'select', 'textarea', etc.
-		 *     @type array		$options	Optional. Options for dropdown ([value] => [label]), only used when $type is "select"
+		 * @type string $type Editability type. Accepts 'text', 'select', 'textarea', etc.
+		 * @type array $options Optional. Options for dropdown ([value] => [label]), only used when $type is "select"
 		 * }
+		 *
 		 * @param CACIE_Editable_Model $model Editability storage model
 		 */
 		$data = apply_filters( 'cac/editable/editables_data', $data, $this );
-        $data = apply_filters( 'cac/editable/editables_data/type=' . $this->storage_model->get_type(), $data, $this );
+		$data = apply_filters( 'cac/editable/editables_data/type=' . $this->storage_model->get_type(), $data, $this );
 
 		return $data;
 	}
@@ -172,7 +194,7 @@ class CACIE_Editable_Model_User extends CACIE_Editable_Model {
 		}
 
 		// Check whether this is the users overview page
-		if ( ! empty( $_REQUEST['action'] )  && $_REQUEST['action'] == 'delete' ) {
+		if ( ! empty( $_REQUEST['action'] ) && $_REQUEST['action'] == 'delete' ) {
 			return;
 		}
 
@@ -182,6 +204,7 @@ class CACIE_Editable_Model_User extends CACIE_Editable_Model {
 		$items = array();
 
 		if ( $users = $user_query->results ) {
+
 			foreach ( $users as $user ) {
 
 				if ( ! is_a( $user, 'WP_User' ) ) {
@@ -194,7 +217,7 @@ class CACIE_Editable_Model_User extends CACIE_Editable_Model {
 
 				$columndata = array();
 
-				foreach ( $this->storage_model->columns as $column_name => $column ) {
+				foreach ( $this->storage_model->get_columns() as $column_name => $column ) {
 
 					// Edit enabled for this column?
 					if ( ! $this->is_edit_enabled( $column ) ) {
@@ -212,15 +235,20 @@ class CACIE_Editable_Model_User extends CACIE_Editable_Model {
 								$value = $user->user_email;
 								break;
 							case 'role':
-								$value = $user->roles[0];
+								$value = '';
+								if ( isset( $user->roles[0] ) ) {
+									$value = $user->roles[0];
+								}
+								break;
+							case 'username':
+								$value = $user->user_login;
 								break;
 						}
-					}
-					// Custom column
+					} // Custom column
 					else {
 						$raw_value = $this->get_column_editability_value( $column, $user->ID );
 
-						if ( $raw_value === NULL ) {
+						if ( $raw_value === null ) {
 							continue;
 						}
 
@@ -249,19 +277,18 @@ class CACIE_Editable_Model_User extends CACIE_Editable_Model {
 
 					// Add data
 					$columndata[ $column_name ] = array(
-						'revisions' => array( $value ),
+						'revisions'        => array( $value ),
 						'current_revision' => 0,
-						'itemdata' => $itemdata,
-						'editable' => array(
+						'itemdata'         => $itemdata,
+						'editable'         => array(
 							'formattedvalue' => $this->get_formatted_value( $column, $value )
 						)
 					);
 				}
 
 				$items[ $user->ID ] = array(
-					'ID' 			=> $user->ID,
-					'object' 		=> get_object_vars( $user ),
-					'columndata' 	=> $columndata
+					'ID'         => $user->ID,
+					'columndata' => $columndata
 				);
 			}
 		}
@@ -285,18 +312,23 @@ class CACIE_Editable_Model_User extends CACIE_Editable_Model {
 	 * @see CACIE_Editable_Model::manage_value()
 	 * @since 3.3
 	 */
-	public function manage_value( $column, $id ){
+	public function manage_value( $column, $id ) {
 
 		switch ( $column->properties->type ) {
+			case 'username':
+				$user = get_user_by( 'id', $id );
+				echo $user->user_login;
+				break;
 			case 'email':
 				$user = get_user_by( 'id', $id );
 				echo '<a href="mailto:' . esc_attr( $user->user_email ) . '" title="' . esc_attr( sprintf( __( 'E-mail: %s' ), $user->user_email ) ) . '">' . $user->user_email . '</a>';
 				break;
 			case 'role':
+			case 'column-roles':
 				$user = get_user_by( 'id', $id );
 				global $wp_roles;
 				if ( $wp_roles && isset( $wp_roles->roles[ $user->roles[0] ] ) ) {
-					 echo $wp_roles->roles[ $user->roles[0] ]['name'];
+					echo translate_user_role( $wp_roles->roles[ $user->roles[0] ]['name'] );
 				}
 				break;
 		}
@@ -318,27 +350,61 @@ class CACIE_Editable_Model_User extends CACIE_Editable_Model {
 		// Third party columns can use the save() method as a callback for inline-editing
 		if ( method_exists( $column, 'save' ) ) {
 			$column->save( $id, $value );
+
 			return;
 		}
 
-		$editable = $this->get_editable( $column->properties->name );
+		$editable = $this->get_editable( $column->get_name() );
 
-		switch ( $column->properties->type ) {
+		switch ( $column->get_type() ) {
 
 			/**
 			 * Default Columns
 			 *
 			 */
 			case 'role':
-				wp_update_user( array( 'ID' => $id, 'role' => $value ) );
+				// users can not change their own role
+				if ( current_user_can( 'edit_users' ) && ( get_current_user_id() !== $user->ID ) && $value ) {
+					$user->set_role( $value );
+				}
+				break;
+			case 'username':
+				global $wpdb;
+
+				$value = sanitize_user( $value, true );
+
+				if ( $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(1) FROM {$wpdb->users} WHERE user_login = %s AND ID != %d", $value, $id ) ) ) {
+					return new WP_Error( 'cacie_error_username_exists', __( 'The username already exists.', 'codepress-admin-columns' ) );
+				}
+
+				$wpdb->update(
+					$wpdb->users,
+					array( 'user_login' => $value ),
+					array( 'ID' => $id ),
+					array( '%s' ),
+					array( '%d' )
+				);
+
+				clean_user_cache( $id );
+
 				break;
 
 			/**
 			 * Custom Columns
 			 */
-			case 'column-acf_field':
-				if ( function_exists( 'update_field' ) ) {
-					update_field( $column->get_field_key(), $value, 'user_' . $user->ID );
+			case 'column-roles':
+				if ( current_user_can( 'edit_users' ) ) {
+
+					// prevent the removal of your own admin role
+					if ( current_user_can( 'administrator' ) && get_current_user_id() == $user->ID ) {
+						$value[] = 'administrator';
+					}
+					if ( ! empty( $value ) ) {
+						$user->set_role( array_pop( $value ) );
+						foreach ( $value as $key ) {
+							$user->add_role( $key );
+						}
+					}
 				}
 				break;
 			case 'column-meta':
@@ -354,7 +420,7 @@ class CACIE_Editable_Model_User extends CACIE_Editable_Model {
 				$this->update_meta( $user->ID, 'nickname', $value );
 				break;
 			case 'column-rich_editing':
-				$this->update_meta( $user->ID, 'rich_editing', $value );
+				$this->update_meta( $user->ID, 'rich_editing', 'true' == $value ? 1 : 0 );
 				break;
 			case 'column-user_description':
 				$this->update_meta( $user->ID, 'description', $value );
@@ -368,11 +434,28 @@ class CACIE_Editable_Model_User extends CACIE_Editable_Model {
 
 					if ( isset( $user->{$property} ) ) {
 						wp_update_user( array(
-							'ID' => $user->ID,
+							'ID'      => $user->ID,
 							$property => $value
 						) );
 					}
 				}
 		}
+	}
+
+	/**
+	 * @see CACIE_Editable_Model
+	 * @version 3.6
+	 */
+	public function get_column_editability_value( $column, $id ) {
+
+		$value = parent::get_column_editability_value( $column, $id );
+
+		if ( $column->properties->type == 'username' ) {
+			$user = get_user_by( 'id', $id );
+
+			return $user->user_login;
+		}
+
+		return $value;
 	}
 }

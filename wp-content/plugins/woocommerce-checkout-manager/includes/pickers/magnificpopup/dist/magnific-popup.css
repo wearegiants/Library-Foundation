@@ -40,7 +40,7 @@
   height: 100%;
   z-index: 1043;
   position: fixed;
-  outline: none !important;
+  outline: none;
   -webkit-backface-visibility: hidden; }
 
 .mfp-container {
@@ -85,10 +85,10 @@
   cursor: zoom-out; }
 
 .mfp-zoom {
-  cursor: pointer !important;
-  cursor: -webkit-zoom-in !important;
-  cursor: -moz-zoom-in !important;
-  cursor: zoom-in !important; }
+  cursor: pointer;
+  cursor: -webkit-zoom-in;
+  cursor: -moz-zoom-in;
+  cursor: zoom-in; }
 
 .mfp-auto-cursor .mfp-content {
   cursor: auto; }
@@ -102,7 +102,7 @@
   display: none; }
 
 .mfp-hide {
-  display: none !important; }
+  display: none; }
 
 .mfp-preloader {
   color: #CCC;

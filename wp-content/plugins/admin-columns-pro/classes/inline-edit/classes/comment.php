@@ -7,9 +7,14 @@
 class CACIE_Editable_Model_Comment extends CACIE_Editable_Model {
 
 	/**
+	 * @since 3.6.1
+	 */
+	public function get_ajax_options( $column, $search ) {}
+
+	/**
 	 * @since 3.5
 	 */
-	protected function get_list_selector() {
+	public function get_list_selector() {
 		return '#the-comment-list';
 	}
 
@@ -160,7 +165,7 @@ class CACIE_Editable_Model_Comment extends CACIE_Editable_Model {
 			}
 
 			$columndata = array();
-			foreach ( $this->storage_model->columns as $column_name => $column ) {
+			foreach ( $this->storage_model->get_columns() as $column_name => $column ) {
 				if ( ! $this->is_edit_enabled( $column ) ) {
 					continue;
 				}
@@ -266,6 +271,7 @@ class CACIE_Editable_Model_Comment extends CACIE_Editable_Model {
 		// If a column features a saving method itself, the "return" statement makes sure default behaviour is prevented
 		if ( method_exists( $column, 'save' ) ) {
 			$result = $column->save( $id, $value );
+
 			// Return a possible WP_Error yielded by the column save method
 			if ( is_wp_error( $result ) ) {
 				return $result;
@@ -273,18 +279,13 @@ class CACIE_Editable_Model_Comment extends CACIE_Editable_Model {
 			return;
 		}
 
-		$editable = $this->get_editable( $column->properties->name );
+		$editable = $this->get_editable( $column->get_name() );
 
 		switch ( $column->properties->type ) {
 
 			// Default
 
 			// Custom columns
-			case 'column-acf_field':
-				if ( function_exists( 'update_field' ) ) {
-					update_field( $column->get_field_key(), $value, 'comment_' . $id );
-				}
-				break;
 			case 'column-meta':
 				$this->update_meta( $id, $column->get_field_key(), $value );
 				break;

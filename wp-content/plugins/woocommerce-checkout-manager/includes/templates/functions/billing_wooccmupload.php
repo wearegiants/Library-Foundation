@@ -6,12 +6,13 @@
 // Exit if accessed directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
-function upload_billing_scripts_enhanced() {
+function wooccm_upload_billing_scripts() {
 
 	global $woocommerce;
 
 	$options = get_option( 'wccs_settings3' );
 
+	// Check if we have any buttons
 	if( empty( $options['billing_buttons'] ) )
 		return;
 
@@ -20,6 +21,7 @@ function upload_billing_scripts_enhanced() {
 		if( $btn['type'] <> 'wooccmupload' )
 			continue;
 ?>
+<!-- Billing section: File upload -->
 <script type="text/javascript">
 jQuery(document).ready(function($){
 
@@ -141,7 +143,7 @@ jQuery(document).ready(function($){
 						filetype = theFile.type;
 						return function(e){
 						showUploadedItem( e.target.result, fileName, filetype );
-						};
+					};
 					})(file); 
 					reader.readAsDataURL(file);
 				}
@@ -158,11 +160,14 @@ jQuery(document).ready(function($){
 					contentType: false,
 					success: function (res) {
 						var result = $.parseJSON(res), new_val;
-
-					    new_val = document.getElementById("billing_<?php echo $btn['cow']; ?>").value.split("||");
+						document.getElementById("billing_<?php echo $btn['cow']; ?>").value = result;
+						/* @mod - Test formatting change */
+/*
+						new_val = document.getElementById("billing_<?php echo $btn['cow']; ?>").value.split("||");
 						new_val[0] = result[0];
 						new_val[1] += result[1] + ",";
 						document.getElementById("billing_<?php echo $btn['cow']; ?>").value = new_val[0] + "||" + new_val[1];
+*/
 
 						$("#billing_<?php echo $btn['cow']; ?>_field").unblock();
 					}
@@ -187,7 +192,7 @@ jQuery(document).ready(function($){
 				if( count[t].getAttribute("wooccm-attach-id") ){
 					break;
 				}
-					store.push(count[t]);
+				store.push(count[t]);
 			}
 
 			if( store.length !== 0 ){
@@ -202,6 +207,7 @@ jQuery(document).ready(function($){
 
 			$(".wooccm_each_file").each(function(){
 				if( this.title === title) {
+
 					var currentgutz = this;
 					this.firstElementChild.href = wooxtro;
 					this.firstElementChild.firstElementChild.src = wooxtro;
@@ -252,6 +258,7 @@ jQuery(document).ready(function($){
 							alert("billing_<?php echo ( !empty( $options['checkness']['picture_success'] ) ? $options['checkness']['picture_success'] : 'Picture Saved' ); ?>");
 						}
 					});
+
 				}
 			});
 
@@ -268,7 +275,7 @@ jQuery(document).ready(function($){
 					if( count[t].getAttribute("wooccm-attach-id") ){
 						break;
 					}
-						store.push(count[t]);
+					store.push(count[t]);
 				}
 
 				if( store.length !== 0 ){

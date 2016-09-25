@@ -1,23 +1,20 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit when accessed directly
+defined( 'ABSPATH' ) or die();
 
 /**
  * @since 1.1
  */
-class CPAC_WC_Column_Post_Product_Type extends CPAC_Column {
+class CPAC_WC_Column_Post_Product_Type extends CPAC_WC_Column {
 
 	/**
 	 * @see CPAC_Column::init()
 	 * @since 1.1
 	 */
 	public function init() {
-
 		parent::init();
 
-		// Properties
-		$this->properties['type']	= 'column-wc-product_type';
-		$this->properties['label']	= __( 'Product type', 'cpac' );
-		$this->properties['group']	= 'woocommerce-custom';
+		$this->properties['type'] = 'column-wc-product_type';
+		$this->properties['label'] = __( 'Product type', 'codepress-admin-columns' );
 	}
 
 	/**
@@ -25,14 +22,13 @@ class CPAC_WC_Column_Post_Product_Type extends CPAC_Column {
 	 * @since 1.1
 	 */
 	public function get_value( $post_id ) {
-
 		$product_type = $this->get_raw_value( $post_id );
 
 		$types = apply_filters( 'product_type_selector', array(
-			'simple' 	=> __( 'Simple product', 'woocommerce' ),
-			'grouped' 	=> __( 'Grouped product', 'woocommerce' ),
-			'external' 	=> __( 'External/Affiliate product', 'woocommerce' ),
-			'variable'  => __( 'Variable product', 'woocommerce' )
+			'simple'   => __( 'Simple product', 'woocommerce' ),
+			'grouped'  => __( 'Grouped product', 'woocommerce' ),
+			'external' => __( 'External/Affiliate product', 'woocommerce' ),
+			'variable' => __( 'Variable product', 'woocommerce' )
 		), $product_type );
 
 		$value = isset( $types[ $product_type ] ) ? $types[ $product_type ] : $product_type;
@@ -55,5 +51,4 @@ class CPAC_WC_Column_Post_Product_Type extends CPAC_Column {
 
 		return $product_type;
 	}
-
 }

@@ -19,10 +19,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Admin_Taxonomies {
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 */
 	public function __construct() {
-
 		// Category/term ordering
 		add_action( 'create_term', array( $this, 'create_term' ), 5, 3 );
 		add_action( 'delete_term', array( $this, 'delete_term' ), 5 );
@@ -39,7 +38,14 @@ class WC_Admin_Taxonomies {
 
 		// Taxonomy page descriptions
 		add_action( 'product_cat_pre_add_form', array( $this, 'product_cat_description' ) );
-		add_action( 'product_shipping_class_pre_add_form', array( $this, 'shipping_class_description' ) );
+
+		$attribute_taxonomies = wc_get_attribute_taxonomies();
+
+		if ( ! empty( $attribute_taxonomies ) ) {
+			foreach ( $attribute_taxonomies as $attribute ) {
+				add_action( 'pa_' . $attribute->attribute_name . '_pre_add_form', array( $this, 'product_attribute_description' ) );
+			}
+		}
 
 		// Maintain hierarchy of terms
 		add_filter( 'wp_terms_checklist_args', array( $this, 'disable_checked_ontop' ) );
@@ -50,7 +56,7 @@ class WC_Admin_Taxonomies {
 	 *
 	 * @param mixed $term_id
 	 * @param mixed $tt_id
-	 * @param mixed $taxonomy
+	 * @param string $taxonomy
 	 */
 	public function create_term( $term_id, $tt_id = '', $taxonomy = '' ) {
 		if ( 'product_cat' != $taxonomy && ! taxonomy_is_product_attribute( $taxonomy ) ) {
@@ -68,15 +74,13 @@ class WC_Admin_Taxonomies {
 	 * @param mixed $term_id
 	 */
 	public function delete_term( $term_id ) {
-
-		$term_id = (int) $term_id;
-
-		if ( ! $term_id ) {
-			return;
-		}
-
 		global $wpdb;
-		$wpdb->query( "DELETE FROM {$wpdb->woocommerce_termmeta} WHERE `woocommerce_term_id` = " . $term_id );
+
+		$term_id = absint( $term_id );
+
+		if ( $term_id && get_option( 'db_version' ) < 34370 ) {
+			$wpdb->delete( $wpdb->woocommerce_termmeta, array( 'woocommerce_term_id' => $term_id ), array( '%d' ) );
+		}
 	}
 
 	/**
@@ -84,7 +88,7 @@ class WC_Admin_Taxonomies {
 	 */
 	public function add_category_fields() {
 		?>
-		<div class="form-field">
+		<div class="form-field term-display-type-wrap">
 			<label for="display_type"><?php _e( 'Display type', 'woocommerce' ); ?></label>
 			<select id="display_type" name="display_type" class="postform">
 				<option value=""><?php _e( 'Default', 'woocommerce' ); ?></option>
@@ -93,7 +97,7 @@ class WC_Admin_Taxonomies {
 				<option value="both"><?php _e( 'Both', 'woocommerce' ); ?></option>
 			</select>
 		</div>
-		<div class="form-field">
+		<div class="form-field term-thumbnail-wrap">
 			<label><?php _e( 'Thumbnail', 'woocommerce' ); ?></label>
 			<div id="product_cat_thumbnail" style="float: left; margin-right: 10px;"><img src="<?php echo esc_url( wc_placeholder_img_src() ); ?>" width="60px" height="60px" /></div>
 			<div style="line-height: 60px;">
@@ -135,7 +139,7 @@ class WC_Admin_Taxonomies {
 						var attachment = file_frame.state().get( 'selection' ).first().toJSON();
 
 						jQuery( '#product_cat_thumbnail_id' ).val( attachment.id );
-						jQuery( '#product_cat_thumbnail img' ).attr( 'src', attachment.sizes.thumbnail.url );
+						jQuery( '#product_cat_thumbnail' ).find( 'img' ).attr( 'src', attachment.sizes.thumbnail.url );
 						jQuery( '.remove_image_button' ).show();
 					});
 
@@ -144,11 +148,29 @@ class WC_Admin_Taxonomies {
 				});
 
 				jQuery( document ).on( 'click', '.remove_image_button', function() {
-					jQuery( '#product_cat_thumbnail img' ).attr( 'src', '<?php echo esc_js( wc_placeholder_img_src() ); ?>' );
+					jQuery( '#product_cat_thumbnail' ).find( 'img' ).attr( 'src', '<?php echo esc_js( wc_placeholder_img_src() ); ?>' );
 					jQuery( '#product_cat_thumbnail_id' ).val( '' );
 					jQuery( '.remove_image_button' ).hide();
 					return false;
 				});
+
+				jQuery( document ).ajaxComplete( function( event, request, options ) {
+					if ( request && 4 === request.readyState && 200 === request.status
+						&& options.data && 0 <= options.data.indexOf( 'action=add-tag' ) ) {
+
+						var res = wpAjax.parseAjaxResponse( request.responseXML, 'ajax-response' );
+						if ( ! res || res.errors ) {
+							return;
+						}
+						// Clear Thumbnail fields on submit
+						jQuery( '#product_cat_thumbnail' ).find( 'img' ).attr( 'src', '<?php echo esc_js( wc_placeholder_img_src() ); ?>' );
+						jQuery( '#product_cat_thumbnail_id' ).val( '' );
+						jQuery( '.remove_image_button' ).hide();
+						// Clear Display type field on submit
+						jQuery( '#display_type' ).val( '' );
+						return;
+					}
+				} );
 
 			</script>
 			<div class="clear"></div>
@@ -226,7 +248,7 @@ class WC_Admin_Taxonomies {
 							var attachment = file_frame.state().get( 'selection' ).first().toJSON();
 
 							jQuery( '#product_cat_thumbnail_id' ).val( attachment.id );
-							jQuery( '#product_cat_thumbnail img' ).attr( 'src', attachment.sizes.thumbnail.url );
+							jQuery( '#product_cat_thumbnail' ).find( 'img' ).attr( 'src', attachment.sizes.thumbnail.url );
 							jQuery( '.remove_image_button' ).show();
 						});
 
@@ -235,7 +257,7 @@ class WC_Admin_Taxonomies {
 					});
 
 					jQuery( document ).on( 'click', '.remove_image_button', function() {
-						jQuery( '#product_cat_thumbnail img' ).attr( 'src', '<?php echo esc_js( wc_placeholder_img_src() ); ?>' );
+						jQuery( '#product_cat_thumbnail' ).find( 'img' ).attr( 'src', '<?php echo esc_js( wc_placeholder_img_src() ); ?>' );
 						jQuery( '#product_cat_thumbnail_id' ).val( '' );
 						jQuery( '.remove_image_button' ).hide();
 						return false;
@@ -252,6 +274,8 @@ class WC_Admin_Taxonomies {
 	 * save_category_fields function.
 	 *
 	 * @param mixed $term_id Term ID being saved
+	 * @param mixed $tt_id
+	 * @param string $taxonomy
 	 */
 	public function save_category_fields( $term_id, $tt_id = '', $taxonomy = '' ) {
 		if ( isset( $_POST['display_type'] ) && 'product_cat' === $taxonomy ) {
@@ -272,8 +296,8 @@ class WC_Admin_Taxonomies {
 	/**
 	 * Description for shipping class page to aid users.
 	 */
-	public function shipping_class_description() {
-		echo wpautop( __( 'Shipping classes can be used to group products of similar type. These groups can then be used by certain shipping methods to provide different rates to different products.', 'woocommerce' ) );
+	public function product_attribute_description() {
+		echo wpautop( __( 'Attribute terms can be assigned to products and variations.<br/><br/><b>Note</b>: Deleting a term will remove it from all products and variations to which it has been assigned. Recreating a term will not automatically assign it back to products.', 'woocommerce' ) );
 	}
 
 	/**
@@ -283,11 +307,14 @@ class WC_Admin_Taxonomies {
 	 * @return array
 	 */
 	public function product_cat_columns( $columns ) {
-		$new_columns          = array();
-		$new_columns['cb']    = $columns['cb'];
-		$new_columns['thumb'] = __( 'Image', 'woocommerce' );
+		$new_columns = array();
 
-		unset( $columns['cb'] );
+		if ( isset( $columns['cb'] ) ) {
+			$new_columns['cb'] = $columns['cb'];
+			unset( $columns['cb'] );
+		}
+
+		$new_columns['thumb'] = __( 'Image', 'woocommerce' );
 
 		return array_merge( $new_columns, $columns );
 	}
@@ -295,9 +322,9 @@ class WC_Admin_Taxonomies {
 	/**
 	 * Thumbnail column value added to category admin.
 	 *
-	 * @param mixed $columns
-	 * @param mixed $column
-	 * @param mixed $id
+	 * @param string $columns
+	 * @param string $column
+	 * @param int $id
 	 * @return array
 	 */
 	public function product_cat_column( $columns, $column, $id ) {
@@ -313,10 +340,10 @@ class WC_Admin_Taxonomies {
 			}
 
 			// Prevent esc_url from breaking spaces in urls for image embeds
-			// Ref: http://core.trac.wordpress.org/ticket/23605
+			// Ref: https://core.trac.wordpress.org/ticket/23605
 			$image = str_replace( ' ', '%20', $image );
 
-			$columns .= '<img src="' . esc_url( $image ) . '" alt="' . __( 'Thumbnail', 'woocommerce' ) . '" class="wp-post-image" height="48" width="48" />';
+			$columns .= '<img src="' . esc_url( $image ) . '" alt="' . esc_attr__( 'Thumbnail', 'woocommerce' ) . '" class="wp-post-image" height="48" width="48" />';
 
 		}
 
@@ -330,11 +357,9 @@ class WC_Admin_Taxonomies {
 	 * @return array
 	 */
 	public function disable_checked_ontop( $args ) {
-
-		if ( 'product_cat' == $args['taxonomy'] ) {
+		if ( ! empty( $args['taxonomy'] ) && 'product_cat' === $args['taxonomy'] ) {
 			$args['checked_ontop'] = false;
 		}
-
 		return $args;
 	}
 }

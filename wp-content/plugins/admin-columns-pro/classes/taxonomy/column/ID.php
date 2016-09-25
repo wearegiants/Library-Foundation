@@ -11,7 +11,7 @@ class CPAC_Column_Term_ID extends CPAC_Column {
 		parent::init();
 
 		$this->properties['type']	 = 'column-termid';
-		$this->properties['label']	 = __( 'ID', 'cpac' );
+		$this->properties['label']	 = __( 'ID', 'codepress-admin-columns' );
 	}
 
 	/**

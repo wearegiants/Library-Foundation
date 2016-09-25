@@ -6,33 +6,33 @@ function wooccm_install() {
 	$options2 = get_option( 'wccs_settings2' );
 	$options3 = get_option( 'wccs_settings3' );
 
-	update_option('wooccm_update_notice', 0 );
+	update_option( WOOCCM_PREFIX . '_update_notice', 0 );
 
-	if ( function_exists( 'icl_register_string' ) ) {
-		icl_register_string('WooCommerce Checkout Manager', 'is a required field.', 'is a required field.');
+	if( function_exists( 'icl_register_string' ) ) {
+		icl_register_string( 'WooCommerce Checkout Manager', 'is a required field.', 'is a required field.' );
 	}
-	if (empty($options['checkness']['position'])) {
+	if( empty( $options['checkness']['position'] ) ) {
 		$options['checkness']['position'] = 'after_order_notes';
 	}
-	if (empty($options['checkness']['wooccm_notification_email'])) {
-		$options['checkness']['wooccm_notification_email'] = get_option('admin_email');
+	if( empty( $options['checkness']['wooccm_notification_email'] ) ) {
+		$options['checkness']['wooccm_notification_email'] = get_option( 'admin_email' );
 	}
-	if ( empty($options['checkness']['payment_method_d']) ) {
+	if( empty( $options['checkness']['payment_method_d'] ) ) {
 		$options['checkness']['payment_method_d'] = 'Payment Method';
 	}
-	if ( empty($options['checkness']['time_stamp_title']) ) {
+	if( empty( $options['checkness']['time_stamp_title'] ) ) {
 		$options['checkness']['time_stamp_title'] = 'Order Time';
 	}
-	if ( empty($options['checkness']['payment_method_t']) ) {
+	if( empty( $options['checkness']['payment_method_t'] ) ) {
 		$options['checkness']['payment_method_t'] = '1';
 	}
-	if ( empty($options['checkness']['shipping_method_d']) ) {
+	if( empty( $options['checkness']['shipping_method_d'] ) ) {
 		$options['checkness']['shipping_method_d'] = 'Shipping Method';
 	}
-	if ( empty($options['checkness']['shipping_method_t']) ) {
+	if( empty( $options['checkness']['shipping_method_t'] ) ) {
 		$options['checkness']['shipping_method_t'] = '1';
 	}
-	if ( empty($options2['shipping_buttons']) ) {
+	if( empty( $options2['shipping_buttons'] ) ) {
 		$shipping = array( 
 			'country' => 'Country', 
 			'first_name' => 'First Name', 
@@ -47,7 +47,7 @@ function wooccm_install() {
 		$ship = 0;
 		foreach( $shipping as $name => $value ) {
 
-			$options2['shipping_buttons'][$ship]['label'] = __( ''.$value.'', 'woocommerce' );
+			$options2['shipping_buttons'][$ship]['label'] = __( $value, 'woocommerce-checkout-manager' );
 			$options2['shipping_buttons'][$ship]['cow'] = $name;
 			$options2['shipping_buttons'][$ship]['checkbox']  = 'true';
 			$options2['shipping_buttons'][$ship]['order'] = $ship + 1;
@@ -72,17 +72,17 @@ function wooccm_install() {
 
 			if ( $name == 'address_1') {
 				$options2['shipping_buttons'][$ship]['position'] = 'form-row-wide';
-				$options2['shipping_buttons'][$ship]['placeholder'] = __('Street address', 'woocommerce');
+				$options2['shipping_buttons'][$ship]['placeholder'] = __('Street address', 'woocommerce-checkout-manager');
 			}
 
 			if ( $name == 'address_2') {
 				$options2['shipping_buttons'][$ship]['position'] = 'form-row-wide';
-				$options2['shipping_buttons'][$ship]['placeholder'] = __('Apartment, suite, unit etc. (optional)', 'woocommerce');
+				$options2['shipping_buttons'][$ship]['placeholder'] = __('Apartment, suite, unit etc. (optional)', 'woocommerce-checkout-manager');
 			}
 
 			if ( $name == 'city') {
 				$options2['shipping_buttons'][$ship]['position'] = 'form-row-wide';
-				$options2['shipping_buttons'][$ship]['placeholder'] = __('Town / City', 'woocommerce');
+				$options2['shipping_buttons'][$ship]['placeholder'] = __('Town / City', 'woocommerce-checkout-manager');
 			}
 
 			if ( $name == 'state') {
@@ -91,7 +91,7 @@ function wooccm_install() {
 
 			if ( $name == 'postcode') {
 				$options2['shipping_buttons'][$ship]['position'] = 'form-row-last';
-				$options2['shipping_buttons'][$ship]['placeholder'] = __('Postcode / Zip', 'woocommerce');
+				$options2['shipping_buttons'][$ship]['placeholder'] = __('Postcode / Zip', 'woocommerce-checkout-manager');
 				$options2['shipping_buttons'][$ship]['clear_row'] = true;
 			}
 
@@ -116,7 +116,7 @@ function wooccm_install() {
 		$bill = 0;
 		foreach( $billing as $name => $value ) {
 
-			$options3['billing_buttons'][$bill]['label'] = __(''.$value.'', 'woocommerce');
+			$options3['billing_buttons'][$bill]['label'] = __( $value, 'woocommerce-checkout-manager' );
 			$options3['billing_buttons'][$bill]['cow'] = $name;
 			$options3['billing_buttons'][$bill]['checkbox']  = 'true';
 			$options3['billing_buttons'][$bill]['order'] = $bill + 1;
@@ -141,17 +141,17 @@ function wooccm_install() {
 
 			if ( $name == 'address_1') {
 				$options3['billing_buttons'][$bill]['position'] = 'form-row-wide';
-				$options3['billing_buttons'][$bill]['placeholder'] = __('Street address', 'woocommerce');
+				$options3['billing_buttons'][$bill]['placeholder'] = __('Street address', 'woocommerce-checkout-manager');
 			}
 
 			if ( $name == 'address_2') {
 				$options3['billing_buttons'][$bill]['position'] = 'form-row-wide';
-				$options3['billing_buttons'][$bill]['placeholder'] = __('Apartment, suite, unit etc. (optional)', 'woocommerce');
+				$options3['billing_buttons'][$bill]['placeholder'] = __('Apartment, suite, unit etc. (optional)', 'woocommerce-checkout-manager');
 			}
 
 			if ( $name == 'city') {
 				$options3['billing_buttons'][$bill]['position'] = 'form-row-wide';
-				$options3['billing_buttons'][$bill]['placeholder'] = __('Town / City', 'woocommerce');
+				$options3['billing_buttons'][$bill]['placeholder'] = __('Town / City', 'woocommerce-checkout-manager');
 			}
 
 			if ( $name == 'state') {
@@ -160,7 +160,7 @@ function wooccm_install() {
 
 			if ( $name == 'postcode') {
 				$options3['billing_buttons'][$bill]['position'] = 'form-row-last';
-				$options3['billing_buttons'][$bill]['placeholder'] = __('Postcode / Zip', 'woocommerce');
+				$options3['billing_buttons'][$bill]['placeholder'] = __('Postcode / Zip', 'woocommerce-checkout-manager');
 				$options3['billing_buttons'][$bill]['clear_row'] = true;
 			}
 
@@ -181,7 +181,7 @@ function wooccm_install() {
 		foreach( $options['buttons'] as $i => $btn ) {
 
 			if( !empty($btn['check_1']) || !empty($btn['check_2']) ) {
-				$options['buttons'][$i]['option_array'] = implode( '||', array(''.wpml_string_wccm_pro(''.$btn['check_1'].'').'',''.wpml_string_wccm_pro(''.$btn['check_2'].'').'') );
+				$options['buttons'][$i]['option_array'] = implode( '||', array( wooccm_wpml_string( $btn['check_1'] ), wooccm_wpml_string( $btn['check_2'] ) ) );
 				$options['buttons'][$i]['check_1'] = '';
 				$options['buttons'][$i]['check_2'] = '';
 			} 
@@ -215,7 +215,7 @@ function wooccm_install() {
 	foreach( $options3['billing_buttons'] as $i => $btn ) {
 
 		if( !empty($btn['check_1']) || !empty($btn['check_2']) ) {
-			$options3['billing_buttons'][$i]['option_array'] = implode( '||', array(''.wpml_string_wccm_pro(''.$btn['check_1'].'').'',''.wpml_string_wccm_pro(''.$btn['check_2'].'').'') );
+			$options3['billing_buttons'][$i]['option_array'] = implode( '||', array( wooccm_wpml_string( $btn['check_1'] ), wooccm_wpml_string( $btn['check_2'] ) ) );
 			$options3['billing_buttons'][$i]['check_1'] = '';
 			$options3['billing_buttons'][$i]['check_2'] = '';
 		} 
@@ -230,7 +230,7 @@ function wooccm_install() {
 	foreach( $options2['shipping_buttons'] as $i => $btn ) {
 
 		if( !empty($btn['check_1']) || !empty($btn['check_2']) ) {
-			$options2['shipping_buttons'][$i]['option_array'] = implode( '||', array(''.wpml_string_wccm_pro(''.$btn['check_1'].'').'',''.wpml_string_wccm_pro(''.$btn['check_2'].'').'') );
+			$options2['shipping_buttons'][$i]['option_array'] = implode( '||', array( wooccm_wpml_string( $btn['check_1'] ), wooccm_wpml_string( $btn['check_2'] ) ) );
 			$options2['shipping_buttons'][$i]['check_1'] = '';
 			$options2['shipping_buttons'][$i]['check_2'] = '';
 		}

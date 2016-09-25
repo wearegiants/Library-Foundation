@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: 		Admin Columns - WooCommerce add-on
-Version: 			1.2
+Version: 			1.4
 Description: 		Enhance your product and order overviews with new columns, and edit products directly from the overview page. WooCommerce integration Add-on for Admin Columns Pro.
 Author: 			Codepress
-Author URI: 		http://admincolumns.com
-Text Domain: 		cpac
+Author URI: 		https://admincolumns.com
+Text Domain: 		codepress-admin-columns
 */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -13,10 +13,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin information
-define( 'CAC_WC_VERSION',	'1.2' );
-define( 'CAC_WC_FILE',		__FILE__ );
-define( 'CAC_WC_URL',		plugin_dir_url( __FILE__ ) );
-define( 'CAC_WC_DIR',		plugin_dir_path( __FILE__ ) );
+define( 'CAC_WC_VERSION', '1.4' );
+define( 'CAC_WC_FILE', __FILE__ );
+define( 'CAC_WC_URL', plugin_dir_url( __FILE__ ) );
+define( 'CAC_WC_DIR', plugin_dir_path( __FILE__ ) );
+
+require CAC_WC_DIR . 'classes/helpers/orders.php';
 
 /**
  * Main ACF Addon plugin class
@@ -66,8 +68,10 @@ class CPAC_Addon_WC {
 
 		$this->plugin_basename = plugin_basename( __FILE__ );
 
-		// translations
-		load_plugin_textdomain( 'cpac', false, dirname( $this->plugin_basename ) . '/languages/' );
+		// load translations from pro version
+		if ( defined( 'CAC_PRO_URL' ) ) {
+			load_plugin_textdomain( 'codepress-admin-columns', false, CAC_PRO_URL . 'languages/' );
+		}
 
 		// set wc post types
 		$this->post_types = array( 'product', 'shop_order', 'shop_coupon' );
@@ -78,11 +82,10 @@ class CPAC_Addon_WC {
 
 		// Hooks
 		add_action( 'after_plugin_row_' . $this->plugin_basename, array( $this, 'display_plugin_row_notices' ), 11 );
-		add_filter( 'cac/storage_model/column_type_groups', array( $this, 'column_type_groups' ), 10, 2 );
-		add_filter( 'cac/columns/registered/default', array( $this, 'group_default_woocommerce_column_types' ), 10, 2 );
 		add_filter( 'cac/columns/custom', array( $this, 'add_columns' ), 10, 2 );
 		add_filter( 'cac/storage_models', array( $this, 'set_menu_type' ) );
-		add_filter( 'cac/menu_types', array( $this, 'add_menu_type' ) );
+		add_filter( 'cac/grouped_columns', array( $this, 'grouped_columns_sort' ) );
+		add_filter( 'cac/default_column_names', array( $this, 'default_column_names' ), 10, 2 );
 	}
 
 	/**
@@ -91,25 +94,33 @@ class CPAC_Addon_WC {
 	 * @since 1.0
 	 */
 	public function init( $cpac ) {
-
-		// Store CPAC object
 		$this->cpac = $cpac;
 
-		// Upgrade
 		$this->maybe_upgrade();
-
-		// Setup callback
 		$this->after_setup();
+
+		add_action( 'admin_enqueue_scripts', array( $this, 'scripts' ) );
 	}
 
 	/**
-	 * @since 1.2
+	 * @since 1.3
 	 */
-	public function add_menu_type( $menu_types ) {
+	public function scripts() {
+		if ( $this->cpac->is_columns_screen() ) {
+			wp_enqueue_style( 'cac-wc-column', CAC_WC_URL . 'assets/css/column.css' );
+		}
+	}
 
-		$menu_types['woocommerce'] = __( 'WooCommerce', 'cpac' );
-		//$menu_types['woocommerce_tax'] = __( 'WC Taxonomy', 'cpac' );
-		return $menu_types;
+	public function grouped_columns_sort( $grouped_columns ) {
+		$label = __( 'WooCommerce', 'woocommerce' );
+
+		if ( isset( $grouped_columns[ $label ] ) ) {
+			$acf[ $label ] = $grouped_columns[ $label ];
+			unset( $grouped_columns[ $label ] );
+			$grouped_columns = $acf + $grouped_columns;
+		}
+
+		return $grouped_columns;
 	}
 
 	/**
@@ -118,21 +129,14 @@ class CPAC_Addon_WC {
 	 * @since 1.2
 	 */
 	public function set_menu_type( $storage_models ) {
-
 		if ( $this->is_woocommerce_active() ) {
 			foreach ( $storage_models as $k => $storage_model ) {
-
-				// WC posttypes
 				if ( in_array( $storage_model->get_post_type(), $this->post_types ) ) {
-					$storage_models[ $k ] = $storage_model->set_menu_type( 'woocommerce' );
+					$storage_models[ $k ] = $storage_model->set_menu_type( 'Woocommerce' );
 				}
-
-				// WC taxonomies
-				/*if ( method_exists( $storage_model, 'get_taxonomy' ) && in_array( $storage_model->get_taxonomy(), $this->taxonomies ) ) {
-					$storage_models[ $k ] = $storage_model->set_menu_type( 'woocommerce_tax' );
-				}*/
 			}
 		}
+
 		return $storage_models;
 	}
 
@@ -147,7 +151,7 @@ class CPAC_Addon_WC {
 			if ( version_compare( CAC_WC_VERSION, '1.1', '>=' ) && version_compare( $db_version, '1.1', '<' ) ) {
 				$mappings = array(
 					'column-wc-price' => 'price',
-					'column-wc-sku' => 'sku',
+					'column-wc-sku'   => 'sku',
 					'column-wc-stock' => 'is_in_stock'
 				);
 
@@ -183,24 +187,10 @@ class CPAC_Addon_WC {
 		 * Fires when the Admin Columns WooCommerce plugin is fully loaded
 		 *
 		 * @since 1.0
+		 *
 		 * @param CPAC_WC $cpac_wc_instance Main Admin Columns WooCommerce plugin class instance
 		 */
 		do_action( 'cpac-wc/loaded', $this );
-	}
-
-	/**
-	 * @since 1.1
-	 */
-	public function column_type_groups( $groups, $storage_model_instance ) {
-
-		if ( $this->is_woocommerce_active() ) {
-			$groups = array_merge( array(
-					'woocommerce-default' => __( 'Default', 'cpac' ),
-					'woocommerce-custom' => __( 'WooCommerce Custom', 'cpac' )
-				), $groups );
-		}
-
-		return $groups;
 	}
 
 	/**
@@ -213,9 +203,11 @@ class CPAC_Addon_WC {
 		if ( $this->is_woocommerce_active() ) {
 
 			require_once CAC_WC_DIR . 'classes/column/wc-column.php';
+			require_once CAC_WC_DIR . 'classes/column/wc-column-default.php';
 
 			// Product columns
 			if ( 'product' == $storage_model->key ) {
+				$columns['CPAC_WC_Column_Post_Attributes'] = CAC_WC_DIR . 'classes/column/product/attributes.php';
 				$columns['CPAC_WC_Column_Post_Reviews_Enabled'] = CAC_WC_DIR . 'classes/column/product/reviews-enabled.php';
 				$columns['CPAC_WC_Column_Post_Featured'] = CAC_WC_DIR . 'classes/column/product/featured.php';
 				$columns['CPAC_WC_Column_Post_Weight'] = CAC_WC_DIR . 'classes/column/product/weight.php';
@@ -223,6 +215,7 @@ class CPAC_Addon_WC {
 				$columns['CPAC_WC_Column_Post_Backorders_Allowed'] = CAC_WC_DIR . 'classes/column/product/backorders-allowed.php';
 				$columns['CPAC_WC_Column_Post_Order_Count'] = CAC_WC_DIR . 'classes/column/product/order-count.php';
 				$columns['CPAC_WC_Column_Post_Order_Total'] = CAC_WC_DIR . 'classes/column/product/order-total.php';
+				$columns['CPAC_WC_Column_Post_Parent'] = CAC_WC_DIR . 'classes/column/product/parent.php';
 				$columns['CPAC_WC_Column_Post_Price'] = CAC_WC_DIR . 'classes/column/product/price.php';
 				$columns['CPAC_WC_Column_Post_Shipping_Class'] = CAC_WC_DIR . 'classes/column/product/shipping-class.php';
 				$columns['CPAC_WC_Column_Post_SKU'] = CAC_WC_DIR . 'classes/column/product/sku.php';
@@ -230,18 +223,25 @@ class CPAC_Addon_WC {
 				$columns['CPAC_WC_Column_Post_Stock_Status'] = CAC_WC_DIR . 'classes/column/product/stock-status.php';
 				$columns['CPAC_WC_Column_Post_Upsells'] = CAC_WC_DIR . 'classes/column/product/upsells.php';
 				$columns['CPAC_WC_Column_Post_Visibility'] = CAC_WC_DIR . 'classes/column/product/visibility.php';
+				$columns['CPAC_WC_Column_Post_Tax_Status'] = CAC_WC_DIR . 'classes/column/product/tax-status.php';
 				$columns['CPAC_WC_Column_Post_Thumb'] = CAC_WC_DIR . 'classes/column/product/thumb.php';
+				$columns['CPAC_WC_Column_Post_Tax_Class'] = CAC_WC_DIR . 'classes/column/product/tax-class.php';
 				$columns['CPAC_WC_Column_Post_Crosssells'] = CAC_WC_DIR . 'classes/column/product/crosssells.php';
 				$columns['CPAC_WC_Column_Post_Product_Type'] = CAC_WC_DIR . 'classes/column/product/product-type.php';
+				$columns['CPAC_WC_Column_Post_Variation'] = CAC_WC_DIR . 'classes/column/product/variation.php';
 			}
 
 			// Order columns
 			if ( 'shop_order' == $storage_model->key ) {
 				$columns['CPAC_WC_Column_Post_Order_Discount'] = CAC_WC_DIR . 'classes/column/shop_order/order-discount.php';
 				$columns['CPAC_WC_Column_Post_Product_Thumbnails'] = CAC_WC_DIR . 'classes/column/shop_order/product-thumbnails.php';
+				$columns['CPAC_WC_Column_Post_Product'] = CAC_WC_DIR . 'classes/column/shop_order/product.php';
+				$columns['CPAC_WC_Column_Post_Product_Details'] = CAC_WC_DIR . 'classes/column/shop_order/product-details.php';
+				$columns['CPAC_WC_Column_Post_Order_Coupons_Used'] = CAC_WC_DIR . 'classes/column/shop_order/order-coupons-used.php';
 				$columns['CPAC_WC_Column_Post_Order_Status'] = CAC_WC_DIR . 'classes/column/shop_order/order-status.php';
 				$columns['CPAC_WC_Column_Post_Transaction_ID'] = CAC_WC_DIR . 'classes/column/shop_order/transaction-id.php';
 				$columns['CPAC_WC_Column_Post_Payment_Method'] = CAC_WC_DIR . 'classes/column/shop_order/payment-method.php';
+				$columns['CPAC_WC_Column_Post_Order_Shipping_Method'] = CAC_WC_DIR . 'classes/column/shop_order/shipping-method.php';
 			}
 
 			// Coupon columns
@@ -258,6 +258,20 @@ class CPAC_Addon_WC {
 				$columns['CPAC_WC_Column_Post_Exclude_Products'] = CAC_WC_DIR . 'classes/column/shop_coupon/exclude-products.php';
 				$columns['CPAC_WC_Column_Post_Minimum_Amount'] = CAC_WC_DIR . 'classes/column/shop_coupon/minimum-amount.php';
 			}
+
+			// Coupon columns
+			if ( 'wp-users' == $storage_model->key ) {
+				$columns['CPAC_WC_Column_User_Orders'] = CAC_WC_DIR . 'classes/column/user/orders.php';
+				$columns['CPAC_WC_Column_User_Total_Sales'] = CAC_WC_DIR . 'classes/column/user/total-sales.php';
+				$columns['CPAC_WC_Column_User_Order_Count'] = CAC_WC_DIR . 'classes/column/user/order-count.php';
+				$columns['CPAC_WC_Column_User_Coupons_Used'] = CAC_WC_DIR . 'classes/column/user/coupons-used.php';
+				//$columns['CPAC_WC_Column_User_Order_Custom_Field'] = CAC_WC_DIR . 'classes/column/user/order-custom-field.php';
+			}
+
+			// Remove WooCommerce placeholder column
+			if ( isset( $columns['CPAC_Column_WC_Placeholder'] ) ) {
+				unset( $columns['CPAC_Column_WC_Placeholder'] );
+			}
 		}
 
 		return $columns;
@@ -266,33 +280,19 @@ class CPAC_Addon_WC {
 	/**
 	 * Group default WooCommerce column types into the WooCommerce column type group
 	 *
-	 * @see filter:cac/columns/registered/default
 	 * @since 1.0
 	 */
-	public function group_default_woocommerce_column_types( $columns, $storage_model ) {
-
-		if ( 'product' == $storage_model->key ) {
-			foreach ( $columns as $column_name => $column ) {
-				if ( in_array( $column_name, array( 'thumb', 'name', 'sku', 'price', 'product_cat', 'product_tag', 'featured', 'product_type' ) ) ) {
-					$column->set_properties( 'group', 'woocommerce-default' );
-				}
-			}
-		}
-
-		if ( 'shop_order' == $storage_model->key ) {
-			foreach ( $columns as $column_name => $column ) {
-				if ( in_array( $column_name, array( 'customer_message', 'order_notes', 'order_status', 'order_actions', 'order_date', 'order_title', 'order_items', 'shipping_address', 'order_total' ) ) ) {
-					$column->set_properties( 'group', 'woocommerce-default' );
-				}
-			}
-		}
-
-		if ( 'shop_coupon' == $storage_model->key ) {
-			foreach ( $columns as $column_name => $column ) {
-				if ( in_array( $column_name, array( 'coupon_code', 'amount', 'type', 'description', 'expiry_date', 'products', 'usage' ) ) ) {
-					$column->set_properties( 'group', 'woocommerce-default' );
-				}
-			}
+	public function default_column_names( $columns, $storage_model ) {
+		switch ( $storage_model->get_post_type() ) {
+			case 'product' :
+				$columns = array( 'thumb', 'name', 'sku', 'price', 'product_cat', 'product_tag', 'featured', 'product_type', 'date' );
+				break;
+			case 'shop_order' :
+				$columns = array( 'customer_message', 'order_notes', 'order_status', 'order_actions', 'order_date', 'order_title', 'order_items', 'shipping_address', 'order_total', 'billing_address' );
+				break;
+			case 'shop_coupon' :
+				$columns = array( 'coupon_code', 'amount', 'type', 'description', 'expiry_date', 'products', 'usage' );
+				break;
 		}
 
 		return $columns;
@@ -306,8 +306,7 @@ class CPAC_Addon_WC {
 	 * @return bool Returns true if the main Admin Columns plugin is active, false otherwise
 	 */
 	public function is_cpac_active() {
-
-		return class_exists( 'CPAC' );
+		return class_exists( 'CPAC', false );
 	}
 
 	/**
@@ -318,7 +317,6 @@ class CPAC_Addon_WC {
 	 * @return bool Returns true if WooCommerce is active, false otherwise
 	 */
 	public function is_woocommerce_active() {
-
 		return class_exists( 'WooCommerce', false );
 	}
 
@@ -333,29 +331,27 @@ class CPAC_Addon_WC {
 		$missing_dependencies = array();
 
 		if ( ! $this->is_cpac_active() ) {
-			$missing_dependencies[] = '<a href="' . admin_url( 'plugin-install.php' ) . '?tab=search&s=Admin+Columns&plugin-search-input=Search+Plugins' . '" target="_blank">' . __( 'Admin Columns', 'cpac' ) . '</a>';
+			$missing_dependencies[] = '<a href="' . admin_url( 'plugin-install.php' ) . '?tab=search&s=Admin+Columns&plugin-search-input=Search+Plugins' . '" target="_blank">' . __( 'Admin Columns', 'codepress-admin-columns' ) . '</a>';
 		}
 
 		if ( ! $this->is_woocommerce_active() ) {
-			$missing_dependencies[] = '<a href="' . admin_url( 'plugin-install.php' ) . '?tab=search&s=WooCommerce&plugin-search-input=Search+Plugins' . '" target="_blank">' . __( 'WooCommerce', 'cpac' ) . '</a>';
+			$missing_dependencies[] = '<a href="' . admin_url( 'plugin-install.php' ) . '?tab=search&s=WooCommerce&plugin-search-input=Search+Plugins' . '" target="_blank">' . __( 'WooCommerce', 'codepress-admin-columns' ) . '</a>';
 		}
-
-		$missing_list = '';
 
 		if ( ! empty( $missing_dependencies ) ) {
 			if ( count( $missing_dependencies ) === 1 ) {
 				$missing_list = $missing_dependencies[0];
 			}
 			else {
-				$missing_list = implode( ', ', array_slice( $missing_dependencies, 0, -1 ) );
-				$missing_list = sprintf( __( '%s and %s', 'cpac' ), $missing_list, implode( '', array_slice( $missing_dependencies, -1 ) ) );
+				$missing_list = implode( ', ', array_slice( $missing_dependencies, 0, - 1 ) );
+				$missing_list = sprintf( __( '%s and %s', 'codepress-admin-columns' ), $missing_list, implode( '', array_slice( $missing_dependencies, - 1 ) ) );
 			}
 
 			?>
 			<tr class="plugin-update-tr">
 				<td colspan="3" class="plugin-update">
 					<div class="update-message">
-						<?php printf( __( 'The WooCommerce add-on is enabled but not effective. It requires %s in order to work.', 'cpac' ), $missing_list ); ?>
+						<?php printf( __( 'The WooCommerce add-on is enabled but not effective. It requires %s in order to work.', 'codepress-admin-columns' ), $missing_list ); ?>
 					</div>
 				</td>
 			</tr>
@@ -373,17 +369,16 @@ class CPAC_Addon_WC {
 	public function get_column_mappings() {
 
 		return array(
-			'price' => 'column-wc-price',
-			'sku' => 'column-wc-sku',
+			'price'       => 'column-wc-price',
+			'sku'         => 'column-wc-sku',
 			'is_in_stock' => 'column-wc-stock',
-			'usage' => 'column-wc-usage',
+			'usage'       => 'column-wc-usage',
 			'description' => 'column-wc-description',
-			'amount' => 'column-wc-amount',
-			'type' => 'column-wc-type',
+			'amount'      => 'column-wc-amount',
+			'type'        => 'column-wc-type',
 			'coupon_code' => 'column-wc-coupon_code'
 		);
 	}
-
 }
 
 new CPAC_Addon_WC();

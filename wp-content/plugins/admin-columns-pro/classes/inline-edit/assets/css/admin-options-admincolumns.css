@@ -3,12 +3,11 @@
  * ----------------------------------------------------------------------------
  */
 .column-meta .column_label .inner .editing:before {
-	content: "\f464";
-	display: inline-block;
-	-webkit-font-smoothing: antialiased;
-	font: normal 24px/17px 'dashicons';
-	vertical-align: top;
-}
+  content: "\f464";
+  display: inline-block;
+  -webkit-font-smoothing: antialiased;
+  font: normal 24px/17px 'dashicons';
+  vertical-align: top; }
+
 .column-meta .column_label .inner .editing.on:before {
-	color: #21759B;
-}
+  color: #21759B; }

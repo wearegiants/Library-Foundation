@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit when accessed directly
 /**
  * @since 1.1
  */
-class CPAC_WC_Column_Post_Order_Count extends CPAC_Column {
+class CPAC_WC_Column_Post_Order_Count extends CPAC_WC_Column {
 
 	/**
 	 * @see CPAC_Column::init()
@@ -16,8 +16,7 @@ class CPAC_WC_Column_Post_Order_Count extends CPAC_Column {
 
 		// Properties
 		$this->properties['type']	= 'column-wc-order_count';
-		$this->properties['label']	= __( 'Number of orders', 'cpac' );
-		$this->properties['group']	= 'woocommerce-custom';
+		$this->properties['label']	= __( 'Number of orders', 'woocommerce' );
 	}
 
 	/**
@@ -25,8 +24,8 @@ class CPAC_WC_Column_Post_Order_Count extends CPAC_Column {
 	 * @since 1.1
 	 */
 	public function get_value( $post_id ) {
-
-		return $this->get_raw_value( $post_id );
+		$count = $this->get_raw_value( $post_id );
+		return $count ? $count : $this->get_empty_char();
 	}
 
 	/**
@@ -34,7 +33,6 @@ class CPAC_WC_Column_Post_Order_Count extends CPAC_Column {
 	 * @since 1.1
 	 */
 	public function get_raw_value( $post_id ) {
-
 		global $wpdb;
 
 		$num_orders = $wpdb->get_var( $wpdb->prepare( "

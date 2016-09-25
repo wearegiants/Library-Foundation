@@ -1,23 +1,20 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit when accessed directly
+defined( 'ABSPATH' ) or die();
 
 /**
  * @since 1.0
  */
-class CPAC_WC_Column_Post_Usage extends CPAC_Column_Default {
+class CPAC_WC_Column_Post_Usage extends CPAC_WC_Column_Default {
 
 	/**
 	 * @see CPAC_Column::init()
 	 * @since 1.0
 	 */
 	public function init() {
-
 		parent::init();
 
-		// define properties
-		$this->properties['type']	= 'usage';
-		$this->properties['label']	= __( 'Usage / Limit', 'cpac' );
-		$this->properties['group']	= 'woocommerce-default';
+		$this->properties['type'] = 'usage';
+		$this->properties['label'] = __( 'Usage / Limit', 'woocommerce' );
 		$this->properties['handle'] = 'usage';
 	}
 
@@ -26,13 +23,11 @@ class CPAC_WC_Column_Post_Usage extends CPAC_Column_Default {
 	 * @since 1.0
 	 */
 	public function get_raw_value( $post_id ) {
-
 		$coupon = new WC_Coupon( get_post_field( 'post_title', $post_id, 'raw' ) );
 
 		return array(
-			'usage_limit' => $coupon->usage_limit,
+			'usage_limit'          => $coupon->usage_limit,
 			'usage_limit_per_user' => $coupon->usage_limit_per_user
 		);
 	}
-
 }

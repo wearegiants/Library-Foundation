@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Taxonomy storage model for editability
  *
@@ -22,10 +23,15 @@ class CACIE_Editable_Model_Taxonomy extends CACIE_Editable_Model {
 			case 'slug':
 			case 'description':
 
-			// Custom columns
+				// Custom columns
 			case 'column-excerpt' :
+			case 'column-term_parent' :
 				$is_editable = true;
-			break;
+				break;
+
+			case 'column-meta' :
+				$is_editable = false;
+				break;
 		}
 
 		/**
@@ -64,30 +70,38 @@ class CACIE_Editable_Model_Taxonomy extends CACIE_Editable_Model {
 			 * Default columns
 			 *
 			 */
-			'name' => array(
-				'type' 		=> 'text',
-				'property' 	=> 'name',
-				'js' 		=> array(
+			'name'               => array(
+				'type'         => 'text',
+				'property'     => 'name',
+				'js'           => array(
 					'selector' => 'a.row-title',
 				),
 				'display_ajax' => false
 			),
-			'slug' => array(
-				'type' 		=> 'text',
-				'property' 	=> 'slug',
+			'slug'               => array(
+				'type'     => 'text',
+				'property' => 'slug',
 			),
-			'description' => array(
-				'type' 		=> 'textarea',
-				'property' 	=> 'description',
+			'description'        => array(
+				'type'     => 'textarea',
+				'property' => 'description',
 			),
 
 			/**
 			 * Custom columns
 			 *
 			 */
-			'column-excerpt' => array(
-				'type' 		=> 'textarea',
-				'property' 	=> 'description',
+			'column-term_parent' => array(
+				'type'            => 'select2_dropdown',
+				'property'        => 'parent',
+				'ajax_populate'   => true,
+				'formatted_value' => 'term',
+				'multiple'        => false,
+				'clear_button'    => true
+			),
+			'column-excerpt'     => array(
+				'type'     => 'textarea',
+				'property' => 'description',
 			),
 		);
 
@@ -99,9 +113,10 @@ class CACIE_Editable_Model_Taxonomy extends CACIE_Editable_Model {
 		 * @param array $data {
 		 *     Editability settings.
 		 *
-		 *     @type string		$type		Editability type. Accepts 'text', 'select', 'textarea', etc.
-		 *     @type array		$options	Optional. Options for dropdown ([value] => [label]), only used when $type is "select"
+		 * @type string $type Editability type. Accepts 'text', 'select', 'textarea', etc.
+		 * @type array $options Optional. Options for dropdown ([value] => [label]), only used when $type is "select"
 		 * }
+		 *
 		 * @param CACIE_Editable_Model $model Editability storage model
 		 */
 		$data = apply_filters( 'cac/editable/editables_data', $data, $this );
@@ -135,7 +150,7 @@ class CACIE_Editable_Model_Taxonomy extends CACIE_Editable_Model {
 
 			$columndata = array();
 
-			foreach ( $this->storage_model->columns as $column_name => $column ) {
+			foreach ( $this->storage_model->get_columns() as $column_name => $column ) {
 
 				// Edit enabled for this column?
 				if ( ! $this->is_edit_enabled( $column ) ) {
@@ -159,13 +174,11 @@ class CACIE_Editable_Model_Taxonomy extends CACIE_Editable_Model {
 							$value = $term->description;
 							break;
 					}
-				}
-
-				// Custom column
+				} // Custom column
 				else {
 					$raw_value = $this->get_column_editability_value( $column, $term->term_id );;
 
-					if ( $raw_value === NULL ) {
+					if ( $raw_value === null ) {
 						continue;
 					}
 
@@ -194,19 +207,18 @@ class CACIE_Editable_Model_Taxonomy extends CACIE_Editable_Model {
 
 				// Add data
 				$columndata[ $column_name ] = array(
-					'revisions' => array( $value ),
+					'revisions'        => array( $value ),
 					'current_revision' => 0,
-					'itemdata' => $itemdata,
-					'editable' => array(
+					'itemdata'         => $itemdata,
+					'editable'         => array(
 						'formattedvalue' => $this->get_formatted_value( $column, $value )
 					)
 				);
 			}
 
 			$items[ $term->term_id ] = array(
-				'ID' 			=> $term->term_id,
-				'object' 		=> get_object_vars( $term ),
-				'columndata' 	=> $columndata
+				'ID'         => $term->term_id,
+				'columndata' => $columndata
 			);
 		}
 
@@ -217,7 +229,7 @@ class CACIE_Editable_Model_Taxonomy extends CACIE_Editable_Model {
 	 * @see CACIE_Editable_Model::manage_value()
 	 * @since 1.0
 	 */
-	public function manage_value( $column, $id ){
+	public function manage_value( $column, $id ) {
 		$term = get_term_by( 'id', $id, $this->storage_model->taxonomy );
 
 		switch ( $column->properties->type ) {
@@ -251,28 +263,14 @@ class CACIE_Editable_Model_Taxonomy extends CACIE_Editable_Model {
 		// Third party columns can use the save() method as a callback for inline-editing
 		if ( method_exists( $column, 'save' ) ) {
 			$column->save( $id, $value );
+
 			return;
 		}
 
 		// Fetch data
-		$editable = $this->get_editable( $column->properties->name );
+		$editable = $this->get_editable( $column->get_name() );
 
-		switch ( $column->properties->type ) {
-
-			/**
-			 * Default Columns
-			 *
-			 */
-
-			/**
-			 * Custom Columns
-			 *
-			 */
-			case 'column-acf_field':
-				if ( function_exists( 'update_field' ) ) {
-					update_field( $column->get_field_key(), $value, $taxonomy . '_' . $term->term_id );
-				}
-				break;
+		switch ( $column->get_type() ) {
 
 			// Save basic property such as title or description (data that is available in WP_Post)
 			default:
@@ -286,5 +284,19 @@ class CACIE_Editable_Model_Taxonomy extends CACIE_Editable_Model {
 					}
 				}
 		}
+	}
+
+	/**
+	 * @since 3.7
+	 */
+	public function get_ajax_options( $column, $search ) {
+		$args = array(
+			'number'     => 100,
+			'hide_empty' => false,
+			'search'     => $search,
+			'fields'     => 'id=>name'
+		);
+
+		return get_terms( $this->storage_model->taxonomy, $args );
 	}
 }

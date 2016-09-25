@@ -1,5 +1,42 @@
 == Changelog ==
 
+= 1.4 =
+Release Date: March 16th, 2016
+
+* [Added] Added Tax Status column for products with support for filtering
+* [Added] Added Tax Class column for products with support for filtering
+* [Added] Added Shipping method column for orders with support for filtering
+* [Added] Added filtering support for "Reviews enabled" column
+* [Added] Added filtering support for "Shipping method" column
+* [Added] Added Product detail column for orders
+* [Fixed] Changed groupnames for upcoming plugin release
+* [Fixed] Default WooCommerce columns are not clonable
+* [Fixed] Discount columns fixed
+* [Updated] Changed status icons with dashicons
+
+= 1.3.2 =
+Release Date: January 21th, 2016
+
+* [Added] Broken support for WooCommerce < 2.3
+* [Fixed] Minimized the number of strings that needs translating
+* [Improved] Script loading is improved
+
+= 1.3.1 =
+Release Date: November 26th, 2015
+
+* [Added] Added a Product column for Order screen which can display Title, ID, SKU or Thumbnails
+* [Added] Added an Attributes column for product screen which can display any attribute
+* [Fixed] Replaced deprecated method get_product with wc_get_product
+
+= 1.3 =
+Release Date: October 13th, 2015
+
+* [Added] Variation column: displays variations properties such as price and stock
+* [Added] Order column for Users: displays order ID's with edit link. On hover it shows price, date and item count
+* [Added] Total Sales column for Users: displays the total sales per user per currency
+* [Added] Subscription Expiration Date column for Users which can be sorted
+* [Fixed] Translations will be loaded from pro version
+
 = 1.2 =
 Release Date: May 4th, 2015
 

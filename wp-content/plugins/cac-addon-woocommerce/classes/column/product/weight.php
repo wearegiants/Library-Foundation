@@ -1,25 +1,22 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit when accessed directly
+defined( 'ABSPATH' ) or die();
 
 /**
  * CPAC_ACF_Column_ACF_Field
  *
  * @since 1.0
  */
-class CPAC_WC_Column_Post_Weight extends CPAC_Column {
+class CPAC_WC_Column_Post_Weight extends CPAC_WC_Column {
 
 	/**
 	 * @see CPAC_Column::init()
 	 * @since 1.0
 	 */
 	public function init() {
-
 		parent::init();
 
-		// Properties
-		$this->properties['type']	= 'column-wc-weight';
-		$this->properties['label']	= __( 'Weight', 'cpac' );
-		$this->properties['group']	= 'woocommerce-custom';
+		$this->properties['type'] = 'column-wc-weight';
+		$this->properties['label'] = __( 'Weight', 'woocommerce' );
 	}
 
 	/**
@@ -30,6 +27,7 @@ class CPAC_WC_Column_Post_Weight extends CPAC_Column {
 		if ( function_exists( 'wc_product_weight_enabled' ) ) {
 			return wc_product_weight_enabled();
 		}
+
 		return true;
 	}
 
@@ -38,8 +36,8 @@ class CPAC_WC_Column_Post_Weight extends CPAC_Column {
 	 * @since 1.0
 	 */
 	public function get_value( $post_id ) {
-
-		return strval( $this->get_raw_value( $post_id ) + 0 ) . ' ' . get_option( 'woocommerce_weight_unit' );
+		$weight = $this->get_raw_value( $post_id );
+		return $weight ? strval( $this->get_raw_value( $post_id ) + 0 ) . ' ' . get_option( 'woocommerce_weight_unit' ) : $this->get_empty_char();
 	}
 
 	/**
@@ -47,14 +45,11 @@ class CPAC_WC_Column_Post_Weight extends CPAC_Column {
 	 * @since 1.0
 	 */
 	public function get_raw_value( $post_id ) {
-
-		$product = get_product( $post_id );
-
+		$product = wc_get_product( $post_id );
 		if ( $product->is_virtual() ) {
 			return;
 		}
 
 		return $product->has_weight() ? floatval( $product->get_weight() ) : '';
 	}
-
 }

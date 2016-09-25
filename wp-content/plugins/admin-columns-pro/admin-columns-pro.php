@@ -1,14 +1,13 @@
 <?php
 /*
 Plugin Name: Admin Columns Pro
-Version: 3.5
+Version: 3.8.7
 Description: Customize columns on the administration screens for post(types), users and other content. Filter and sort content, and edit posts directly from the posts overview. All via an intuitive, easy-to-use drag-and-drop interface.
 Author: AdminColumns.com
-Author URI: http://www.admincolumns.com
-Plugin URI: http://www.admincolumns.com/
-Text Domain: cpac
+Author URI: https://www.admincolumns.com
+Plugin URI: https://www.admincolumns.com
+Text Domain: codepress-admin-columns
 Domain Path: /languages/
-Network: true
 */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -17,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'ACP_VERSION', '3.5' );
+define( 'ACP_VERSION', '3.8.7' );
 define( 'ACP_FILE', __FILE__ );
 
 // Only run plugin in the admin interface
@@ -33,13 +32,11 @@ if ( ! is_admin() ) {
 class CPAC_Full {
 
 	/**
-	 * Constructor
-	 *
 	 * @since 3.0
 	 */
 	public function __construct() {
 
-		// Add capabilty to roles to manage admin columns
+		// Add capability to roles to manage admin columns
 		register_activation_hook( __FILE__, array( $this, 'set_capabilities' ) );
 
 		// Only load Admin Columns if it hasn't been loaded already (in which case it is automatically deactivated by maybe_deactivate_admincolumns())
@@ -51,6 +48,7 @@ class CPAC_Full {
 
 		// Add settings link
 		add_filter( 'plugin_action_links', array( $this, 'add_settings_link' ), 1, 2 );
+		add_filter( 'network_admin_plugin_action_links', array( $this, 'add_settings_link' ), 10, 2 );
 	}
 
 	/**
@@ -90,30 +88,33 @@ class CPAC_Full {
 	 *
 	 * @param string $links All settings links.
 	 * @param string $file Plugin filename.
+	 *
 	 * @return string Link to settings page
 	 */
 	public function add_settings_link( $links, $file ) {
 
 		if ( $file === plugin_basename( __FILE__ ) ) {
-			array_unshift( $links, '<a href="' . admin_url("options-general.php") . '?page=codepress-admin-columns&tab=settings">' . __( 'Settings', 'cpac' ) . '</a>' );
+			$adminurl = is_network_admin() ? network_admin_url( "settings.php" ) : admin_url( "options-general.php" );
+			array_unshift( $links, '<a href="' . add_query_arg( array(
+					'page' => 'codepress-admin-columns',
+					'tab'  => 'settings'
+				), $adminurl ) . '">' . __( 'Settings', 'codepress-admin-columns' ) . '</a>' );
 		}
 
 		return $links;
 	}
 
 	/**
-	 * Add capabilty to administrator to manage admin columns.
-	 * You can use the capability 'manage_admin_columns' to grant other roles this privilidge as well.
+	 * Add capability to administrator to manage admin columns.
+	 * You can use the capability 'manage_admin_columns' to grant other roles this privilege as well.
 	 *
 	 * @since 3.0
 	 */
 	public function set_capabilities() {
-
 		if ( $role = get_role( 'administrator' ) ) {
-   			$role->add_cap( 'manage_admin_columns' );
-   		}
+			$role->add_cap( 'manage_admin_columns' );
+		}
 	}
-
 }
 
 new CPAC_Full();

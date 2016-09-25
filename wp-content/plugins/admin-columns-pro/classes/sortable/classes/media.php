@@ -7,25 +7,17 @@
  */
 class CAC_Sortable_Model_Media extends CAC_Sortable_Model {
 
-	/**
-	 * Constructor
-	 *
-	 * @since 1.0
-	 */
-	public function __construct( $storage_model ) {
-		parent::__construct( $storage_model );
-
-		// default sortby
-		$this->default_orderby = '';
-
-		// handle sorting request
-		add_filter( 'request', array( $this, 'handle_sorting_request'), 1 );
-
-		// register sortable headings
-		add_filter( "manage_upload_sortable_columns", array( $this, 'add_sortable_headings' ) );
-
-		// add reset button
+	public function init_hooks() {
+		add_filter( 'request', array( $this, 'handle_sorting_request' ), 1 );
+		add_filter( "manage_" . $this->storage_model->get_screen_id() . "_sortable_columns", array( $this, 'add_sortable_headings' ) );
 		add_action( 'restrict_manage_posts', array( $this, 'add_reset_button' ) );
+	}
+
+	/**
+	 * @since 3.7
+	 */
+	public function get_items( $args ) {
+		return $this->get_posts( $args );
 	}
 
 	/**
@@ -58,7 +50,24 @@ class CAC_Sortable_Model_Media extends CAC_Sortable_Model {
 			'column-acf_field',
 		);
 
-		return $column_names;
+		return array_merge( $column_names, (array) $this->get_default_sortables() );
+	}
+
+	/**
+	 * Columns that are sortable by WordPress core
+	 *
+	 * @since 3.8
+	 */
+	public function get_default_sortables() {
+		$columns = array(
+			'title',
+			'author',
+			'date',
+			'parent',
+			'comment'
+		);
+
+		return $columns;
 	}
 
 	/**
@@ -69,16 +78,10 @@ class CAC_Sortable_Model_Media extends CAC_Sortable_Model {
 	 * @since 1.0
 	 *
 	 * @param array $vars
+	 *
 	 * @return array Vars
 	 */
 	public function handle_sorting_request( $vars ) {
-
-		global $pagenow;
-
-		// only trigger on upload page
-		if ( 'upload.php' != $pagenow ) {
-			return $vars;
-		}
 
 		$vars = $this->apply_sorting_preference( $vars );
 
@@ -94,6 +97,8 @@ class CAC_Sortable_Model_Media extends CAC_Sortable_Model {
 		// unsorted Attachments
 		$posts = array();
 
+		$show_all_results = $this->get_show_all_results();
+
 		switch ( $column->properties->type ) :
 
 			// WP Default Columns
@@ -104,22 +109,16 @@ class CAC_Sortable_Model_Media extends CAC_Sortable_Model {
 				break;
 
 			case 'column-width' :
+			case 'column-height' :
 				$sort_flag = SORT_NUMERIC;
-				foreach ( $this->get_posts() as $id ) {
-					$meta 	= wp_get_attachment_metadata( $id );
-					$width 	= ! empty( $meta['width'] ) ? $meta['width'] : 0;
-					if ( $width ) {
-						$posts[ $id ] = $width;
-					}
-				}
 				break;
 
 			case 'column-height' :
 				$sort_flag = SORT_NUMERIC;
 				foreach ( $this->get_posts() as $id ) {
-					$meta 	= wp_get_attachment_metadata( $id );
+					$meta = wp_get_attachment_metadata( $id );
 					$height = ! empty( $meta['height'] ) ? $meta['height'] : 0;
-					if ( $height ) {
+					if ( $height || $show_all_results ) {
 						$posts[ $id ] = $height;
 					}
 				}
@@ -128,12 +127,12 @@ class CAC_Sortable_Model_Media extends CAC_Sortable_Model {
 			case 'column-dimensions' :
 				$sort_flag = SORT_NUMERIC;
 				foreach ( $this->get_posts() as $id ) {
-					$meta 	= wp_get_attachment_metadata( $id );
+					$meta = wp_get_attachment_metadata( $id );
 					$height = ! empty( $meta['height'] ) ? $meta['height'] : 0;
-					$width 	= ! empty( $meta['width'] ) ? $meta['width'] : 0;
+					$width = ! empty( $meta['width'] ) ? $meta['width'] : 0;
 					$surface = $height * $width;
 
-					if ( $surface ) {
+					if ( $surface || $show_all_results ) {
 						$posts[ $id ] = $surface;
 					}
 				}
@@ -154,9 +153,9 @@ class CAC_Sortable_Model_Media extends CAC_Sortable_Model {
 			case 'column-file_name' :
 				$sort_flag = SORT_STRING;
 				foreach ( $this->get_posts() as $id ) {
-					$meta 	= get_post_meta( $id, '_wp_attached_file', true );
-					$file	= ! empty( $meta ) ? strtolower( basename( $meta ) ) : '';
-					if ( $file ) {
+					$meta = get_post_meta( $id, '_wp_attached_file', true );
+					$file = ! empty( $meta ) ? strtolower( basename( $meta ) ) : '';
+					if ( $file || $show_all_results ) {
 						$posts[ $id ] = $file;
 					}
 				}
@@ -169,73 +168,84 @@ class CAC_Sortable_Model_Media extends CAC_Sortable_Model {
 			case 'column-file_size' :
 				$sort_flag = SORT_NUMERIC;
 				foreach ( $this->get_posts() as $id ) {
-					$file = wp_get_attachment_url( $id );
-					if ( $file ) {
-						$abs			= str_replace( WP_CONTENT_URL, WP_CONTENT_DIR, $file );
-						$posts[ $id ] 	= $this->prepare_sort_string_value( filesize( $abs ) );
+					$value = false;
+					if ( $file = wp_get_attachment_url( $id ) ) {
+						$abs = str_replace( WP_CONTENT_URL, WP_CONTENT_DIR, $file );
+						$value = file_exists( $abs ) ? filesize( $abs ) : false;
+					}
+					if ( $value || $show_all_results ) {
+						$posts[ $id ] = $this->prepare_sort_string_value( $value );
 					}
 				}
 				break;
 
 			case 'column-available_sizes' :
 				$sort_flag = SORT_NUMERIC;
+				$sizes = get_intermediate_image_sizes();
 				foreach ( $this->get_posts() as $id ) {
 					$meta = get_post_meta( $id, '_wp_attachment_metadata', true );
-					if ( isset( $meta['sizes'] ) ) {
-						$posts[ $id ] = count( array_intersect( array_keys( $meta['sizes'] ), get_intermediate_image_sizes() ) );
+					$value = isset( $meta['sizes'] ) ? count( array_intersect( array_keys( $meta['sizes'] ), $sizes ) ) : false;
+
+					if ( $value || $show_all_results ) {
+						$posts[ $id ] = $value;
 					}
 				}
 				break;
 
 			case 'column-taxonomy' :
-				$sort_flag 	= SORT_STRING;
-				$posts 		= $this->get_posts_sorted_by_taxonomy( $column->options->taxonomy );
+				$sort_flag = SORT_STRING;
+				$posts = $this->get_posts_sorted_by_taxonomy( $column->get_option( 'taxonomy' ) );
 				break;
 
+			// Custom Field
 			case 'column-meta' :
-				$field_type = 'meta_value';
-				if ( in_array( $column->options->field_type, array( 'numeric', 'library_id') ) ) {
-					$field_type = 'meta_value_num';
+				if ( $items = $this->get_meta_items_for_sorting( $column ) ) {
+					$posts = $items['items'];
+					$sort_flag = $items['sort_flag'];
 				}
-
-				$vars = array_merge( $vars, array(
-					'meta_key' 	=> $column->options->field,
-					'orderby' 	=> $field_type
-				));
+				else {
+					$vars['meta_query'][] = array(
+						'key'     => $column->get_field_key(),
+						'type'    => in_array( $column->get_option( 'field_type' ), array( 'numeric', 'library_id', 'count' ) ) ? 'NUMERIC' : 'CHAR',
+						'compare' => '!=',
+						'value'   => ''
+					);
+					$vars['orderby'] = $column->get_field_key();
+				}
 				break;
 
 			case 'column-exif_data' :
 				$sort_flag = SORT_STRING;
+				foreach ( $this->get_posts() as $id ) {
+					$value = $column->get_value( $id );
+					if ( $value || $show_all_results ) {
+						$posts[ $id ] = $value;
+					}
+				}
 				break;
 
 			case 'column-acf_field' :
 				if ( method_exists( $column, 'get_field' ) ) {
-					$field = $column->get_field();
-					$sort_flag = in_array( $field['type'], array( 'date_picker', 'number' ) ) ? SORT_NUMERIC : SORT_REGULAR;
-
-					foreach ( $this->get_posts() as $id ) {
-						$value = $column->get_sorting_value( $id );
-						if ( $value || $this->show_all_results ) {
-							$posts[ $id ] = $this->prepare_sort_string_value( $value );
-						}
+					$is_sortable = $this->set_acf_sorting_vars( $column, $vars );
+					if ( ! $is_sortable ) {
+						$sort_flag = SORT_REGULAR;
+						$posts = $this->get_acf_sorting_data( $column, $this->get_posts() );
 					}
 				}
-
 				break;
 
 		endswitch;
 
 		// we will add the sorted post ids to vars['post__in'] and remove unused vars
 		if ( isset( $sort_flag ) ) {
-
-			// orderby column value
 			if ( ! $posts ) {
 				foreach ( $this->get_posts() as $id ) {
-					$posts[ $id ] = $this->prepare_sort_string_value( $column->get_value( $id ) );
+					$value = method_exists( $column, 'get_raw_value' ) ? $column->get_raw_value( $id ) : $column->get_value( $id );
+					if ( $value || $show_all_results ) {
+						$posts[ $id ] = $this->prepare_sort_string_value( $value );
+					}
 				}
 			}
-
-			// set post__in vars
 			$vars = $this->get_vars_post__in( $vars, $posts, $sort_flag );
 		}
 

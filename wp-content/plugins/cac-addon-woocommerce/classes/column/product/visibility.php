@@ -1,19 +1,16 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) exit; // Exit when accessed directly
+defined( 'ABSPATH' ) or die();
 
 /**
  * @since 1.2
  */
-class CPAC_WC_Column_Post_Visibility extends CPAC_Column_Default {
+class CPAC_WC_Column_Post_Visibility extends CPAC_WC_Column {
 
 	public function init() {
-
 		parent::init();
 
-		// define properties
-		$this->properties['type']	= 'column-wc-visibility';
-		$this->properties['label']	= __( 'Visiblity', 'cpac' );
-		$this->properties['group']	= 'woocommerce-custom';
+		$this->properties['type'] = 'column-wc-visibility';
+		$this->properties['label'] = __( 'Visiblity', 'codepress-admin-columns' );
 	}
 
 	public function get_visibility_options() {
@@ -36,7 +33,8 @@ class CPAC_WC_Column_Post_Visibility extends CPAC_Column_Default {
 	}
 
 	public function get_raw_value( $post_id ) {
-		$product = get_product( $post_id );
+		$product = wc_get_product( $post_id );
+
 		return $product->visibility;
 	}
 }

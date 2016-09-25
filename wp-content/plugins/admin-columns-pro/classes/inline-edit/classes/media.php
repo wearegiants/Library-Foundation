@@ -1,10 +1,17 @@
 <?php
+
 /**
  * Media storage model for editability
  *
  * @since 1.0
  */
 class CACIE_Editable_Model_Media extends CACIE_Editable_Model {
+
+	/**
+	 * @since 3.6.1
+	 */
+	public function get_ajax_options( $column, $search ) {
+	}
 
 	/**
 	 * @see CACIE_Editable_Model::is_editable()
@@ -15,21 +22,21 @@ class CACIE_Editable_Model_Media extends CACIE_Editable_Model {
 		// By default, inherit editability from parent
 		$is_editable = parent::is_editable( $column );
 
-		switch ( $column->properties->type ) {
+		switch ( $column->get_type() ) {
 
 			// Default columns
 			case 'author':
-			//case 'date': // @todo: datepicker conflict with ACF
+			case 'date':
 			case 'title':
 
-			// Custom columns
+				// Custom columns
 			case 'column-alternate_text':
 			case 'column-caption':
 			case 'column-description':
 			case 'column-mime_type':
 			case 'column-taxonomy':
 				$is_editable = true;
-			break;
+				break;
 		}
 
 		/**
@@ -85,19 +92,20 @@ class CACIE_Editable_Model_Media extends CACIE_Editable_Model {
 			 * Default columns
 			 *
 			 */
-			'author' => array(
-				'type' 		=> 'select2_dropdown',
-				'property' 	=> 'post_author',
-				'ajax_populate' => true
+			'author'                => array(
+				'type'            => 'select2_dropdown',
+				'property'        => 'post_author',
+				'ajax_populate'   => true,
+				'formatted_value' => 'user'
 			),
-			'date' => array(
-				'type' 		=> 'date',
-				'property' 	=> 'post_date'
+			'date'                  => array(
+				'type'     => 'date',
+				'property' => 'post_date'
 			),
-			'title' => array(
-				'type' 		=> 'text',
-				'property' 	=> 'post_title',
-				'js' 		=> array(
+			'title'                 => array(
+				'type'         => 'text',
+				'property'     => 'post_title',
+				'js'           => array(
 					'selector' => 'strong > a',
 				),
 				'display_ajax' => false
@@ -110,25 +118,25 @@ class CACIE_Editable_Model_Media extends CACIE_Editable_Model {
 			'column-alternate_text' => array(
 				'type' => 'text'
 			),
-			'column-caption' => array(
-				'type' => 'textarea',
+			'column-caption'        => array(
+				'type'     => 'textarea',
 				'property' => 'post_excerpt'
 			),
-			'column-description' => array(
-				'type' => 'textarea',
+			'column-description'    => array(
+				'type'     => 'textarea',
 				'property' => 'post_content'
 			),
-			'column-mime_type' => array(
-				'type' => 'select',
+			'column-mime_type'      => array(
+				'type'     => 'select',
 				'property' => 'post_mime_type'
 			),
-			'column-taxonomy' => array(
+			'column-taxonomy'       => array(
 				'type' => 'select2_tags'
 			),
 		);
 
 		// Handle capabilities for editing post status
-		$post_type_object = get_post_type_object( $this->storage_model->post_type );
+		$post_type_object = get_post_type_object( $this->storage_model->get_post_type() );
 
 		if ( ! current_user_can( $post_type_object->cap->publish_posts ) ) {
 			unset( $data['column-status'] );
@@ -142,10 +150,11 @@ class CACIE_Editable_Model_Media extends CACIE_Editable_Model {
 		 * @param array $data {
 		 *     Editability settings.
 		 *
-		 *     @type string		$type		Editability type. Accepts 'text', 'select', 'textarea', 'media', 'float',
-		 *			 						'togglable', 'select', 'select2_dropdown' and 'select2_tags'
-		 *     @type array		$options	Optional. Options for dropdown ([value] => [label]), only used when $type is "select"
+		 * @type string $type Editability type. Accepts 'text', 'select', 'textarea', 'media', 'float',
+		 *                                    'togglable', 'select', 'select2_dropdown' and 'select2_tags'
+		 * @type array $options Optional. Options for dropdown ([value] => [label]), only used when $type is "select"
 		 * }
+		 *
 		 * @param CACIE_Editable_Model $model Editability storage model
 		 */
 		$data = apply_filters( 'cac/editable/editables_data', $data, $this );
@@ -171,7 +180,7 @@ class CACIE_Editable_Model_Media extends CACIE_Editable_Model {
 
 			$columndata = array();
 
-			foreach ( $this->storage_model->columns as $column_name => $column ) {
+			foreach ( $this->storage_model->get_columns() as $column_name => $column ) {
 
 				// Edit enabled for this column?
 				if ( ! $this->is_edit_enabled( $column ) ) {
@@ -201,7 +210,7 @@ class CACIE_Editable_Model_Media extends CACIE_Editable_Model {
 				else {
 					$raw_value = $this->get_column_editability_value( $column, $post->ID );
 
-					if ( $raw_value === NULL ) {
+					if ( $raw_value === null ) {
 						continue;
 					}
 
@@ -230,19 +239,18 @@ class CACIE_Editable_Model_Media extends CACIE_Editable_Model {
 
 				// Add data
 				$columndata[ $column_name ] = array(
-					'revisions' => array( $value ),
+					'revisions'        => array( $value ),
 					'current_revision' => 0,
-					'itemdata' => $itemdata,
-					'editable' => array(
+					'itemdata'         => $itemdata,
+					'editable'         => array(
 						'formattedvalue' => $this->get_formatted_value( $column, $value )
 					)
 				);
 			}
 
 			$items[ $post->ID ] = array(
-				'ID' 			=> $post->ID,
-				'object' 		=> get_object_vars( $post ),
-				'columndata' 	=> $columndata
+				'ID'         => $post->ID,
+				'columndata' => $columndata
 			);
 		}
 
@@ -253,18 +261,18 @@ class CACIE_Editable_Model_Media extends CACIE_Editable_Model {
 	 * @see CACIE_Editable_Model::manage_value()
 	 * @since 1.0
 	 */
-	public function manage_value( $column, $id ){
+	public function manage_value( $column, $id ) {
 
 		global $post;
 
 		$post = get_post( $id );
 		setup_postdata( $post );
 
-		switch ( $column->properties->type ) {
+		switch ( $column->get_type() ) {
 
 			case 'author':
 				printf( '<a href="%s">%s</a>',
-					esc_url( add_query_arg( array( 'author' => get_the_author_meta('ID') ), 'upload.php' ) ),
+					esc_url( add_query_arg( array( 'author' => get_the_author_meta( 'ID' ) ), 'upload.php' ) ),
 					get_the_author()
 				);
 				break;
@@ -272,15 +280,19 @@ class CACIE_Editable_Model_Media extends CACIE_Editable_Model {
 				// copied from class-wp-media-list-table.php
 				if ( '0000-00-00 00:00:00' == $post->post_date ) {
 					$h_time = __( 'Unpublished' );
-				} else {
+				}
+				else {
 					$m_time = $post->post_date;
 					$time = get_post_time( 'G', true, $post, false );
 					if ( ( abs( $t_diff = time() - $time ) ) < DAY_IN_SECONDS ) {
-						if ( $t_diff < 0 )
+						if ( $t_diff < 0 ) {
 							$h_time = sprintf( __( '%s from now' ), human_time_diff( $time ) );
-						else
+						}
+						else {
 							$h_time = sprintf( __( '%s ago' ), human_time_diff( $time ) );
-					} else {
+						}
+					}
+					else {
 						$h_time = mysql2date( __( 'Y/m/d' ), $m_time );
 					}
 				}
@@ -310,12 +322,13 @@ class CACIE_Editable_Model_Media extends CACIE_Editable_Model {
 		// Third party columns can use the save() method as a callback for inline-editing
 		if ( method_exists( $column, 'save' ) ) {
 			$column->save( $id, $value );
+
 			return;
 		}
 
-		$editable = $this->get_editable( $column->properties->name );
+		$editable = $this->get_editable( $column->get_name() );
 
-		switch ( $column->properties->type ) {
+		switch ( $column->get_type() ) {
 
 			/**
 			 * Default Columns
@@ -323,13 +336,14 @@ class CACIE_Editable_Model_Media extends CACIE_Editable_Model {
 			 */
 			case 'date':
 				// preserve the original time
-				$time = strtotime("1970-01-01 " . date( 'H:i:s', strtotime( $post->post_date ) ) );
+				$time = strtotime( "1970-01-01 " . date( 'H:i:s', strtotime( $post->post_date ) ) );
+				$date = date( 'Y-m-d H:i:s', strtotime( $value ) + $time );
 
 				wp_update_post( array(
-					'ID' => $post->ID,
-					'edit_date' => 1, // needed for GMT date
-					'post_date' => date( 'Y-m-d H:i:s', strtotime( $value ) + $time )
-				));
+					'ID'            => $post->ID,
+					'post_date'     => $date,
+					'post_date_gmt' => get_gmt_from_date( $date )
+				) );
 				break;
 
 			/**
@@ -339,17 +353,13 @@ class CACIE_Editable_Model_Media extends CACIE_Editable_Model {
 			case 'column-alternate_text':
 				$this->update_meta( $post->ID, '_wp_attachment_image_alt', $value );
 				break;
-			case 'column-acf_field':
-				if ( function_exists( 'update_field' ) ) {
-					update_field( $column->get_field_key(), $value, $post->ID );
-				}
-				break;
 			case 'column-meta':
 				$this->update_meta( $post->ID, $column->get_field_key(), $value );
 				break;
 			case 'column-taxonomy':
-				if ( ! empty( $column->options->taxonomy ) && taxonomy_exists( $column->options->taxonomy ) ) {
-					$this->set_post_terms( $id, $value, $column->options->taxonomy );
+				$taxonomy = $column->get_option( 'taxonomy' );
+				if ( $taxonomy && taxonomy_exists( $taxonomy ) ) {
+					$this->set_post_terms( $id, $value, $taxonomy );
 				}
 				break;
 
@@ -360,7 +370,7 @@ class CACIE_Editable_Model_Media extends CACIE_Editable_Model {
 
 					if ( isset( $post->{$property} ) ) {
 						wp_update_post( array(
-							'ID' => $post->ID,
+							'ID'      => $post->ID,
 							$property => $value
 						) );
 					}
